@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import DashboardPage from '../features/dashboard/pages/DashboardPage'
 
 import '../shared/styles/App.css'
 
@@ -6,7 +7,7 @@ function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <h1>Dashboard React</h1>
+    <DashboardPage />
   )
 }
 
