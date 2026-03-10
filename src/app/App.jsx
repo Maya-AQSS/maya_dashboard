@@ -1,13 +1,11 @@
-import { useState } from 'react'
-import DashboardPage from '../features/dashboard/pages/DashboardPage'
+import AppRouter from './router'
 
 import '../shared/styles/App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <DashboardPage />
+    <AppRouter />
   )
 }
 
