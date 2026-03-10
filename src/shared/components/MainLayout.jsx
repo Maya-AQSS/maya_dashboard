@@ -2,20 +2,25 @@ import Navbar from './Navbar'
 
 function MainLayout({ children }) {
     return (
-        <>
-            <header>
+        <div className="main-layout">
+
+            <header className="main-header">
                 <Navbar />
-                <h1>Layout principal</h1>
+                <div className="main-header-text">
+                    <h1>Dashboard</h1>
+                    <p>Bienvenido a tu panel de control</p>
+                </div>
             </header>
 
-            <main>
+            <main className="main-content">
                 {children}
             </main>
-            
-            <footer>
+
+            <footer className="main-footer">
                 <p>Dashboard React</p>
             </footer>
-        </>
+            
+        </div>
     )
 }
 

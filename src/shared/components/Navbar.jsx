@@ -2,11 +2,21 @@ import { Link } from 'react-router-dom'
 
 function Navbar() {
     return (
-        <nav>
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/profile">Perfil</Link>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Registro</Link>
+        <nav className="navbar">
+
+            <div className="navbar-left">
+                <span className="navbar-logo">Dashboard React</span>
+            </div>
+            
+            <div className="navbar-right">
+                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
+                <Link to="/profile" className="navbar-link">Perfil</Link>
+                <Link to="/login" className="navbar-link">Login</Link>
+                <Link to="/register" className="navbar-link navbar-link-primary">
+                    Registro
+                </Link>
+            </div>
+        
         </nav>
     )
 }
