@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login as loginApi } from '../api/authApi'
+import { loginApi } from '../api/AuthApi'
 import { useAuth } from '../../../app/auth/AuthContext'
 
 function useLogin() {
@@ -10,7 +10,7 @@ function useLogin() {
     const navigate = useNavigate()
     const { setUser } = useAuth()
 
-    const login = async (credentials) => {
+    const checkLogin = async (credentials) => {
         
         setLoading(true)
         setError(null)
@@ -26,7 +26,7 @@ function useLogin() {
         }
     }
 
-    return { login, loading, error }
+    return { checkLogin, loading, error }
 }
 
 export {

@@ -6,11 +6,11 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { login, loading, error } = useLogin()
+  const { checkLogin, loading, error } = useLogin()
 
   const onSubmit = (event) => {
     event.preventDefault()
-    login({ email, password })
+    checkLogin({ email, password })
   }
 
   
@@ -47,7 +47,7 @@ function LoginForm() {
       <button type="submit" disabled={loading} className="primary-button">
         {loading ? 'Entrando…' : 'Entrar'}
       </button>
-      
+
     </form>
   )
 }
