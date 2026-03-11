@@ -6,43 +6,24 @@ import DashboardPage from '../features/dashboard/pages/DashboardPage'
 import ProfilePage from '../features/profile/pages/ProfilePage'
 import AuthLayout from '../shared/components/AuthLayout'
 import MainLayout from '../shared/components/MainLayout'
+import RequireAuth from './auth/RequireAuth'
 
 function AppRouter() {
     return (
         <Routes>
-            <Route
-                path="/login"
-                element={
-                    <AuthLayout>
-                        <LoginPage />
-                    </AuthLayout>
-                }
-            />
-            <Route
-                path="/register"
-                element={
-                    <AuthLayout>
-                        <RegisterPage />
-                    </AuthLayout>
-                }
-            />
-            
-            <Route
-                path="/dashboard"
-                element={
-                    <MainLayout>
-                        <DashboardPage />
-                    </MainLayout>
-                }
-            />
-            <Route
-                path="/profile"
-                element={
-                    <MainLayout>
-                        <ProfilePage />
-                    </MainLayout>
-                }
-            />
+            {/* Rutas públicas (layout de auth) */}
+            <Route element={<AuthLayout />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+            </Route>
+
+            {/* Rutas protegidas (RequireAuth + layout principal) */}
+            <Route element={<RequireAuth />}>
+                <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                </Route>
+            </Route>
         </Routes>
     )
 }
