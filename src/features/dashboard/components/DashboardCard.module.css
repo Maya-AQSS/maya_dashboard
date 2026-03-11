@@ -26,11 +26,42 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #6b21a8;
+  text-align: center;
 }
 
 .description {
   margin: 0;
   font-size: 0.9rem;
   color: #4b5563;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 24px -12px rgba(15, 23, 42, 0.25),
+    0 4px 8px -4px rgba(15, 23, 42, 0.14);
+}
+
+.link {
+  margin-top: 0.5rem;
+  align-self: center;
+  text-decoration: none;
+}
+
+.button {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: none;
+  background-color: #714b67;
+  color: #f9fafb;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.button:hover {
+  background-color: #5b3853;
+  transform: translateY(-1px);
 }
 

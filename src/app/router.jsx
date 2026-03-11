@@ -7,6 +7,8 @@ import ProfilePage from '../features/profile/pages/ProfilePage'
 import AuthLayout from '../shared/components/AuthLayout'
 import MainLayout from '../shared/components/MainLayout'
 import RequireAuth from './auth/RequireAuth'
+import TechnologyDetailPage from '../features/dashboard/pages/TechnologyDetailPage'
+
 
 function AppRouter() {
     return (
@@ -21,6 +23,7 @@ function AppRouter() {
             <Route element={<RequireAuth />}>
                 <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/technologies/:id" element={<TechnologyDetailPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>
             </Route>
