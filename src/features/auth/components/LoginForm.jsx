@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLogin } from '../hooks/useLogin'
+import useLogin from '../hooks/useLogin'
 
 function LoginForm() {
 
@@ -8,14 +8,17 @@ function LoginForm() {
 
   const { checkLogin, loading, error } = useLogin()
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
-    checkLogin({ email, password })
+
+    await checkLogin({ email, password })
   }
 
   
   return (
     <form onSubmit={onSubmit} className="auth-form">
+
+      {/* <FormField campo="email" /> */}
       <div className="form-field">
         <label htmlFor="email">Email</label>
         <input

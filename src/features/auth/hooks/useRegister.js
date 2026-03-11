@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { loginApi } from '../api/AuthApi'
+import { registerApi } from '../api/AuthApi'
 import { useAuth } from '../../../app/auth/AuthContext'
 
-function useLogin() {
+function useRegister() {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
@@ -11,23 +11,24 @@ function useLogin() {
     const navigate = useNavigate()
     const { setUser } = useAuth()
 
-    const checkLogin = async (credentials) => {
-
+    const checkRegister = async (credentials) => {
         setLoading(true)
         setError(null)
 
         try {
-            const user = await loginApi(credentials)
+            const user = await registerApi(credentials)
+
             setUser(user)
+
             navigate('/dashboard')
         } catch (err) {
-            setError(err.message ?? 'Error al iniciar sesión')
+            setError(err.message ?? 'Error al registrarse')
         } finally {
             setLoading(false)
         }
     }
 
-    return { checkLogin, loading, error }
+    return { checkRegister, loading, error }
 }
 
-export default useLogin
+export default useRegister

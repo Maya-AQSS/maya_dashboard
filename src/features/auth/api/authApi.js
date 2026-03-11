@@ -13,7 +13,19 @@ async function loginApi({ email, password }) {
     }
 }
 
+async function registerApi({ name, email, password }) {
 
-export {
-    loginApi,
+    if (!name || !email || !password) {
+        throw new Error('Nombre, email y contraseña son obligatorios')
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
+
+    return {
+        id: 1,
+        name,
+        email,
+    }
 }
+
+export { loginApi, registerApi }
