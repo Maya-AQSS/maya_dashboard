@@ -1,22 +1,40 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../app/auth/AuthContext'
 
 function Navbar() {
+    const navigate = useNavigate()
+    const { user, setUser } = useAuth()
+
+    const logout = () => {
+        setUser(null)
+        navigate('/login')
+    }
+
     return (
         <nav className="navbar">
-
             <div className="navbar-left">
                 <span className="navbar-logo">Dashboard React</span>
             </div>
-            
+
             <div className="navbar-right">
-                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-                <Link to="/profile" className="navbar-link">Perfil</Link>
-                <Link to="/login" className="navbar-link">Login</Link>
-                <Link to="/register" className="navbar-link navbar-link-primary">
-                    Registro
+
+                <Link to="/dashboard" className="navbar-link">
+                    Dashboard
                 </Link>
+
+                <Link to="/profile" className="navbar-link">
+                    Perfil de {user.name}
+                </Link>
+
+                <button
+                    type="button"
+                    onClick={logout}
+                    className="navbar-link navbar-link-primary"
+                >
+                    Cerrar sesión
+                </button>
+
             </div>
-        
         </nav>
     )
 }
