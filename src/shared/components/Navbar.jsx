@@ -18,8 +18,8 @@ function Navbar() {
 
             <div className="navbar-right">
 
-                <Link to="/dashboard" className="navbar-link">
-                    Dashboard
+                <Link to="/technologies" className="navbar-link">
+                    Tecnologías
                 </Link>
 
                 <Link to="/profile" className="navbar-link">

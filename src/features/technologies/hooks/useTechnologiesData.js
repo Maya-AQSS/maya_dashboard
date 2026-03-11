@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getDashboardData } from '../api/dashboardApi'
+import { getTechnologiesData } from '../api/technologiesApi'
 
-function useDashboardData() {
+function useTechnologiesData() {
 
-  const [applications, setApplications] = useState([])
+  const [technologies, setTechnologies] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -15,13 +15,13 @@ function useDashboardData() {
       setError(null)
 
       try {
-        const response = await getDashboardData()
+        const response = await getTechnologiesData()
         if (isMounted) {
-          setApplications(response.applications || [])
+          setTechnologies(response.applications || [])
         }
       } catch (error) {
         if (isMounted) {
-          setError(error.message ?? 'Error al cargar el dashboard')
+          setError(error.message ?? 'Error al cargar las tecnologías')
         }
       } finally {
         if (isMounted) {
@@ -37,7 +37,7 @@ function useDashboardData() {
     }
   }, [])
 
-  return { applications, loading, error }
+  return { technologies, loading, error }
 }
 
-export default useDashboardData
+export default useTechnologiesData

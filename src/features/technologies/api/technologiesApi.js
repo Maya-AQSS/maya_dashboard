@@ -1,4 +1,4 @@
-async function getDashboardData() {
+async function getTechnologiesData() {
 
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
 
@@ -80,4 +80,4 @@ async function getDashboardData() {
     }
 }
 
-export { getDashboardData }
+export { getTechnologiesData }
