@@ -1,11 +1,13 @@
+import styles from './DashboardCard.module.css'
+
 function DashboardCard({ application }) {
-    return (
-        <div className="dashboard-card">
-            <h3 className="dashboard-card-title">{application.name}</h3>
-            <p className="dashboard-card-category">{application.category}</p>
-            <p className="dashboard-card-description">{application.description}</p>
-        </div>
-    )
+  return (
+    <article className={styles.card}>
+      <h3 className={styles.title}>{application.name}</h3>
+      <p className={styles.category}>{application.category}</p>
+      <p className={styles.description}>{application.description}</p>
+    </article>
+  )
 }
 
 export default DashboardCard
