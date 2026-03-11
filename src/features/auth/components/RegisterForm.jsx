@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import useRegister from '../hooks/useRegister'
+import styles from './AuthForm.module.css'
 
 function RegisterForm() {
 
@@ -30,9 +31,9 @@ function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="auth-form">
+    <form onSubmit={onSubmit} className={styles.authForm}>
       
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="name">Nombre</label>
         <input
           id="name"
@@ -44,7 +45,7 @@ function RegisterForm() {
         />
       </div>
 
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -56,7 +57,7 @@ function RegisterForm() {
         />
       </div>
 
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="password">Contraseña</label>
         <input
           id="password"
@@ -68,7 +69,7 @@ function RegisterForm() {
         />
       </div>
 
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="passwordConfirmation">Confirmar contraseña</label>
         <input
           id="passwordConfirmation"
@@ -80,10 +81,10 @@ function RegisterForm() {
         />
       </div>
 
-      {errorForm && <p className="form-error">{errorForm}</p>}
-      {error && <p className="form-error">{error}</p>}
+      {errorForm && <p className={styles.formError}>{errorForm}</p>}
+      {error && <p className={styles.formError}>{error}</p>}
 
-      <button type="submit" disabled={loading} className="primary-button">
+      <button type="submit" disabled={loading} className={styles.primaryButton}>
         {loading ? 'Registrando…' : 'Registrarse'}
       </button>
     </form>

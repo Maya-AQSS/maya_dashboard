@@ -1,4 +1,5 @@
 /* Layout público de autenticación (estilo Odoo) */
+
 .auth-layout {
   min-height: 100vh;
   display: flex;
@@ -45,6 +46,15 @@
     0 4px 8px -2px rgba(17, 24, 39, 0.15);
 }
 
+.auth-card h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.35rem;
+  color: #111827;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .auth-footer {
   padding: 1rem 1.5rem 2rem;
   text-align: center;
@@ -54,6 +64,7 @@
 }
 
 /* Layout principal autenticado */
+
 .main-layout {
   min-height: 100vh;
   display: flex;
@@ -99,6 +110,7 @@
 }
 
 /* Navbar */
+
 .navbar {
   max-width: 1200px;
   margin: 0 auto;
@@ -143,65 +155,3 @@
   background-color: #fbb319;
 }
 
-/* Formulario de autenticación */
-.auth-card h2 {
-  margin: 0 0 1.25rem;
-  font-size: 1.35rem;
-  color: #111827;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.form-field label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #4b5563;
-}
-
-.form-field input {
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #cbd5e1;
-  font-size: 0.95rem;
-}
-
-.form-field input:focus {
-  outline: 2px solid #714b67;
-  outline-offset: 1px;
-  border-color: transparent;
-}
-
-.primary-button {
-  margin-top: 0.5rem;
-  padding: 0.6rem 0.9rem;
-  border-radius: 0.75rem;
-  border: none;
-  background-color: #714b67;
-  color: #f9fafb;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.primary-button:disabled {
-  opacity: 0.7;
-  cursor: default;
-}
-
-.form-error {
-  color: #b91c1c;
-  font-size: 0.85rem;
-}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import useLogin from '../hooks/useLogin'
+import styles from './AuthForm.module.css'
 
 function LoginForm() {
 
@@ -16,10 +17,10 @@ function LoginForm() {
 
   
   return (
-    <form onSubmit={onSubmit} className="auth-form">
+    <form onSubmit={onSubmit} className={styles.authForm}>
 
       {/* <FormField campo="email" /> */}
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="email">Email</label>
         <input
           id="email"
@@ -32,7 +33,7 @@ function LoginForm() {
         />
       </div>
 
-      <div className="form-field">
+      <div className={styles.formField}>
         <label htmlFor="password">Contraseña</label>
         <input
           id="password"
@@ -45,9 +46,9 @@ function LoginForm() {
         />
       </div>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <p className={styles.formError}>{error}</p>}
 
-      <button type="submit" disabled={loading} className="primary-button">
+      <button type="submit" disabled={loading} className={styles.primaryButton}>
         {loading ? 'Entrando…' : 'Entrar'}
       </button>
 
