@@ -63,6 +63,24 @@
   opacity: 0.9;
 }
 
+.auth-switch {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+  color: #4b5563;
+  border-top: 1px solid #e5e7eb;
+}
+
+.auth-switch a {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
+
 /* Layout principal autenticado */
 
 .main-layout {
