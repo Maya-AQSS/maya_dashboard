@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { registerApi } from '../api/AuthApi'
+import { registerApi } from '../api/authApi'
 import { useAuth } from '../../../app/auth/AuthContext'
 
 function useRegister() {

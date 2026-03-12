@@ -24,6 +24,7 @@ function AppRouter() {
                 <Route element={<MainLayout />}>
                     <Route path="/technologies" element={<TechnologiesListPage />} />
                     <Route path="/technologies/:id" element={<TechnologyDetailPage />} />
+                    
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>
             </Route>
