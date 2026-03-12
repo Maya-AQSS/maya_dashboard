@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import useToolsData from '../hooks/useToolsData'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
+import { sortToolsByName, sortFavoriteToolsByLastUsedAt } from '../lib/sortTools'
 import '../styles/tools.css'
 
 function ToolsListPage() {
@@ -10,17 +11,24 @@ function ToolsListPage() {
   const { tools, loading, error, toggleFavorite } = useToolsData()
   const [showAll, setShowAll] = useState(false)
 
+  const visibleTools = useMemo(() => {
+
+    if (!tools || tools.length === 0) return []
+
+    if (showAll) {
+      return sortToolsByName(tools)
+    }
+
+    return sortFavoriteToolsByLastUsedAt(tools)
+
+  }, [tools, showAll])
+
+  const showLastUsed = !showAll
+
   if (loading) return <div>Cargando...</div>
   if (error) return <div>Error: {error}</div>
   if (!tools || tools.length === 0) return <p>No hay herramientas para mostrar.</p>
 
-  const allToolsSortedByName = [...tools].sort((a, b) =>
-    a.name.localeCompare(b.name)
-  )
-
-  const favoriteToolsSortedByLastUsed = tools
-    .filter((tool) => tool.isFavorite)
-    .sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt))
 
   return (
     <>
@@ -39,19 +47,12 @@ function ToolsListPage() {
         }
       />
 
-      {showAll ? (
-        <ToolsGrid
-          tools={allToolsSortedByName}
-          onToggleFavorite={toggleFavorite}
-          showLastUsed={false}
-        />
-      ) : (
-        <ToolsGrid
-          tools={favoriteToolsSortedByLastUsed}
-          onToggleFavorite={toggleFavorite}
-          showLastUsed={true}
-        />
-      )}
+      <ToolsGrid
+        tools={visibleTools}
+        onToggleFavorite={toggleFavorite}
+        showLastUsed={showLastUsed}
+      />
+
     </>
   )
 }

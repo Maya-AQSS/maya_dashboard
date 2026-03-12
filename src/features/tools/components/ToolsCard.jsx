@@ -7,8 +7,9 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
   const [showConfirm, setShowConfirm] = useState(false)
 
   const handleStarClick = (event) => {
-    event.stopPropagation()
     event.preventDefault()
+    event.stopPropagation()
+    
     setShowConfirm(true)
   }
 
@@ -34,7 +35,7 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
   const title = isFavorite
     ? `Quitar ${tool.name} de favoritas`
     : `Añadir ${tool.name} a favoritas`
-    
+
   const message = isFavorite
     ? 'Esta herramienta dejará de aparecer en tu listado de favoritas.'
     : 'Esta herramienta aparecerá en tu listado de favoritas.'
@@ -48,7 +49,7 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
             type="button"
             className={styles.favoriteBadge}
             onClick={handleStarClick}
-            aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+            aria-label={isFavorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
           >
             {isFavorite ? '★' : '☆'}
           </button>

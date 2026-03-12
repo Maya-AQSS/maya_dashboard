@@ -1,20 +1,13 @@
 import { TOOLS } from '../data/toolsData'
+import { mapToolFromApi } from './toolMapper'
 
 async function getToolsData() {
 
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
 
     return {
-        tools: TOOLS.map((tool) => ({
-            id: tool.id,
-            name: tool.name,
-            category: tool.category,
-            description: tool.description,
-            isFavorite: tool.is_favorite,
-            documentationUrl: tool.documentation_url,
-            lastUsedAt: tool.last_used_at,
-        })),
-    }
+        tools: TOOLS.map(mapToolFromApi),
+      }
 }
 
 
@@ -29,15 +22,7 @@ async function toggleToolFavorite(id) {
 
     tool.is_favorite = !tool.is_favorite
 
-    return {
-        id: tool.id,
-        name: tool.name,
-        category: tool.category,
-        description: tool.description,
-        isFavorite: tool.is_favorite,
-        documentationUrl: tool.documentation_url,
-        lastUsedAt: tool.last_used_at,
-    }
+    return mapToolFromApi(tool)
 }
 
 export { getToolsData, toggleToolFavorite }

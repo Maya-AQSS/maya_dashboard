@@ -40,6 +40,7 @@ function useToolsData() {
     }
   }, [])
 
+  
   const toggleFavorite = async (id) => {
     try {
       const updated = await toggleToolFavorite(id)
