@@ -30,9 +30,9 @@ function ToolsListPage() {
       />
 
       {showAll ? (
-        <ToolsGrid tools={tools} toggleFavorite={toggleFavorite} />
+        <ToolsGrid tools={tools} onToggleFavorite={toggleFavorite} />
       ) : (
-        <ToolsGrid tools={favoriteTools} toggleFavorite={toggleFavorite} />
+        <ToolsGrid tools={favoriteTools} onToggleFavorite={toggleFavorite} />
       )}
     </>
   )
