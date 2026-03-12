@@ -65,6 +65,8 @@
   color: #92400e;
   font-size: 0.8rem;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
 }
 
 .technology-detail-description {

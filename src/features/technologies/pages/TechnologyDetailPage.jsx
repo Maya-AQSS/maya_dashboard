@@ -4,7 +4,7 @@ import useTechnologyDetail from '../hooks/useTechnologyDetail'
 function TechnologyDetailPage() {
   const { id } = useParams()
 
-  const { technology, loading, error } = useTechnologyDetail(id)
+  const { technology, loading, error, toggleFavorite } = useTechnologyDetail(id)
 
   if (loading) return <p>Cargando tecnología...</p>
 
@@ -21,9 +21,13 @@ function TechnologyDetailPage() {
             <h2 className="technology-detail-title">{technology.name}</h2>
           </div>
 
-          {technology.is_favorite && (
-            <span className="technology-detail-badge">★ Favorita</span>
-          )}
+          <button
+            type="button"
+            className="technology-detail-badge"
+            onClick={toggleFavorite}
+          >
+            {technology.is_favorite ? '★ Quitar de favoritas' : '☆ Añadir a favoritas'}
+          </button>
         </header>
 
         <p className="technology-detail-description">{technology.description}</p>

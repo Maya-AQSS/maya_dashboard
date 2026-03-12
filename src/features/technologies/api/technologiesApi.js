@@ -28,4 +28,18 @@ async function getTechnologyById(id) {
     return technology
 }
 
-export { getTechnologiesData, getTechnologyById }
+async function toggleTechnologyFavorite(id) {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+
+    const technology = TECHNOLOGIES.find((tech) => tech.id === Number(id))
+
+    if (!technology) {
+        throw new Error('Tecnología no encontrada')
+    }
+
+    technology.is_favorite = !technology.is_favorite
+
+    return { ...technology }
+}
+
+export { getTechnologiesData, getTechnologyById, toggleTechnologyFavorite }

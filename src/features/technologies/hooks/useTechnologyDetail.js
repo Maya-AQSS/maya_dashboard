@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getTechnologyById } from '../api/technologiesApi'
+import { getTechnologyById, toggleTechnologyFavorite } from '../api/technologiesApi'
 
 function useTechnologyDetail(id) {
 
@@ -40,7 +40,18 @@ function useTechnologyDetail(id) {
         }
     }, [id])
 
-    return { technology, loading, error }
+    async function handleToggleFavorite() {
+        if (!technology) return
+
+        try {
+            const updated = await toggleTechnologyFavorite(technology.id)
+            setTechnology(updated)
+        } catch (error) {
+            setError(error.message ?? 'Error al actualizar la tecnología')
+        }
+    }
+
+    return { technology, loading, error, toggleFavorite: handleToggleFavorite }
 }
 
 export default useTechnologyDetail
