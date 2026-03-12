@@ -14,13 +14,23 @@ function ToolsListPage() {
   if (error) return <div>Error: {error}</div>
   if (!tools || tools.length === 0) return <p>No hay herramientas para mostrar.</p>
 
-  const favoriteTools = tools.filter((tool) => tool.is_favorite)
+  const allToolsSortedByName = [...tools].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  )
+
+  const favoriteToolsSortedByLastUsed = tools
+    .filter((tool) => tool.isFavorite)
+    .sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt))
 
   return (
     <>
       <PageHeader
         title={showAll ? 'Todas las herramientas' : 'Herramientas favoritas'}
-        subtitle={showAll ? "Herramientas que están disponibles en el sistema." : "Tus herramientas favoritas."}
+        subtitle={
+          showAll
+            ? 'Herramientas que están disponibles en el sistema.'
+            : 'Tus herramientas favoritas.'
+        }
         rightAction={
           <ToolsToggleButton
             showAll={showAll}
@@ -30,9 +40,17 @@ function ToolsListPage() {
       />
 
       {showAll ? (
-        <ToolsGrid tools={tools} onToggleFavorite={toggleFavorite} />
+        <ToolsGrid
+          tools={allToolsSortedByName}
+          onToggleFavorite={toggleFavorite}
+          showLastUsed={false}
+        />
       ) : (
-        <ToolsGrid tools={favoriteTools} onToggleFavorite={toggleFavorite} />
+        <ToolsGrid
+          tools={favoriteToolsSortedByLastUsed}
+          onToggleFavorite={toggleFavorite}
+          showLastUsed={true}
+        />
       )}
     </>
   )

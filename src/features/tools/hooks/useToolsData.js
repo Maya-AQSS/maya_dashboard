@@ -2,18 +2,6 @@ import { useEffect, useState } from 'react'
 import { getToolsData, toggleToolFavorite } from '../api/toolsApi'
 
 
-function sortToolsByFavoriteAndName(tools) {
-
-  return [...tools].sort((a, b) => {
-    if (a.is_favorite === b.is_favorite) {
-      return a.name.localeCompare(b.name)
-    }
-
-    return a.is_favorite ? -1 : 1
-  })
-}
-
-
 function useToolsData() {
 
   const [tools, setTools] = useState([])
@@ -31,10 +19,8 @@ function useToolsData() {
         const response = await getToolsData()
 
         if (isMounted) {
-
-          const toolsFromApi = response.applications || []
-
-          setTools(sortToolsByFavoriteAndName(toolsFromApi))
+          const toolsFromApi = response.tools || []
+          setTools(toolsFromApi)
         }
       } catch (error) {
         if (isMounted) {
@@ -59,11 +45,9 @@ function useToolsData() {
       const updated = await toggleToolFavorite(id)
 
       setTools((prev) => {
-        const next = prev.map((tool) =>
-          tool.id === updated.id ? { ...tool, is_favorite: updated.is_favorite } : tool
+        return prev.map((tool) =>
+          tool.id === updated.id ? { ...tool, isFavorite: updated.isFavorite } : tool
         )
-        
-        return sortToolsByFavoriteAndName(next)
       })
     } catch (error) {
       setError(error.message ?? 'Error al actualizar favoritas')

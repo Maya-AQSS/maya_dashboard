@@ -8,6 +8,7 @@ const TOOLS = [
     version: '19',
     owner: 'Meta',
     documentation_url: 'https://react.dev',
+    last_used_at: '2026-03-10T09:30:00Z',
   },
   {
     id: 2,
@@ -18,6 +19,7 @@ const TOOLS = [
     version: '3',
     owner: 'Evan You / Comunidad',
     documentation_url: 'https://vuejs.org',
+    last_used_at: '2026-03-08T15:45:00Z',
   },
   {
     id: 3,
@@ -28,6 +30,7 @@ const TOOLS = [
     version: '11',
     owner: 'Laravel LLC',
     documentation_url: 'https://laravel.com',
+    last_used_at: '2026-03-07T11:20:00Z',
   },
   {
     id: 4,
@@ -38,6 +41,7 @@ const TOOLS = [
     version: '22',
     owner: 'OpenJS Foundation',
     documentation_url: 'https://nodejs.org',
+    last_used_at: '2026-03-11T18:05:00Z',
   },
   {
     id: 5,
@@ -48,6 +52,7 @@ const TOOLS = [
     version: '16',
     owner: 'Comunidad PostgreSQL',
     documentation_url: 'https://www.postgresql.org',
+    last_used_at: '2026-03-09T13:10:00Z',
   },
   {
     id: 6,
@@ -58,6 +63,7 @@ const TOOLS = [
     version: '7',
     owner: 'Redis Ltd.',
     documentation_url: 'https://redis.io',
+    last_used_at: '2026-03-05T16:30:00Z',
   },
   {
     id: 7,
@@ -68,6 +74,7 @@ const TOOLS = [
     version: '27',
     owner: 'Docker Inc.',
     documentation_url: 'https://www.docker.com',
+    last_used_at: '2026-03-12T08:00:00Z',
   },
   {
     id: 8,
@@ -78,6 +85,7 @@ const TOOLS = [
     version: '1.32',
     owner: 'Cloud Native Computing Foundation',
     documentation_url: 'https://kubernetes.io',
+    last_used_at: '2026-03-12T07:45:00Z',
   },
   {
     id: 9,
@@ -88,6 +96,7 @@ const TOOLS = [
     version: 'N/A',
     owner: 'GitHub',
     documentation_url: 'https://docs.github.com/actions',
+    last_used_at: '2026-03-04T10:15:00Z',
   },
   {
     id: 10,
@@ -98,6 +107,7 @@ const TOOLS = [
     version: '3',
     owner: 'Tailwind Labs',
     documentation_url: 'https://tailwindcss.com',
+    last_used_at: '2026-03-06T14:25:00Z',
   },
   {
     id: 11,
@@ -108,6 +118,7 @@ const TOOLS = [
     version: '5',
     owner: 'Microsoft',
     documentation_url: 'https://www.typescriptlang.org',
+    last_used_at: '2026-03-11T21:00:00Z',
   },
   {
     id: 12,
@@ -118,6 +129,7 @@ const TOOLS = [
     version: '29',
     owner: 'Meta / Comunidad',
     documentation_url: 'https://jestjs.io',
+    last_used_at: '2026-03-03T09:00:00Z',
   },
 ]
 

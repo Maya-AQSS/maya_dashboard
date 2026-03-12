@@ -5,13 +5,14 @@ async function getToolsData() {
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
 
     return {
-        applications: TOOLS.map(({ id, name, category, description, is_favorite, documentation_url }) => ({
-            id,
-            name,
-            category,
-            description,
-            is_favorite,
-            documentation_url,
+        tools: TOOLS.map((tool) => ({
+            id: tool.id,
+            name: tool.name,
+            category: tool.category,
+            description: tool.description,
+            isFavorite: tool.is_favorite,
+            documentationUrl: tool.documentation_url,
+            lastUsedAt: tool.last_used_at,
         })),
     }
 }
@@ -28,7 +29,15 @@ async function toggleToolFavorite(id) {
 
     tool.is_favorite = !tool.is_favorite
 
-    return { ...tool }
+    return {
+        id: tool.id,
+        name: tool.name,
+        category: tool.category,
+        description: tool.description,
+        isFavorite: tool.is_favorite,
+        documentationUrl: tool.documentation_url,
+        lastUsedAt: tool.last_used_at,
+    }
 }
 
 export { getToolsData, toggleToolFavorite }
