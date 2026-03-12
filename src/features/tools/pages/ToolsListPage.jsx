@@ -1,41 +1,38 @@
+import { useState } from 'react'
 import useToolsData from '../hooks/useToolsData'
 import ToolsGrid from '../components/ToolsGrid'
+import ToolsToggleButton from '../components/ToolsToggleButton'
+import PageHeader from '../../../shared/components/PageHeader'
 import '../styles/tools.css'
 
 function ToolsListPage() {
 
   const { tools, loading, error, toggleFavorite } = useToolsData()
+  const [showAll, setShowAll] = useState(false)
 
   if (loading) return <div>Cargando...</div>
-
   if (error) return <div>Error: {error}</div>
-
-  if (!tools || tools.length === 0) {
-    return <p>No hay herramientas para mostrar.</p>
-  }
+  if (!tools || tools.length === 0) return <p>No hay herramientas para mostrar.</p>
 
   const favoriteTools = tools.filter((tool) => tool.is_favorite)
-  const otherTools = tools.filter((tool) => !tool.is_favorite)
 
   return (
     <>
-      <section className="tools-header">
-        <h2>Listado de Herramientas</h2>
-        <p>Herramientas que están disponibles en el sistema.</p>
-      </section>
+      <PageHeader
+        title={showAll ? 'Todas las herramientas' : 'Herramientas favoritas'}
+        subtitle={showAll ? "Herramientas que están disponibles en el sistema." : "Tus herramientas favoritas."}
+        rightAction={
+          <ToolsToggleButton
+            showAll={showAll}
+            onToggle={() => setShowAll((prev) => !prev)}
+          />
+        }
+      />
 
-      {favoriteTools.length > 0 && (
-        <section>
-          <h3>Favoritas</h3>
-          <ToolsGrid tools={favoriteTools} onToggleFavorite={toggleFavorite} />
-        </section>
-      )}
-
-      {otherTools.length > 0 && (
-        <section>
-          <h3>Otras herramientas</h3>
-          <ToolsGrid tools={otherTools} onToggleFavorite={toggleFavorite} />
-        </section>
+      {showAll ? (
+        <ToolsGrid tools={tools} toggleFavorite={toggleFavorite} />
+      ) : (
+        <ToolsGrid tools={favoriteTools} toggleFavorite={toggleFavorite} />
       )}
     </>
   )

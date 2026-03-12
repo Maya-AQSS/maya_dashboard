@@ -19,6 +19,7 @@ function ToolsCard({ tool, onToggleFavorite }) {
           type="button"
           className={styles.favoriteBadge}
           onClick={handleStarClick}
+          aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
         >
           {isFavorite ? '★' : '☆'}
         </button>
