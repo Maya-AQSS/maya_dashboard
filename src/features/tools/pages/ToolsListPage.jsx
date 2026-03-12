@@ -10,18 +10,32 @@ function ToolsListPage() {
 
   const { tools, loading, error, toggleFavorite } = useToolsData()
   const [showAll, setShowAll] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const visibleTools = useMemo(() => {
-
     if (!tools || tools.length === 0) return []
 
-    if (showAll) {
-      return sortToolsByName(tools)
-    }
+    const normalizedSearch = searchTerm.trim().toLowerCase()
 
-    return sortFavoriteToolsByLastUsedAt(tools)
+    const baseList = showAll ? tools : tools.filter((tool) => tool.isFavorite)
 
-  }, [tools, showAll])
+    const filtered = !normalizedSearch
+      ? baseList
+      : baseList.filter((tool) =>
+        [
+          tool.name,
+          tool.category,
+          tool.description,
+        ]
+          .filter(Boolean)
+          .some((field) => field.toLowerCase().includes(normalizedSearch))
+      )
+
+    return showAll
+      ? sortToolsByName(filtered)
+      : sortFavoriteToolsByLastUsedAt(filtered)
+
+  }, [tools, showAll, searchTerm])
 
   const showLastUsed = !showAll
 
@@ -46,6 +60,30 @@ function ToolsListPage() {
           />
         }
       />
+
+
+      <div className="tools-search">
+        <div className="tools-search-box">
+          <input
+            type="text"
+            className="tools-search-input"
+            placeholder="Buscar por nombre, categoría o descripción"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              className="tools-search-clear"
+              onClick={() => setSearchTerm('')}
+              aria-label="Borrar búsqueda"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
 
       <ToolsGrid
         tools={visibleTools}
