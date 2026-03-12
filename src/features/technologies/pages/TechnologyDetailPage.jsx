@@ -13,25 +13,44 @@ function TechnologyDetailPage() {
   if (!technology) return <p>No se ha encontrado información para esta tecnología.</p>
 
   return (
-    <section>
-      <h2>{technology.name}</h2>
+    <>
+      <section className="technology-detail">
+        <header className="technology-detail-header">
+          <div>
+            <p className="technology-detail-category">{technology.category}</p>
+            <h2 className="technology-detail-title">{technology.name}</h2>
+          </div>
 
-      <p><strong>Categoría:</strong> {technology.category}</p>
-      <p>{technology.description}</p>
+          {technology.is_favorite && (
+            <span className="technology-detail-badge">★ Favorita</span>
+          )}
+        </header>
 
-      <p><strong>Versión:</strong> {technology.version}</p>
-      <p><strong>Responsable:</strong> {technology.owner}</p>
-      <p>
-        <strong>Documentación:</strong>{' '}
-        <a href={technology.documentation_url} target="_blank" rel="noreferrer">
-          {technology.documentation_url}
-        </a>
-      </p>
+        <p className="technology-detail-description">{technology.description}</p>
 
-      <div style={{ marginTop: '1rem' }}>
+        <dl className="technology-detail-meta">
+          <div>
+            <dt><strong>Versión</strong></dt>
+            <dd>{technology.version}</dd>
+          </div>
+          <div>
+            <dt><strong>Responsable</strong></dt>
+            <dd>{technology.owner}</dd>
+          </div>
+        </dl>
+
+        <p className="technology-detail-link">
+          <strong>Documentación:</strong>{' '}
+          <a href={technology.documentation_url} target="_blank" rel="noreferrer">
+            {technology.documentation_url}
+          </a>
+        </p>
+      </section>
+
+      <div className="technology-detail-back">
         <Link to="/technologies">← Volver al listado</Link>
       </div>
-    </section>
+    </>
   )
 }
 
