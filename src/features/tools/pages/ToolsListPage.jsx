@@ -1,43 +1,45 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import useToolsData from '../hooks/useToolsData'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
-import { sortToolsByName, sortFavoriteToolsByLastUsedAt } from '../lib/sortTools'
+import { buildVisibleTools, paginate } from '../lib/toolsListView'
 import '../styles/tools.css'
+
+
+const PAGE_SIZE = 8
 
 function ToolsListPage() {
 
   const { tools, loading, error, toggleFavorite } = useToolsData()
   const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const visibleTools = useMemo(() => {
-    if (!tools || tools.length === 0) return []
 
-    const normalizedSearch = searchTerm.trim().toLowerCase()
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [showAll, searchTerm])
 
-    const baseList = showAll ? tools : tools.filter((tool) => tool.isFavorite)
 
-    const filtered = !normalizedSearch
-      ? baseList
-      : baseList.filter((tool) =>
-        [
-          tool.name,
-          tool.category,
-          tool.description,
-        ]
-          .filter(Boolean)
-          .some((field) => field.toLowerCase().includes(normalizedSearch))
-      )
+  const { pageItems, meta } = useMemo(() => {
 
-    return showAll
-      ? sortToolsByName(filtered)
-      : sortFavoriteToolsByLastUsedAt(filtered)
+    const visible = buildVisibleTools(tools, { showAll, searchTerm })
+    return paginate(visible, { pageSize: PAGE_SIZE, currentPage })
 
-  }, [tools, showAll, searchTerm])
+  }, [tools, showAll, searchTerm, currentPage])
 
+  const { totalItems, totalPages, startIndex, endIndex, canGoPrev, canGoNext } = meta
+  
   const showLastUsed = !showAll
+
+  const handlePrevPage = () => {
+    if (canGoPrev) setCurrentPage((page) => page - 1)
+  }
+
+  const handleNextPage = () => {
+    if (canGoNext) setCurrentPage((page) => page + 1)
+  }
 
   if (loading) return <div>Cargando...</div>
   if (error) return <div>Error: {error}</div>
@@ -86,10 +88,38 @@ function ToolsListPage() {
 
 
       <ToolsGrid
-        tools={visibleTools}
+        tools={pageItems}
         onToggleFavorite={toggleFavorite}
         showLastUsed={showLastUsed}
       />
+
+
+      {totalItems > PAGE_SIZE && (
+        <div className="tools-pagination">
+          <button
+            type="button"
+            className="tools-pagination-button tools-pagination-button-secondary"
+            onClick={handlePrevPage}
+            disabled={!canGoPrev}
+          >
+            Anterior
+          </button>
+
+          <span className="tools-pagination-info">
+            Mostrando {startIndex + 1}–{Math.min(endIndex, totalItems)} de {totalItems}{' '}
+            herramientas · Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            type="button"
+            className="tools-pagination-button"
+            onClick={handleNextPage}
+            disabled={!canGoNext}
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
 
     </>
   )
