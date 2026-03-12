@@ -20,7 +20,7 @@ function useRegister() {
 
             setUser(user)
 
-            navigate('/technologies')
+            navigate('/tools')
         } catch (error) {
             setError(error.message ?? 'Error al registrarse')
         } finally {

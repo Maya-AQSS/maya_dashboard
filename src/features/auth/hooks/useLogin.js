@@ -19,7 +19,7 @@ function useLogin() {
         try {
             const user = await loginApi(credentials)
             setUser(user)
-            navigate('/technologies')
+            navigate('/tools')
         } catch (err) {
             setError(err.message ?? 'Error al iniciar sesión')
         } finally {

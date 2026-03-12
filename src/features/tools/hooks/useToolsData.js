@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getTechnologiesData } from '../api/technologiesApi'
+import { getToolsData } from '../api/toolsApi'
 
-function useTechnologiesData() {
+function useToolsData() {
 
-  const [technologies, setTechnologies] = useState([])
+  const [tools, setTools] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -15,13 +15,13 @@ function useTechnologiesData() {
       setError(null)
 
       try {
-        const response = await getTechnologiesData()
+        const response = await getToolsData()
 
         if (isMounted) {
           
-          const technologiesFromApi = response.applications || []
+          const toolsFromApi = response.applications || []
 
-          const sortedTechnologies = [...technologiesFromApi].sort((a, b) => {
+          const sortedTools = [...toolsFromApi].sort((a, b) => {
             if (a.is_favorite === b.is_favorite) {
               return a.name.localeCompare(b.name)
             }
@@ -29,11 +29,11 @@ function useTechnologiesData() {
             return a.is_favorite ? -1 : 1
           })
 
-          setTechnologies(sortedTechnologies)
+          setTools(sortedTools)
         }
       } catch (error) {
         if (isMounted) {
-          setError(error.message ?? 'Error al cargar las tecnologías')
+          setError(error.message ?? 'Error al cargar las herramientas')
         }
       } finally {
         if (isMounted) {
@@ -49,7 +49,7 @@ function useTechnologiesData() {
     }
   }, [])
 
-  return { technologies, loading, error }
+  return { tools, loading, error }
 }
 
-export default useTechnologiesData
+export default useToolsData

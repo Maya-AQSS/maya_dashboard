@@ -1,4 +1,4 @@
-const TECHNOLOGIES = [
+const TOOLS = [
   {
     id: 1,
     name: 'React',
@@ -121,5 +121,5 @@ const TECHNOLOGIES = [
   },
 ]
 
-export { TECHNOLOGIES }
+export { TOOLS }
 
