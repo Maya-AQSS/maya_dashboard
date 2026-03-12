@@ -21,8 +21,8 @@ function useRegister() {
             setUser(user)
 
             navigate('/technologies')
-        } catch (err) {
-            setError(err.message ?? 'Error al registrarse')
+        } catch (error) {
+            setError(error.message ?? 'Error al registrarse')
         } finally {
             setLoading(false)
         }

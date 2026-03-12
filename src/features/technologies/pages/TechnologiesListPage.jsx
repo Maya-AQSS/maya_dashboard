@@ -14,6 +14,9 @@ function TechnologiesListPage() {
     return <p>No hay tecnologías para mostrar.</p>
   }
 
+  const favoriteTechnologies = technologies.filter((tech) => tech.is_favorite)
+  const otherTechnologies = technologies.filter((tech) => !tech.is_favorite)
+
   return (
     <>
       <section className="technologies-header">
@@ -21,7 +24,19 @@ function TechnologiesListPage() {
         <p>Tecnologías y herramientas que están disponibles en el sistema.</p>
       </section>
 
-      <TechnologiesGrid technologies={technologies} />
+      {favoriteTechnologies.length > 0 && (
+        <section>
+          <h3>Favoritas</h3>
+          <TechnologiesGrid technologies={favoriteTechnologies} />
+        </section>
+      )}
+
+      {otherTechnologies.length > 0 && (
+        <section>
+          <h3>Otras tecnologías</h3>
+          <TechnologiesGrid technologies={otherTechnologies} />
+        </section>
+      )}
     </>
   )
 }

@@ -16,8 +16,20 @@ function useTechnologiesData() {
 
       try {
         const response = await getTechnologiesData()
+
         if (isMounted) {
-          setTechnologies(response.applications || [])
+          
+          const technologiesFromApi = response.applications || []
+
+          const sortedTechnologies = [...technologiesFromApi].sort((a, b) => {
+            if (a.is_favorite === b.is_favorite) {
+              return a.name.localeCompare(b.name)
+            }
+
+            return a.is_favorite ? -1 : 1
+          })
+
+          setTechnologies(sortedTechnologies)
         }
       } catch (error) {
         if (isMounted) {
