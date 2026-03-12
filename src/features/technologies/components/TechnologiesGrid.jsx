@@ -6,9 +6,9 @@ function TechnologiesGrid({ technologies }) {
 
     return (
         <div className="technologies-grid">
-            {technologies.map((technology) => (
-                <TechnologyCard key={technology.id} technology={technology} />
-            ))}
+            {technologies.map((technology) => {
+                return <TechnologyCard key={technology.id} technology={technology} />
+            })}
         </div>
     )
 }

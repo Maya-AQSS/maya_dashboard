@@ -14,6 +14,12 @@
     transform 0.12s ease;
 }
 
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -61,27 +67,3 @@
     0 14px 24px -12px rgba(15, 23, 42, 0.25),
     0 4px 8px -4px rgba(15, 23, 42, 0.14);
 }
-
-.link {
-  margin-top: auto;
-  align-self: center;
-  text-decoration: none;
-}
-
-.button {
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  border: none;
-  background-color: #714b67;
-  color: #f9fafb;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.button:hover {
-  background-color: #5b3853;
-  transform: translateY(-1px);
-}
-
