@@ -1,5 +1,18 @@
 import { useEffect, useState } from 'react'
-import { getToolsData } from '../api/toolsApi'
+import { getToolsData, toggleToolFavorite } from '../api/toolsApi'
+
+
+function sortToolsByFavoriteAndName(tools) {
+
+  return [...tools].sort((a, b) => {
+    if (a.is_favorite === b.is_favorite) {
+      return a.name.localeCompare(b.name)
+    }
+
+    return a.is_favorite ? -1 : 1
+  })
+}
+
 
 function useToolsData() {
 
@@ -18,18 +31,10 @@ function useToolsData() {
         const response = await getToolsData()
 
         if (isMounted) {
-          
+
           const toolsFromApi = response.applications || []
 
-          const sortedTools = [...toolsFromApi].sort((a, b) => {
-            if (a.is_favorite === b.is_favorite) {
-              return a.name.localeCompare(b.name)
-            }
-
-            return a.is_favorite ? -1 : 1
-          })
-
-          setTools(sortedTools)
+          setTools(sortToolsByFavoriteAndName(toolsFromApi))
         }
       } catch (error) {
         if (isMounted) {
@@ -49,7 +54,24 @@ function useToolsData() {
     }
   }, [])
 
-  return { tools, loading, error }
+  const toggleFavorite = async (id) => {
+    try {
+      const updated = await toggleToolFavorite(id)
+
+      setTools((prev) => {
+        const next = prev.map((tool) =>
+          tool.id === updated.id ? { ...tool, is_favorite: updated.is_favorite } : tool
+        )
+        
+        return sortToolsByFavoriteAndName(next)
+      })
+    } catch (error) {
+      setError(error.message ?? 'Error al actualizar favoritas')
+    }
+
+  }
+
+  return { tools, loading, error, toggleFavorite }
 }
 
 export default useToolsData

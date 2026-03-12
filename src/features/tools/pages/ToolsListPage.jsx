@@ -4,7 +4,7 @@ import '../styles/tools.css'
 
 function ToolsListPage() {
 
-  const { tools, loading, error } = useToolsData()
+  const { tools, loading, error, toggleFavorite } = useToolsData()
 
   if (loading) return <div>Cargando...</div>
 
@@ -27,14 +27,14 @@ function ToolsListPage() {
       {favoriteTools.length > 0 && (
         <section>
           <h3>Favoritas</h3>
-          <ToolsGrid tools={favoriteTools} />
+          <ToolsGrid tools={favoriteTools} onToggleFavorite={toggleFavorite} />
         </section>
       )}
 
       {otherTools.length > 0 && (
         <section>
           <h3>Otras herramientas</h3>
-          <ToolsGrid tools={otherTools} />
+          <ToolsGrid tools={otherTools} onToggleFavorite={toggleFavorite} />
         </section>
       )}
     </>

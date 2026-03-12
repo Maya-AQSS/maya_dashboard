@@ -1,18 +1,27 @@
 import styles from './ToolsCard.module.css'
 
-function ToolsCard({ tool }) {
+function ToolsCard({ tool, onToggleFavorite }) {
+
   const isFavorite = Boolean(tool.is_favorite)
+
+  const handleStarClick = (event) => {
+    event.stopPropagation()
+    event.preventDefault()
+    onToggleFavorite(tool.id)
+  }
 
   return (
     <article className={styles.card}>
       <header className={styles.header}>
         <p className={styles.category}>{tool.category}</p>
 
-        {isFavorite && (
-          <span className={styles.favoriteBadge}>
-            ★
-          </span>
-        )}
+        <button
+          type="button"
+          className={styles.favoriteBadge}
+          onClick={handleStarClick}
+        >
+          {isFavorite ? '★' : '☆'}
+        </button>
       </header>
 
       <a
@@ -28,5 +37,5 @@ function ToolsCard({ tool }) {
   )
 }
 
-  
+
 export default ToolsCard
