@@ -73,7 +73,7 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
           onClick={handleCancel}
         >
           <div
-            className="bg-white dark:bg-odoo-dark-surface rounded-[0.9rem] p-5 max-w-[360px] w-[90%] border border-transparent dark:border-odoo-dark-border shadow-[0_20px_40px_-16px_rgba(15,23,42,0.4),0_0_0_1px_rgba(148,163,184,0.4)] dark:shadow-none"
+            className="bg-white dark:bg-odoo-dark-surface rounded-[0.9rem] p-4 sm:p-5 max-w-[360px] w-[90%] border border-transparent dark:border-odoo-dark-border shadow-[0_20px_40px_-16px_rgba(15,23,42,0.4),0_0_0_1px_rgba(148,163,184,0.4)] dark:shadow-none"
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="m-0 mb-2 text-base font-semibold text-gray-900 dark:text-odoo-dark-text">{title}</h4>

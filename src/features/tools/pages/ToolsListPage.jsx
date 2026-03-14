@@ -63,8 +63,8 @@ function ToolsListPage() {
       />
 
 
-      <div className="max-w-[1200px] mx-auto mb-8 flex justify-center">
-        <div className="relative w-1/2 min-w-[260px] max-w-[480px]">
+      <div className="max-w-[1200px] mx-auto mb-6 sm:mb-8 flex justify-center px-0">
+        <div className="relative w-full sm:w-1/2 min-w-0 max-w-[480px]">
           <input
             type="text"
             className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
@@ -94,7 +94,7 @@ function ToolsListPage() {
 
 
       {totalItems > PAGE_SIZE && (
-        <div className="max-w-[1200px] mx-auto mt-6 flex items-center justify-center gap-3">
+        <div className="max-w-[1200px] mx-auto mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           <button
             type="button"
             className="py-1.5 px-3.5 rounded-full border border-amber-400 dark:border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-amber-200 dark:hover:enabled:bg-amber-800/50 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"
@@ -104,9 +104,8 @@ function ToolsListPage() {
             Anterior
           </button>
 
-          <span className="text-sm text-gray-600 dark:text-odoo-dark-muted">
-            Mostrando {startIndex + 1}–{Math.min(endIndex, totalItems)} de {totalItems}{' '}
-            herramientas · Página {currentPage} de {totalPages}
+          <span className="text-xs sm:text-sm text-gray-600 dark:text-odoo-dark-muted text-center order-last w-full sm:order-none sm:w-auto">
+            Mostrando {startIndex + 1}–{Math.min(endIndex, totalItems)} de {totalItems} · Pág. {currentPage}/{totalPages}
           </span>
 
           <button
