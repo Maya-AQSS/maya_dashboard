@@ -18,8 +18,8 @@ function MainLayout() {
         <Outlet />
       </main>
 
-      <footer className="py-3 px-4 sm:px-8 pb-6 text-center text-xs sm:text-sm text-[#6b6f7b] dark:text-odoo-dark-muted">
-        <p>Dashboard React</p>
+      <footer className="mt-auto py-4 px-4 sm:py-5 sm:px-8 border-t border-transparent dark:border-odoo-dark-border bg-odoo-primary dark:bg-odoo-dark-surface text-center text-xs sm:text-sm text-gray-200 dark:text-odoo-dark-muted shadow-[0_-2px_6px_rgba(15,23,42,0.08)] dark:shadow-none">
+        <p className="m-0 max-w-[1200px] mx-auto">Dashboard React</p>
       </footer>
     </div>
   )

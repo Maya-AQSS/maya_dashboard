@@ -15,10 +15,6 @@ function AuthLayout() {
           <Outlet />
         </div>
       </main>
-
-      <footer className="py-4 px-4 sm:px-6 pb-6 sm:pb-8 text-center text-xs sm:text-sm text-gray-200 opacity-90">
-        <p>Dashboard React</p>
-      </footer>
     </div>
   )
 }
