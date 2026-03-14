@@ -6,7 +6,6 @@ import FormSection from '../../../shared/components/FormSection'
 import FormActions from '../../../shared/components/FormActions'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
-import '../styles/profile.css'
 
 function ProfilePage() {
   const { user, setUser } = useAuth()
@@ -32,7 +31,7 @@ function ProfilePage() {
   })
 
   if (!user) {
-    return <p>No hay información de usuario disponible.</p>
+    return <p className="text-gray-900 dark:text-odoo-dark-text">No hay información de usuario disponible.</p>
   }
 
   const handleEdit = () => {
@@ -123,7 +122,11 @@ function ProfilePage() {
         subtitle={isEditing ? 'Modifica tus datos' : `Hola, ${[user.name, user.surname].filter(Boolean).join(' ') || user.name}`}
         rightAction={
           !isEditing ? (
-            <button type="button" className="profile-edit-button" onClick={handleEdit}>
+            <button
+              type="button"
+              className="py-1.5 px-3.5 rounded-full text-sm font-medium border-none cursor-pointer bg-odoo-primary text-gray-50 hover:bg-odoo-primary-hover"
+              onClick={handleEdit}
+            >
               Editar
             </button>
           ) : null
@@ -131,93 +134,89 @@ function ProfilePage() {
       />
 
       {!isEditing ? (
-        <section className="profile-content profile-show">
-          <div className="profile-show-group">
-            <h4 className="profile-show-group-title">Datos básicos</h4>
-            <dl className="profile-show-fields">
-              <div className="profile-show-row">
-                <dt>Nombre</dt>
-                <dd>{user.name ?? '—'}</dd>
+        <section className="max-w-[600px] mx-auto flex flex-col gap-6">
+          <div className="p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Datos básicos</h4>
+            <dl className="m-0 flex flex-col gap-3">
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Nombre</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.name ?? '—'}</dd>
               </div>
-              <div className="profile-show-row">
-                <dt>Apellidos</dt>
-                <dd>{user.surname ?? '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Apellidos</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.surname ?? '—'}</dd>
               </div>
-              <div className="profile-show-row">
-                <dt>DNI</dt>
-                <dd>{user.dni || '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">DNI</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.dni || '—'}</dd>
               </div>
-              <div className="profile-show-row">
-                <dt>Email</dt>
-                <dd>{user.email ?? '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Email</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.email ?? '—'}</dd>
               </div>
-              <div className="profile-show-row">
-                <dt>Teléfono</dt>
-                <dd>{user.phone || '—'}</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="profile-show-group">
-            <h4 className="profile-show-group-title">Dirección</h4>
-            <dl className="profile-show-fields">
-              <div className="profile-show-row">
-                <dt>Calle</dt>
-                <dd>{user.street || '—'}</dd>
-              </div>
-              <div className="profile-show-row">
-                <dt>Número</dt>
-                <dd>{user.addressNumber || '—'}</dd>
-              </div>
-              <div className="profile-show-row">
-                <dt>Piso</dt>
-                <dd>{user.addressFloor || '—'}</dd>
-              </div>
-              <div className="profile-show-row">
-                <dt>Puerta</dt>
-                <dd>{user.addressDoor || '—'}</dd>
-              </div>
-              <div className="profile-show-row">
-                <dt>Código postal</dt>
-                <dd>{user.postalCode || '—'}</dd>
-              </div>
-              <div className="profile-show-row">
-                <dt>Población</dt>
-                <dd>{user.city || '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Teléfono</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.phone || '—'}</dd>
               </div>
             </dl>
           </div>
-          <div className="profile-show-group">
-            <h4 className="profile-show-group-title">Cuenta</h4>
-            <dl className="profile-show-fields">
-              <div className="profile-show-row">
-                <dt>Usuario (nick)</dt>
-                <dd>{user.username ?? '—'}</dd>
+          <div className="p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Dirección</h4>
+            <dl className="m-0 flex flex-col gap-3">
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Calle</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.street || '—'}</dd>
               </div>
-              <div className="profile-show-row">
-                <dt>Rol</dt>
-                <dd>{user.role ?? '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Número</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressNumber || '—'}</dd>
               </div>
-              <div className="profile-show-row profile-show-row-bio">
-                <dt>Bio</dt>
-                <dd>{user.bio || '—'}</dd>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Piso</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressFloor || '—'}</dd>
+              </div>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Puerta</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressDoor || '—'}</dd>
+              </div>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Código postal</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.postalCode || '—'}</dd>
+              </div>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Población</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.city || '—'}</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Cuenta</h4>
+            <dl className="m-0 flex flex-col gap-3">
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Usuario (nick)</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.username ?? '—'}</dd>
+              </div>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Rol</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.role ?? '—'}</dd>
+              </div>
+              <div className="grid grid-cols-[140px_1fr] gap-3 items-baseline">
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Bio</dt>
+                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text whitespace-pre-wrap leading-normal">{user.bio || '—'}</dd>
               </div>
             </dl>
           </div>
         </section>
       ) : (
-        <section className="profile-content">
+        <section className="max-w-[600px] mx-auto">
           {saveError && (
-            <p className="profile-save-error" role="alert">
+            <p className="mb-4 py-2 px-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg" role="alert">
               {saveError}
             </p>
           )}
-          <div className="form">
-            <FormSection
-              title="Datos básicos"
-              className="form-group"
-              titleClassName="form-group-title"
-            >
-              <div className="form-fields">
+          <div className="flex flex-col gap-4 mb-5">
+            <FormSection title="Datos básicos">
+              <div className="flex flex-col gap-4">
                 <FormField
                   name="name"
                   label="Nombre"
@@ -262,12 +261,8 @@ function ProfilePage() {
               </div>
             </FormSection>
 
-            <FormSection
-              title="Dirección"
-              className="form-group"
-              titleClassName="form-group-title"
-            >
-              <div className="form-fields">
+            <FormSection title="Dirección">
+              <div className="flex flex-col gap-4">
                 <FormField
                   name="street"
                   label="Calle"
@@ -328,12 +323,8 @@ function ProfilePage() {
               </div>
             </FormSection>
 
-            <FormSection
-              title="Cuenta"
-              className="form-group"
-              titleClassName="form-group-title"
-            >
-              <div className="form-fields">
+            <FormSection title="Cuenta">
+              <div className="flex flex-col gap-4">
                 <FormField
                   name="username"
                   label="Usuario (nick)"
@@ -363,10 +354,10 @@ function ProfilePage() {
             </FormSection>
           </div>
 
-          <FormActions className="form-actions">
+          <FormActions>
             <button
               type="button"
-              className="form-button form-button-secondary"
+              className="py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-600 dark:text-odoo-dark-text hover:bg-gray-100 dark:hover:bg-odoo-dark-bg disabled:opacity-70"
               onClick={handleCancel}
               disabled={saving}
             >
@@ -374,7 +365,7 @@ function ProfilePage() {
             </button>
             <button
               type="button"
-              className="form-button form-button-primary"
+              className="py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border-none bg-odoo-primary text-gray-50 hover:bg-odoo-primary-hover disabled:opacity-70"
               onClick={handleSave}
               disabled={saving}
             >

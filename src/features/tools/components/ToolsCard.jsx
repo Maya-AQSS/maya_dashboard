@@ -1,15 +1,12 @@
 import { useState } from 'react'
-import styles from './ToolsCard.module.css'
 
 function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
-
   const isFavorite = Boolean(tool.isFavorite)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const handleStarClick = (event) => {
     event.preventDefault()
     event.stopPropagation()
-    
     setShowConfirm(true)
   }
 
@@ -24,12 +21,12 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
 
   const formattedLastUsedAt = tool.lastUsedAt
     ? new Date(tool.lastUsedAt).toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : 'Sin datos'
 
   const title = isFavorite
@@ -42,12 +39,11 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
 
   return (
     <>
-      <article className={styles.card}>
-        <header className={styles.header}>
-
+      <article className="bg-white dark:bg-odoo-dark-surface rounded-[0.9rem] p-4 pt-[1rem] border border-gray-200 dark:border-odoo-dark-border shadow-[0_10px_20px_-10px_rgba(15,23,42,0.18),0_2px_4px_-2px_rgba(15,23,42,0.12)] dark:shadow-none flex flex-col gap-2.5 h-full transition hover:-translate-y-0.5 hover:shadow-[0_14px_24px_-12px_rgba(15,23,42,0.25),0_4px_8px_-4px_rgba(15,23,42,0.14)] dark:hover:shadow-none">
+        <header className="flex items-center justify-end gap-2">
           <button
             type="button"
-            className={styles.favoriteBadge}
+            className="py-1 px-2 rounded-full bg-amber-100 dark:bg-amber-900/40 border border-purple-200 dark:border-odoo-dark-border text-odoo-primary text-xs font-semibold uppercase tracking-wide cursor-pointer"
             onClick={handleStarClick}
             aria-label={isFavorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
           >
@@ -59,35 +55,40 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
           href={tool.documentationUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={styles.cardLink}
+          className="no-underline text-inherit flex flex-col flex-1"
         >
-          <h3 className={styles.title}>{tool.name}</h3>
-          <p className={styles.description}>{tool.description}</p>
+          <h3 className="m-0 text-base font-semibold text-purple-800 dark:text-odoo-dark-text">{tool.name}</h3>
+          <p className="mb-2 text-sm text-gray-600 dark:text-odoo-dark-muted">{tool.description}</p>
           {showLastUsed && (
-            <p className={styles.lastUsedAt}>Último uso: {formattedLastUsedAt}</p>
+            <p className="mt-auto text-xs text-gray-500 dark:text-odoo-dark-muted text-center">
+              Último uso: {formattedLastUsedAt}
+            </p>
           )}
         </a>
       </article>
 
       {showConfirm && (
-        <div className={styles.confirmOverlay} onClick={handleCancel}>
+        <div
+          className="fixed inset-0 bg-slate-900/35 dark:bg-odoo-dark-bg/80 flex items-center justify-center z-40"
+          onClick={handleCancel}
+        >
           <div
-            className={styles.confirmDialog}
-            onClick={(event) => event.stopPropagation()}
+            className="bg-white dark:bg-odoo-dark-surface rounded-[0.9rem] p-5 max-w-[360px] w-[90%] border border-transparent dark:border-odoo-dark-border shadow-[0_20px_40px_-16px_rgba(15,23,42,0.4),0_0_0_1px_rgba(148,163,184,0.4)] dark:shadow-none"
+            onClick={(e) => e.stopPropagation()}
           >
-            <h4 className={styles.confirmTitle}>{title}</h4>
-            <p className={styles.confirmMessage}>{message}</p>
-            <div className={styles.confirmActions}>
+            <h4 className="m-0 mb-2 text-base font-semibold text-gray-900 dark:text-odoo-dark-text">{title}</h4>
+            <p className="m-0 mb-4 text-sm text-gray-600 dark:text-odoo-dark-muted">{message}</p>
+            <div className="flex justify-end gap-2">
               <button
                 type="button"
-                className={styles.confirmButtonSecondary}
+                className="py-1.5 px-3.5 rounded-full border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-600 dark:text-odoo-dark-text text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-odoo-dark-bg"
                 onClick={handleCancel}
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                className={styles.confirmButton}
+                className="py-1.5 px-3.5 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer hover:bg-odoo-primary-hover"
                 onClick={handleConfirm}
               >
                 Confirmar
@@ -96,7 +97,6 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
           </div>
         </div>
       )}
-
     </>
   )
 }

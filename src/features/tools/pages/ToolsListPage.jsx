@@ -4,7 +4,6 @@ import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
 import { buildVisibleTools, paginate } from '../lib/toolsListView'
-import '../styles/tools.css'
 
 
 const PAGE_SIZE = 8
@@ -41,9 +40,9 @@ function ToolsListPage() {
     if (canGoNext) setCurrentPage((page) => page + 1)
   }
 
-  if (loading) return <div>Cargando...</div>
-  if (error) return <div>Error: {error}</div>
-  if (!tools || tools.length === 0) return <p>No hay herramientas para mostrar.</p>
+  if (loading) return <div className="text-gray-900 dark:text-odoo-dark-text">Cargando...</div>
+  if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>
+  if (!tools || tools.length === 0) return <p className="text-gray-900 dark:text-odoo-dark-text">No hay herramientas para mostrar.</p>
 
 
   return (
@@ -64,11 +63,11 @@ function ToolsListPage() {
       />
 
 
-      <div className="tools-search">
-        <div className="tools-search-box">
+      <div className="max-w-[1200px] mx-auto mb-8 flex justify-center">
+        <div className="relative w-1/2 min-w-[260px] max-w-[480px]">
           <input
             type="text"
-            className="tools-search-input"
+            className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
             placeholder="Buscar por nombre, categoría o descripción"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
@@ -76,7 +75,7 @@ function ToolsListPage() {
           {searchTerm && (
             <button
               type="button"
-              className="tools-search-clear"
+              className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-gray-500 dark:text-odoo-dark-muted cursor-pointer text-lg leading-none hover:text-gray-900 dark:hover:text-odoo-dark-text"
               onClick={() => setSearchTerm('')}
               aria-label="Borrar búsqueda"
             >
@@ -95,24 +94,24 @@ function ToolsListPage() {
 
 
       {totalItems > PAGE_SIZE && (
-        <div className="tools-pagination">
+        <div className="max-w-[1200px] mx-auto mt-6 flex items-center justify-center gap-3">
           <button
             type="button"
-            className="tools-pagination-button tools-pagination-button-secondary"
+            className="py-1.5 px-3.5 rounded-full border border-amber-400 dark:border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-amber-200 dark:hover:enabled:bg-amber-800/50 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"
             onClick={handlePrevPage}
             disabled={!canGoPrev}
           >
             Anterior
           </button>
 
-          <span className="tools-pagination-info">
+          <span className="text-sm text-gray-600 dark:text-odoo-dark-muted">
             Mostrando {startIndex + 1}–{Math.min(endIndex, totalItems)} de {totalItems}{' '}
             herramientas · Página {currentPage} de {totalPages}
           </span>
 
           <button
             type="button"
-            className="tools-pagination-button"
+            className="py-1.5 px-3.5 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:enabled:bg-odoo-primary-hover hover:enabled:-translate-y-0.5 disabled:opacity-45 disabled:cursor-default disabled:transform-none"
             onClick={handleNextPage}
             disabled={!canGoNext}
           >
