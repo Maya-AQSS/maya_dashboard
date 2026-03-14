@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '../../../app/auth/AuthContext'
 import PageHeader from '../../../shared/components/PageHeader'
+import FormField from '../../../shared/components/FormField'
+import FormSection from '../../../shared/components/FormSection'
+import FormActions from '../../../shared/components/FormActions'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
 import '../styles/profile.css'
@@ -10,6 +13,7 @@ function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [errors, setErrors] = useState({})
   const [saveError, setSaveError] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -64,7 +68,7 @@ function ProfilePage() {
   }
 
   const handleSave = async () => {
-    
+
     const { valid, errors: validationErrors } = validateProfileForm(formData)
 
     if (!valid) {
@@ -75,6 +79,7 @@ function ProfilePage() {
 
     setErrors({})
     setSaveError(null)
+    setSaving(true)
 
     try {
       const payload = {
@@ -106,14 +111,16 @@ function ProfilePage() {
       setUser(updatedUser)
     } catch (error) {
       setSaveError(error?.message ?? 'Error al guardar el perfil. Inténtalo de nuevo.')
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
     <>
       <PageHeader
-        title="Perfil"
-        subtitle={`Hola, ${[user.name, user.surname].filter(Boolean).join(' ') || user.name}`}
+        title={isEditing ? 'Editar perfil' : 'Perfil'}
+        subtitle={isEditing ? 'Modifica tus datos' : `Hola, ${[user.name, user.surname].filter(Boolean).join(' ') || user.name}`}
         rightAction={
           !isEditing ? (
             <button type="button" className="profile-edit-button" onClick={handleEdit}>
@@ -124,284 +131,256 @@ function ProfilePage() {
       />
 
       {!isEditing ? (
-        <section className="profile-content">
-          <h3>Datos básicos</h3>
-          <p><strong>Nombre:</strong> {user.name}</p>
-          <p><strong>Apellidos:</strong> {user.surname ?? '—'}</p>
-          <p><strong>DNI:</strong> {user.dni || '—'}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>Teléfono:</strong> {user.phone || '—'}</p>
-          <h3 className="profile-subsection">Dirección</h3>
-          <p><strong>Calle:</strong> {user.street || '—'}</p>
-          <p><strong>Número:</strong> {user.addressNumber || '—'}</p>
-          <p><strong>Piso:</strong> {user.addressFloor || '—'}</p>
-          <p><strong>Puerta:</strong> {user.addressDoor || '—'}</p>
-          <p><strong>Código postal:</strong> {user.postalCode || '—'}</p>
-          <p><strong>Población:</strong> {user.city || '—'}</p>
-          <p><strong>Usuario (nick):</strong> {user.username}</p>
-          <p><strong>Rol:</strong> {user.role}</p>
-          <p><strong>Bio:</strong> {user.bio || '—'}</p>
+        <section className="profile-content profile-show">
+          <div className="profile-show-group">
+            <h4 className="profile-show-group-title">Datos básicos</h4>
+            <dl className="profile-show-fields">
+              <div className="profile-show-row">
+                <dt>Nombre</dt>
+                <dd>{user.name ?? '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Apellidos</dt>
+                <dd>{user.surname ?? '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>DNI</dt>
+                <dd>{user.dni || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Email</dt>
+                <dd>{user.email ?? '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Teléfono</dt>
+                <dd>{user.phone || '—'}</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="profile-show-group">
+            <h4 className="profile-show-group-title">Dirección</h4>
+            <dl className="profile-show-fields">
+              <div className="profile-show-row">
+                <dt>Calle</dt>
+                <dd>{user.street || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Número</dt>
+                <dd>{user.addressNumber || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Piso</dt>
+                <dd>{user.addressFloor || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Puerta</dt>
+                <dd>{user.addressDoor || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Código postal</dt>
+                <dd>{user.postalCode || '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Población</dt>
+                <dd>{user.city || '—'}</dd>
+              </div>
+            </dl>
+          </div>
+          <div className="profile-show-group">
+            <h4 className="profile-show-group-title">Cuenta</h4>
+            <dl className="profile-show-fields">
+              <div className="profile-show-row">
+                <dt>Usuario (nick)</dt>
+                <dd>{user.username ?? '—'}</dd>
+              </div>
+              <div className="profile-show-row">
+                <dt>Rol</dt>
+                <dd>{user.role ?? '—'}</dd>
+              </div>
+              <div className="profile-show-row profile-show-row-bio">
+                <dt>Bio</dt>
+                <dd>{user.bio || '—'}</dd>
+              </div>
+            </dl>
+          </div>
         </section>
       ) : (
-        <section className="profile-content profile-form-section">
-          <h3>Editar datos</h3>
+        <section className="profile-content">
           {saveError && (
             <p className="profile-save-error" role="alert">
               {saveError}
             </p>
           )}
-          <div className="profile-form">
-            <label>
-              Nombre
-              <input
-                type="text"
-                value={formData.name}
-                onChange={handleChange('name')}
-                className={`profile-input ${errors.name ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? 'error-name' : undefined}
-              />
-              {errors.name && (
-                <span id="error-name" className="profile-field-error" role="alert">
-                  {errors.name}
-                </span>
-              )}
-            </label>
-            <label>
-              Apellidos
-              <input
-                type="text"
-                value={formData.surname}
-                onChange={handleChange('surname')}
-                className={`profile-input ${errors.surname ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.surname)}
-                aria-describedby={errors.surname ? 'error-surname' : undefined}
-              />
-              {errors.surname && (
-                <span id="error-surname" className="profile-field-error" role="alert">
-                  {errors.surname}
-                </span>
-              )}
-            </label>
-            <label>
-              DNI
-              <input
-                type="text"
-                value={formData.dni}
-                onChange={handleChange('dni')}
-                placeholder="8 dígitos y una letra"
-                className={`profile-input ${errors.dni ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.dni)}
-                aria-describedby={errors.dni ? 'error-dni' : undefined}
-              />
-              {errors.dni && (
-                <span id="error-dni" className="profile-field-error" role="alert">
-                  {errors.dni}
-                </span>
-              )}
-            </label>
-            <label>
-              Email
-              <input
-                type="email"
-                value={formData.email}
-                onChange={handleChange('email')}
-                className={`profile-input ${errors.email ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? 'error-email' : undefined}
-              />
-              {errors.email && (
-                <span id="error-email" className="profile-field-error" role="alert">
-                  {errors.email}
-                </span>
-              )}
-            </label>
-            <label>
-              Teléfono
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange('phone')}
-                className={`profile-input ${errors.phone ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.phone)}
-                aria-describedby={errors.phone ? 'error-phone' : undefined}
-              />
-              {errors.phone && (
-                <span id="error-phone" className="profile-field-error" role="alert">
-                  {errors.phone}
-                </span>
-              )}
-            </label>
-            <h4 className="profile-form-section-title">Dirección</h4>
-            <label>
-              Calle
-              <input
-                type="text"
-                value={formData.street}
-                onChange={handleChange('street')}
-                className={`profile-input ${errors.street ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.street)}
-                aria-describedby={errors.street ? 'error-street' : undefined}
-              />
-              {errors.street && (
-                <span id="error-street" className="profile-field-error" role="alert">
-                  {errors.street}
-                </span>
-              )}
-            </label>
-            <label>
-              Número
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={formData.addressNumber}
-                onChange={handleChange('addressNumber')}
-                className={`profile-input ${errors.addressNumber ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.addressNumber)}
-                aria-describedby={errors.addressNumber ? 'error-addressNumber' : undefined}
-              />
-              {errors.addressNumber && (
-                <span id="error-addressNumber" className="profile-field-error" role="alert">
-                  {errors.addressNumber}
-                </span>
-              )}
-            </label>
-         
-            <label>
-              Piso (opcional)
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={formData.addressFloor}
-                onChange={handleChange('addressFloor')}
-                className={`profile-input ${errors.addressFloor ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.addressFloor)}
-                aria-describedby={errors.addressFloor ? 'error-addressFloor' : undefined}
-              />
-              {errors.addressFloor && (
-                <span id="error-addressFloor" className="profile-field-error" role="alert">
-                  {errors.addressFloor}
-                </span>
-              )}
-            </label>
-            <label>
-              Puerta (opcional)
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={formData.addressDoor}
-                onChange={handleChange('addressDoor')}
-                className={`profile-input ${errors.addressDoor ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.addressDoor)}
-                aria-describedby={errors.addressDoor ? 'error-addressDoor' : undefined}
-              />
-              {errors.addressDoor && (
-                <span id="error-addressDoor" className="profile-field-error" role="alert">
-                  {errors.addressDoor}
-                </span>
-              )}
-            </label>
-            <label>
-              Código postal
-              <input
-                type="text"
-                value={formData.postalCode}
-                onChange={handleChange('postalCode')}
-                placeholder="5 dígitos"
-                className={`profile-input ${errors.postalCode ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.postalCode)}
-                aria-describedby={errors.postalCode ? 'error-postalCode' : undefined}
-              />
-              {errors.postalCode && (
-                <span id="error-postalCode" className="profile-field-error" role="alert">
-                  {errors.postalCode}
-                </span>
-              )}
-            </label>
-            <label>
-              Población
-              <input
-                type="text"
-                value={formData.city}
-                onChange={handleChange('city')}
-                className={`profile-input ${errors.city ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.city)}
-                aria-describedby={errors.city ? 'error-city' : undefined}
-              />
-              {errors.city && (
-                <span id="error-city" className="profile-field-error" role="alert">
-                  {errors.city}
-                </span>
-              )}
-            </label>
-            <label>
-              Usuario (nick)
-              <input
-                type="text"
-                value={formData.username}
-                onChange={handleChange('username')}
-                className={`profile-input ${errors.username ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.username)}
-                aria-describedby={errors.username ? 'error-username' : undefined}
-              />
-              {errors.username && (
-                <span id="error-username" className="profile-field-error" role="alert">
-                  {errors.username}
-                </span>
-              )}
-            </label>
-            <label>
-              Rol
-              <input
-                type="text"
-                value={formData.role}
-                onChange={handleChange('role')}
-                className={`profile-input ${errors.role ? 'profile-input-invalid' : ''}`}
-                aria-invalid={Boolean(errors.role)}
-                aria-describedby={errors.role ? 'error-role' : undefined}
-              />
-              {errors.role && (
-                <span id="error-role" className="profile-field-error" role="alert">
-                  {errors.role}
-                </span>
-              )}
-            </label>
-            <label>
-              Bio
-              <textarea
-                value={formData.bio}
-                onChange={handleChange('bio')}
-                className={`profile-input profile-textarea ${errors.bio ? 'profile-input-invalid' : ''}`}
-                rows={3}
-                aria-invalid={Boolean(errors.bio)}
-                aria-describedby={errors.bio ? 'error-bio' : undefined}
-              />
-              {errors.bio && (
-                <span id="error-bio" className="profile-field-error" role="alert">
-                  {errors.bio}
-                </span>
-              )}
-            </label>
+          <div className="form">
+            <FormSection
+              title="Datos básicos"
+              className="form-group"
+              titleClassName="form-group-title"
+            >
+              <div className="form-fields">
+                <FormField
+                  name="name"
+                  label="Nombre"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleChange('name')}
+                  error={errors.name}
+                />
+                <FormField
+                  name="surname"
+                  label="Apellidos"
+                  type="text"
+                  value={formData.surname}
+                  onChange={handleChange('surname')}
+                  error={errors.surname}
+                />
+                <FormField
+                  name="dni"
+                  label="DNI"
+                  type="text"
+                  value={formData.dni}
+                  onChange={handleChange('dni')}
+                  error={errors.dni}
+                  placeholder="8 dígitos y una letra"
+                />
+                <FormField
+                  name="email"
+                  label="Email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange('email')}
+                  error={errors.email}
+                />
+                <FormField
+                  name="phone"
+                  label="Teléfono"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange('phone')}
+                  error={errors.phone}
+                />
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Dirección"
+              className="form-group"
+              titleClassName="form-group-title"
+            >
+              <div className="form-fields">
+                <FormField
+                  name="street"
+                  label="Calle"
+                  type="text"
+                  value={formData.street}
+                  onChange={handleChange('street')}
+                  error={errors.street}
+                />
+                <FormField
+                  name="addressNumber"
+                  label="Número"
+                  type="text"
+                  value={formData.addressNumber}
+                  onChange={handleChange('addressNumber')}
+                  error={errors.addressNumber}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                <FormField
+                  name="addressFloor"
+                  label="Piso"
+                  type="text"
+                  value={formData.addressFloor}
+                  onChange={handleChange('addressFloor')}
+                  error={errors.addressFloor}
+                  optionalLabel="(opcional)"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                <FormField
+                  name="addressDoor"
+                  label="Puerta"
+                  type="text"
+                  value={formData.addressDoor}
+                  onChange={handleChange('addressDoor')}
+                  error={errors.addressDoor}
+                  optionalLabel="(opcional)"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                <FormField
+                  name="postalCode"
+                  label="Código postal"
+                  type="text"
+                  value={formData.postalCode}
+                  onChange={handleChange('postalCode')}
+                  error={errors.postalCode}
+                  placeholder="5 dígitos"
+                />
+                <FormField
+                  name="city"
+                  label="Población"
+                  type="text"
+                  value={formData.city}
+                  onChange={handleChange('city')}
+                  error={errors.city}
+                />
+              </div>
+            </FormSection>
+
+            <FormSection
+              title="Cuenta"
+              className="form-group"
+              titleClassName="form-group-title"
+            >
+              <div className="form-fields">
+                <FormField
+                  name="username"
+                  label="Usuario (nick)"
+                  type="text"
+                  value={formData.username}
+                  onChange={handleChange('username')}
+                  error={errors.username}
+                />
+                <FormField
+                  name="role"
+                  label="Rol"
+                  type="text"
+                  value={formData.role}
+                  onChange={handleChange('role')}
+                  error={errors.role}
+                />
+                <FormField
+                  name="bio"
+                  label="Bio"
+                  type="textarea"
+                  value={formData.bio}
+                  onChange={handleChange('bio')}
+                  error={errors.bio}
+                  rows={3}
+                />
+              </div>
+            </FormSection>
           </div>
-          <div className="profile-form-actions">
+
+          <FormActions className="form-actions">
             <button
               type="button"
-              className="profile-button profile-button-secondary"
+              className="form-button form-button-secondary"
               onClick={handleCancel}
+              disabled={saving}
             >
               Cancelar
             </button>
             <button
               type="button"
-              className="profile-button profile-button-primary"
+              className="form-button form-button-primary"
               onClick={handleSave}
+              disabled={saving}
             >
-              Guardar
+              {saving ? 'Guardando...' : 'Guardar'}
             </button>
-          </div>
+          </FormActions>
         </section>
       )}
     </>
