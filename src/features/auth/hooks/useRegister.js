@@ -16,7 +16,7 @@ function useRegister() {
         setError(null)
 
         try {
-            const user = await registerApi(credentials)
+            const { user } = await registerApi(credentials)
 
             setUser(user)
 

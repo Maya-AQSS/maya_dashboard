@@ -17,11 +17,11 @@ function useLogin() {
         setError(null)
 
         try {
-            const user = await loginApi(credentials)
+            const { user } = await loginApi(credentials)
             setUser(user)
             navigate('/tools')
-        } catch (err) {
-            setError(err.message ?? 'Error al iniciar sesión')
+        } catch (error) {
+            setError(error.message ?? 'Error al iniciar sesión')
         } finally {
             setLoading(false)
         }

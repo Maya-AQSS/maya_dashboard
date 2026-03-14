@@ -1,3 +1,5 @@
+import { USER } from '../data/userData'
+
 async function loginApi({ email, password }) {
 
     if (!email || !password) {
@@ -6,11 +8,7 @@ async function loginApi({ email, password }) {
 
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
 
-    return {
-        id: 1,
-        name: 'Usuario de prueba',
-        email,
-    }
+    return { user: USER }
 }
 
 async function registerApi({ name, email, password }) {
@@ -21,11 +19,7 @@ async function registerApi({ name, email, password }) {
 
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
 
-    return {
-        id: 1,
-        name,
-        email,
-    }
+    return { user: USER }
 }
 
 export { loginApi, registerApi }
