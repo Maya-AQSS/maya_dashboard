@@ -23,7 +23,7 @@ function Navbar() {
                 </Link>
 
                 <Link to="/profile" className="navbar-link">
-                    Perfil de {user.name}
+                    Perfil de {[user.name, user.surname].filter(Boolean).join(' ') || user.name}
                 </Link>
 
                 <button
