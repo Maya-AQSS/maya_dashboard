@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 const inputBase =
   'py-2 px-3 border border-gray-300 dark:border-odoo-dark-border rounded-lg text-[0.9rem] bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:outline-none focus:border-odoo-primary dark:focus:border-odoo-primary focus:ring-1 focus:ring-odoo-primary/25'
 const inputInvalid =
@@ -5,40 +7,51 @@ const inputInvalid =
 const errorText = 'text-[0.8rem] text-red-600 dark:text-red-400'
 const textareaExtra = 'resize-y min-h-16'
 
-function FormField({
-  label,
-  name,
-  type = 'text',
-  value,
-  onChange,
-  error,
-  placeholder,
-  inputMode,
-  pattern,
-  rows,
-  optionalLabel,
-  inputClassName,
-  invalidClassName,
-  errorClassName,
-  textareaClassName,
-}) {
+const FormField = forwardRef(function FormField(
+  {
+    label,
+    name,
+    type = 'text',
+    value,
+    onChange,
+    error,
+    placeholder,
+    inputMode,
+    pattern,
+    rows,
+    optionalLabel,
+    inputClassName,
+    invalidClassName,
+    errorClassName,
+    textareaClassName,
+    autoComplete,
+    required,
+  },
+  ref,
+) {
+
   const id = `error-${name}`
   const hasError = Boolean(error)
+
   const inputClasses = [
     inputClassName ?? inputBase,
     hasError && (invalidClassName ?? inputInvalid),
   ]
     .filter(Boolean)
     .join(' ')
+
   const displayLabel = optionalLabel ? `${label} ${optionalLabel}` : label
 
   const commonProps = {
+    ref,
     id: name,
     name,
     value: value ?? '',
     onChange,
     'aria-invalid': hasError,
     'aria-describedby': hasError ? id : undefined,
+    autoComplete,
+    required,
   }
 
   return (
@@ -67,6 +80,6 @@ function FormField({
       )}
     </label>
   )
-}
+})
 
 export default FormField
