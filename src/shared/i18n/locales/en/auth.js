@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'John Doe',
   placeholderPassword: 'password',
+  requiredField: 'Please fill out this field',
+  error: {
+    loginRequired: 'Email and password are required.',
+    registerRequired: 'Name, email and password are required.',
+    generic: 'Something went wrong. Please try again.',
+  },
 }

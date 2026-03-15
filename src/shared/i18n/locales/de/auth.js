@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'Max Mustermann',
   placeholderPassword: 'Passwort',
+  requiredField: 'Füllen Sie dieses Feld aus',
+  error: {
+    loginRequired: 'E-Mail und Passwort sind Pflichtfelder.',
+    registerRequired: 'Name, E-Mail und Passwort sind Pflichtfelder.',
+    generic: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+  },
 }

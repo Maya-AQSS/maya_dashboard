@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'Иван Иванов',
   placeholderPassword: 'пароль',
+  requiredField: 'Заполните это поле',
+  error: {
+    loginRequired: 'Укажите электронную почту и пароль.',
+    registerRequired: 'Укажите имя, электронную почту и пароль.',
+    generic: 'Произошла ошибка. Попробуйте ещё раз.',
+  },
 }

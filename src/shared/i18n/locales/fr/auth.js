@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'Jean Dupont',
   placeholderPassword: 'mot de passe',
+  requiredField: 'Remplissez ce champ',
+  error: {
+    loginRequired: 'L\'adresse e-mail et le mot de passe sont obligatoires.',
+    registerRequired: 'Le nom, l\'e-mail et le mot de passe sont obligatoires.',
+    generic: 'Une erreur s\'est produite. Veuillez réessayer.',
+  },
 }

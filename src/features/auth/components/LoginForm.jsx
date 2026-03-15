@@ -1,12 +1,20 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import useLogin from '../hooks/useLogin'
 import { useLocale } from '../../../shared/i18n'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const emailRef = useRef(null)
+  const passwordRef = useRef(null)
   const { t } = useLocale()
   const { checkLogin, loading, error } = useLogin()
+
+  useEffect(() => {
+    const msg = t('auth.requiredField')
+    if (emailRef.current) emailRef.current.setCustomValidity(email.trim() ? '' : msg)
+    if (passwordRef.current) passwordRef.current.setCustomValidity(password.trim() ? '' : msg)
+  }, [t, email, password])
 
   const onSubmit = async (event) => {
     event.preventDefault()
@@ -20,6 +28,7 @@ function LoginForm() {
           {t('auth.email')}
         </label>
         <input
+          ref={emailRef}
           id="email"
           type="email"
           autoComplete="email"
@@ -36,6 +45,7 @@ function LoginForm() {
           {t('auth.password')}
         </label>
         <input
+          ref={passwordRef}
           id="password"
           type="password"
           autoComplete="current-password"

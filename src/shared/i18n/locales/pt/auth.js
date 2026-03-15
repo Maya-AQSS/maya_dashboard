@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'João Silva',
   placeholderPassword: 'palavra-passe',
+  requiredField: 'Preencha este campo',
+  error: {
+    loginRequired: 'O correio eletrónico e a palavra-passe são obrigatórios.',
+    registerRequired: 'O nome, o correio e a palavra-passe são obrigatórios.',
+    generic: 'Ocorreu um erro. Tente novamente.',
+  },
 }

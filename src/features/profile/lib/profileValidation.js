@@ -6,98 +6,98 @@ const NUMERIC_ONLY = /^\d+$/
 const STREET_MIN_LENGTH = 4
 const HAS_LETTER = /[a-zA-ZáéíóúñÑÀ-ÿ]/
 
-function validateProfileForm(data) {
+function validateProfileForm(data, t) {
   const errors = {}
 
   const name = (data.name ?? '').trim()
   if (!name) {
-    errors.name = 'El nombre es obligatorio.'
+    errors.name = t('profile.validation.nameRequired')
   }
 
   const surname = (data.surname ?? '').trim()
   if (!surname) {
-    errors.surname = 'Los apellidos son obligatorios.'
+    errors.surname = t('profile.validation.surnameRequired')
   }
 
   const username = (data.username ?? '').trim()
   if (!username) {
-    errors.username = 'El usuario (nick) es obligatorio.'
+    errors.username = t('profile.validation.usernameRequired')
   }
 
   const email = (data.email ?? '').trim()
   if (!email) {
-    errors.email = 'El email es obligatorio.'
+    errors.email = t('profile.validation.emailRequired')
   } else if (!EMAIL_REGEX.test(email)) {
-    errors.email = 'Introduce un email válido.'
+    errors.email = t('profile.validation.emailInvalid')
   }
 
   const phone = (data.phone ?? '').trim()
   if (!phone) {
-    errors.phone = 'El teléfono es obligatorio.'
+    errors.phone = t('profile.validation.phoneRequired')
   } else {
     const digits = phone.replace(/\D/g, '')
     if (digits.length < PHONE_MIN_DIGITS) {
-      errors.phone = `El teléfono debe tener al menos ${PHONE_MIN_DIGITS} dígitos.`
+      errors.phone = t('profile.validation.phoneMinDigits', { count: PHONE_MIN_DIGITS })
     }
   }
 
   const role = (data.role ?? '').trim()
   if (!role) {
-    errors.role = 'El rol es obligatorio.'
+    errors.role = t('profile.validation.roleRequired')
   }
 
   const dni = (data.dni ?? '').trim()
   if (!dni) {
-    errors.dni = 'El DNI es obligatorio.'
+    errors.dni = t('profile.validation.dniRequired')
   } else if (!DNI_REGEX.test(dni)) {
-    errors.dni = 'El DNI debe tener 8 dígitos y una letra.'
+    errors.dni = t('profile.validation.dniFormat')
   }
 
   const street = (data.street ?? '').trim()
   if (!street) {
-    errors.street = 'La calle es obligatoria.'
+    errors.street = t('profile.validation.streetRequired')
   } else if (street.length < STREET_MIN_LENGTH) {
-    errors.street = `La calle debe tener al menos ${STREET_MIN_LENGTH} caracteres.`
+    errors.street = t('profile.validation.streetMinLength', { count: STREET_MIN_LENGTH })
   } else if (!HAS_LETTER.test(street)) {
-    errors.street = 'La calle debe contener letras (no puede ser solo números).'
+    errors.street = t('profile.validation.streetHasLetters')
   }
 
   const addressNumber = (data.addressNumber ?? '').trim()
   if (!addressNumber) {
-    errors.addressNumber = 'El número es obligatorio.'
+    errors.addressNumber = t('profile.validation.addressNumberRequired')
   } else if (!NUMERIC_ONLY.test(addressNumber)) {
-    errors.addressNumber = 'El número debe ser numérico.'
+    errors.addressNumber = t('profile.validation.addressNumberNumeric')
   }
 
   const addressFloor = (data.addressFloor ?? '').trim()
   if (addressFloor && !NUMERIC_ONLY.test(addressFloor)) {
-    errors.addressFloor = 'El piso debe ser numérico.'
+    errors.addressFloor = t('profile.validation.addressFloorNumeric')
   }
 
   const addressDoor = (data.addressDoor ?? '').trim()
   if (addressDoor && !NUMERIC_ONLY.test(addressDoor)) {
-    errors.addressDoor = 'La puerta debe ser numérica.'
+    errors.addressDoor = t('profile.validation.addressDoorNumeric')
   }
 
   const postalCode = (data.postalCode ?? '').trim()
   if (!postalCode) {
-    errors.postalCode = 'El código postal es obligatorio.'
+    errors.postalCode = t('profile.validation.postalCodeRequired')
   } else if (!POSTAL_CODE_REGEX.test(postalCode)) {
-    errors.postalCode = 'El código postal debe tener 5 dígitos.'
+    errors.postalCode = t('profile.validation.postalCodeDigits')
   }
 
   const city = (data.city ?? '').trim()
   if (!city) {
-    errors.city = 'La población es obligatoria.'
+    errors.city = t('profile.validation.cityRequired')
   } else if (city.length < STREET_MIN_LENGTH) {
-    errors.city = `La población debe tener al menos ${STREET_MIN_LENGTH} caracteres.`
+    errors.city = t('profile.validation.cityMinLength', { count: STREET_MIN_LENGTH })
   } else if (!HAS_LETTER.test(city)) {
-    errors.city = 'La población debe contener letras (no puede ser solo números).'
+    errors.city = t('profile.validation.cityHasLetters')
   }
 
   const bio = (data.bio ?? '').trim()
   if (!bio) {
-    errors.bio = 'La bio es obligatoria.'
+    errors.bio = t('profile.validation.bioRequired')
   }
 
   return {

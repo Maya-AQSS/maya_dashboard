@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import useRegister from '../hooks/useRegister'
 import { useLocale } from '../../../shared/i18n'
 
@@ -11,6 +11,19 @@ function RegisterForm() {
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [errorForm, setErrorForm] = useState(null)
+
+  const nameRef = useRef(null)
+  const emailRef = useRef(null)
+  const passwordRef = useRef(null)
+  const passwordConfirmationRef = useRef(null)
+
+  useEffect(() => {
+    const msg = t('auth.requiredField')
+    if (nameRef.current) nameRef.current.setCustomValidity(name.trim() ? '' : msg)
+    if (emailRef.current) emailRef.current.setCustomValidity(email.trim() ? '' : msg)
+    if (passwordRef.current) passwordRef.current.setCustomValidity(password.trim() ? '' : msg)
+    if (passwordConfirmationRef.current) passwordConfirmationRef.current.setCustomValidity(passwordConfirmation.trim() ? '' : msg)
+  }, [t, name, email, password, passwordConfirmation])
 
   const onSubmit = async (event) => {
     event.preventDefault()
@@ -32,6 +45,7 @@ function RegisterForm() {
       <div className={fieldClass}>
         <label htmlFor="name" className={labelClass}>{t('auth.name')}</label>
         <input
+          ref={nameRef}
           id="name"
           type="text"
           value={name}
@@ -45,11 +59,12 @@ function RegisterForm() {
       <div className={fieldClass}>
         <label htmlFor="email" className={labelClass}>{t('auth.email')}</label>
         <input
+          ref={emailRef}
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="juan.perez@ejemplo.com"
+          placeholder={t('auth.placeholderEmail')}
           required
           className={inputClass}
         />
@@ -58,6 +73,7 @@ function RegisterForm() {
       <div className={fieldClass}>
         <label htmlFor="password" className={labelClass}>{t('auth.password')}</label>
         <input
+          ref={passwordRef}
           id="password"
           type="password"
           value={password}
@@ -71,6 +87,7 @@ function RegisterForm() {
       <div className={fieldClass}>
         <label htmlFor="passwordConfirmation" className={labelClass}>{t('auth.confirmPassword')}</label>
         <input
+          ref={passwordConfirmationRef}
           id="passwordConfirmation"
           type="password"
           value={passwordConfirmation}

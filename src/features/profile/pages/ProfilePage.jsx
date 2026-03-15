@@ -70,7 +70,7 @@ function ProfilePage() {
 
   const handleSave = async () => {
 
-    const { valid, errors: validationErrors } = validateProfileForm(formData)
+    const { valid, errors: validationErrors } = validateProfileForm(formData, t)
 
     if (!valid) {
       setErrors(validationErrors)

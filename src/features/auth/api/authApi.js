@@ -3,7 +3,7 @@ import { mapUserFromApi } from './userMapper'
 
 async function loginApi({ email, password }) {
   if (!email || !password) {
-    throw new Error('Email y contraseña son obligatorios')
+    throw new Error('auth.error.loginRequired')
   }
 
   await new Promise((resolve) => setTimeout(resolve, 500))
@@ -13,7 +13,7 @@ async function loginApi({ email, password }) {
 
 async function registerApi({ name, email, password }) {
   if (!name || !email || !password) {
-    throw new Error('Nombre, email y contraseña son obligatorios')
+    throw new Error('auth.error.registerRequired')
   }
 
   await new Promise((resolve) => setTimeout(resolve, 500))

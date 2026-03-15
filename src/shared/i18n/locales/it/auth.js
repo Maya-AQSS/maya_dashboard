@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'Mario Rossi',
   placeholderPassword: 'password',
+  requiredField: 'Compila questo campo',
+  error: {
+    loginRequired: 'Email e password sono obbligatori.',
+    registerRequired: 'Nome, email e password sono obbligatori.',
+    generic: 'Si è verificato un errore. Riprova.',
+  },
 }

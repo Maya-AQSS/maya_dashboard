@@ -21,4 +21,10 @@ export default {
   placeholderPasswordMasked: '********',
   placeholderName: 'Juan Pérez',
   placeholderPassword: 'contraseña',
+  requiredField: 'Completa este campo',
+  error: {
+    loginRequired: 'El email y la contraseña son obligatorios.',
+    registerRequired: 'El nombre, el email y la contraseña son obligatorios.',
+    generic: 'Ha ocurrido un error. Inténtalo de nuevo.',
+  },
 }

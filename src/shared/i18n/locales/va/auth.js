@@ -19,6 +19,12 @@ export default {
   hasAccount: 'Ja tens compte?',
   placeholderEmail: 'elteucorreu@exemple.com',
   placeholderPasswordMasked: '********',
-  placeholderName: 'Joan Garcia',
+  placeholderName: 'Vicent Garcia',
   placeholderPassword: 'contrasenya',
+  requiredField: 'Completa este camp',
+  error: {
+    loginRequired: 'El correu electrònic i la contrasenya són obligatoris.',
+    registerRequired: 'El nom, el correu electrònic i la contrasenya són obligatoris.',
+    generic: 'S\'ha produït un error. Torna-ho a provar.',
+  },
 }
