@@ -63,7 +63,7 @@ function ToolsListPage() {
       />
 
 
-      <div className="max-w-[1200px] mx-auto mb-6 sm:mb-8 flex justify-center px-0">
+      <div className="w-full mb-6 sm:mb-8 flex justify-center px-0">
         <div className="relative w-full sm:w-1/2 min-w-0 max-w-[480px]">
           <input
             type="text"
@@ -94,7 +94,7 @@ function ToolsListPage() {
 
 
       {totalItems > PAGE_SIZE && (
-        <div className="max-w-[1200px] mx-auto mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <div className="w-full mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           <button
             type="button"
             className="py-1.5 px-3.5 rounded-full border border-amber-400 dark:border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-amber-200 dark:hover:enabled:bg-amber-800/50 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"

@@ -17,7 +17,7 @@ function Navbar() {
     const profileLabel = [user.name, user.surname].filter(Boolean).join(' ') || user.name
 
     return (
-        <div className="max-w-[1200px] mx-auto relative w-full">
+        <div className="max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto relative w-full">
             <nav className="py-2 px-4 sm:py-3 sm:px-6 flex flex-row items-center justify-between gap-2">
                 <div className="flex-shrink-0 min-w-0">
                     <span className="font-semibold tracking-[0.08em] uppercase text-xs sm:text-sm text-gray-50 truncate block">
