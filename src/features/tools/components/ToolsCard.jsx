@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale, getDateLocale } from '../../../shared/i18n'
 
 function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
   const { t, locale } = useLocale()
@@ -21,9 +21,8 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
     setShowConfirm(false)
   }
 
-  const localeForDate = locale === 'es' ? 'es-ES' : 'en-GB'
   const formattedLastUsedAt = tool.lastUsedAt
-    ? new Date(tool.lastUsedAt).toLocaleString(localeForDate, {
+    ? new Date(tool.lastUsedAt).toLocaleString(getDateLocale(locale), {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
