@@ -3,13 +3,14 @@ import useToolsData from '../hooks/useToolsData'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
+import { useLocale } from '../../../shared/i18n'
 import { buildVisibleTools, paginate } from '../lib/toolsListView'
 
 
 const PAGE_SIZE = 8
 
 function ToolsListPage() {
-
+  const { t } = useLocale()
   const { tools, loading, error, toggleFavorite } = useToolsData()
   const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -40,19 +41,19 @@ function ToolsListPage() {
     if (canGoNext) setCurrentPage((page) => page + 1)
   }
 
-  if (loading) return <div className="text-gray-900 dark:text-odoo-dark-text">Cargando...</div>
-  if (error) return <div className="text-red-600 dark:text-red-400">Error: {error}</div>
-  if (!tools || tools.length === 0) return <p className="text-gray-900 dark:text-odoo-dark-text">No hay herramientas para mostrar.</p>
+  if (loading) return <div className="text-gray-900 dark:text-odoo-dark-text">{t('tools.loading')}</div>
+  if (error) return <div className="text-red-600 dark:text-red-400">{t('tools.error')} {error}</div>
+  if (!tools || tools.length === 0) return <p className="text-gray-900 dark:text-odoo-dark-text">{t('tools.noTools')}</p>
 
 
   return (
     <>
       <PageHeader
-        title={showAll ? 'Todas las herramientas' : 'Herramientas favoritas'}
+        title={showAll ? t('tools.allTools') : t('tools.favoriteTools')}
         subtitle={
           showAll
-            ? 'Herramientas que están disponibles en el sistema.'
-            : 'Tus herramientas favoritas.'
+            ? t('tools.allToolsSubtitle')
+            : t('tools.favoriteToolsSubtitle')
         }
         rightAction={
           <ToolsToggleButton
@@ -68,7 +69,7 @@ function ToolsListPage() {
           <input
             type="text"
             className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
-            placeholder="Buscar por nombre, categoría o descripción"
+            placeholder={t('tools.searchPlaceholderLong')}
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
@@ -77,7 +78,7 @@ function ToolsListPage() {
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-gray-500 dark:text-odoo-dark-muted cursor-pointer text-lg leading-none hover:text-gray-900 dark:hover:text-odoo-dark-text"
               onClick={() => setSearchTerm('')}
-              aria-label="Borrar búsqueda"
+              aria-label={t('tools.clearSearch')}
             >
               ×
             </button>
@@ -101,11 +102,17 @@ function ToolsListPage() {
             onClick={handlePrevPage}
             disabled={!canGoPrev}
           >
-            Anterior
+            {t('tools.prev')}
           </button>
 
           <span className="text-xs sm:text-sm text-gray-600 dark:text-odoo-dark-muted text-center order-last w-full sm:order-none sm:w-auto">
-            Mostrando {startIndex + 1}–{Math.min(endIndex, totalItems)} de {totalItems} · Pág. {currentPage}/{totalPages}
+            {t('tools.showing', {
+              start: startIndex + 1,
+              end: Math.min(endIndex, totalItems),
+              total: totalItems,
+              current: currentPage,
+              totalPages,
+            })}
           </span>
 
           <button
@@ -114,7 +121,7 @@ function ToolsListPage() {
             onClick={handleNextPage}
             disabled={!canGoNext}
           >
-            Siguiente
+            {t('tools.next')}
           </button>
         </div>
       )}

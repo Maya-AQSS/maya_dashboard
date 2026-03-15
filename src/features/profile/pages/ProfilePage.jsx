@@ -4,11 +4,13 @@ import PageHeader from '../../../shared/components/PageHeader'
 import FormField from '../../../shared/components/FormField'
 import FormSection from '../../../shared/components/FormSection'
 import FormActions from '../../../shared/components/FormActions'
+import { useLocale } from '../../../shared/i18n'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
 
 function ProfilePage() {
   const { user, setUser } = useAuth()
+  const { t } = useLocale()
   const [isEditing, setIsEditing] = useState(false)
   const [errors, setErrors] = useState({})
   const [saveError, setSaveError] = useState(null)
@@ -31,7 +33,7 @@ function ProfilePage() {
   })
 
   if (!user) {
-    return <p className="text-gray-900 dark:text-odoo-dark-text">No hay información de usuario disponible.</p>
+    return <p className="text-gray-900 dark:text-odoo-dark-text">{t('profile.noUser')}</p>
   }
 
   const handleEdit = () => {
@@ -102,14 +104,14 @@ function ProfilePage() {
       const updatedUser = await updateProfile(payload)
 
       if (!updatedUser) {
-        setSaveError('Error al guardar el perfil. Inténtalo de nuevo.')
+        setSaveError(t('profile.saveError'))
         return
       }
 
       setIsEditing(false)
       setUser(updatedUser)
     } catch (error) {
-      setSaveError(error?.message ?? 'Error al guardar el perfil. Inténtalo de nuevo.')
+      setSaveError(error?.message ?? t('profile.saveError'))
     } finally {
       setSaving(false)
     }
@@ -118,8 +120,8 @@ function ProfilePage() {
   return (
     <>
       <PageHeader
-        title={isEditing ? 'Editar perfil' : 'Perfil'}
-        subtitle={isEditing ? 'Modifica tus datos' : `Hola, ${[user.name, user.surname].filter(Boolean).join(' ') || user.name}`}
+        title={isEditing ? t('profile.editTitle') : t('profile.title')}
+        subtitle={isEditing ? t('profile.editSubtitle') : t('profile.hello', { name: [user.name, user.surname].filter(Boolean).join(' ') || user.name })}
         rightAction={
           !isEditing ? (
             <button
@@ -127,7 +129,7 @@ function ProfilePage() {
               className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium border-none cursor-pointer bg-odoo-primary text-gray-50 hover:bg-odoo-primary-hover"
               onClick={handleEdit}
             >
-              Editar
+              {t('profile.edit')}
             </button>
           ) : null
         }
@@ -136,72 +138,72 @@ function ProfilePage() {
       {!isEditing ? (
         <section className="max-w-[600px] mx-auto flex flex-col gap-4 sm:gap-6">
           <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Datos básicos</h4>
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.basicData')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Nombre</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.name')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.name ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Apellidos</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.surname')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.surname ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">DNI</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.dni')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.dni || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Email</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.email')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.email ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Teléfono</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.phone')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.phone || '—'}</dd>
               </div>
             </dl>
           </div>
           <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Dirección</h4>
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.address')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Calle</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.street')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.street || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Número</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressNumber')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressNumber || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Piso</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressFloor')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressFloor || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Puerta</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressDoor')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressDoor || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Código postal</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.postalCode')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.postalCode || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Población</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.city')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.city || '—'}</dd>
               </div>
             </dl>
           </div>
           <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">Cuenta</h4>
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.account')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Usuario (nick)</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.username')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.username ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Rol</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.role')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.role ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">Bio</dt>
+                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.bio')}</dt>
                 <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text whitespace-pre-wrap leading-normal">{user.bio || '—'}</dd>
               </div>
             </dl>
@@ -215,11 +217,11 @@ function ProfilePage() {
             </p>
           )}
           <div className="flex flex-col gap-4 mb-5">
-            <FormSection title="Datos básicos">
+            <FormSection title={t('profile.basicData')}>
               <div className="flex flex-col gap-4">
                 <FormField
                   name="name"
-                  label="Nombre"
+                  label={t('auth.name')}
                   type="text"
                   value={formData.name}
                   onChange={handleChange('name')}
@@ -227,7 +229,7 @@ function ProfilePage() {
                 />
                 <FormField
                   name="surname"
-                  label="Apellidos"
+                  label={t('auth.surname')}
                   type="text"
                   value={formData.surname}
                   onChange={handleChange('surname')}
@@ -235,16 +237,16 @@ function ProfilePage() {
                 />
                 <FormField
                   name="dni"
-                  label="DNI"
+                  label={t('profile.dni')}
                   type="text"
                   value={formData.dni}
                   onChange={handleChange('dni')}
                   error={errors.dni}
-                  placeholder="8 dígitos y una letra"
+                  placeholder={t('profile.placeholderDni')}
                 />
                 <FormField
                   name="email"
-                  label="Email"
+                  label={t('auth.email')}
                   type="email"
                   value={formData.email}
                   onChange={handleChange('email')}
@@ -252,7 +254,7 @@ function ProfilePage() {
                 />
                 <FormField
                   name="phone"
-                  label="Teléfono"
+                  label={t('profile.phone')}
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange('phone')}
@@ -261,11 +263,11 @@ function ProfilePage() {
               </div>
             </FormSection>
 
-            <FormSection title="Dirección">
+            <FormSection title={t('profile.address')}>
               <div className="flex flex-col gap-4">
                 <FormField
                   name="street"
-                  label="Calle"
+                  label={t('profile.street')}
                   type="text"
                   value={formData.street}
                   onChange={handleChange('street')}
@@ -273,7 +275,7 @@ function ProfilePage() {
                 />
                 <FormField
                   name="addressNumber"
-                  label="Número"
+                  label={t('profile.addressNumber')}
                   type="text"
                   value={formData.addressNumber}
                   onChange={handleChange('addressNumber')}
@@ -283,38 +285,38 @@ function ProfilePage() {
                 />
                 <FormField
                   name="addressFloor"
-                  label="Piso"
+                  label={t('profile.addressFloor')}
                   type="text"
                   value={formData.addressFloor}
                   onChange={handleChange('addressFloor')}
                   error={errors.addressFloor}
-                  optionalLabel="(opcional)"
+                  optionalLabel={t('profile.optional')}
                   inputMode="numeric"
                   pattern="[0-9]*"
                 />
                 <FormField
                   name="addressDoor"
-                  label="Puerta"
+                  label={t('profile.addressDoor')}
                   type="text"
                   value={formData.addressDoor}
                   onChange={handleChange('addressDoor')}
                   error={errors.addressDoor}
-                  optionalLabel="(opcional)"
+                  optionalLabel={t('profile.optional')}
                   inputMode="numeric"
                   pattern="[0-9]*"
                 />
                 <FormField
                   name="postalCode"
-                  label="Código postal"
+                  label={t('profile.postalCode')}
                   type="text"
                   value={formData.postalCode}
                   onChange={handleChange('postalCode')}
                   error={errors.postalCode}
-                  placeholder="5 dígitos"
+                  placeholder={t('profile.placeholderPostalCode')}
                 />
                 <FormField
                   name="city"
-                  label="Población"
+                  label={t('profile.city')}
                   type="text"
                   value={formData.city}
                   onChange={handleChange('city')}
@@ -323,11 +325,11 @@ function ProfilePage() {
               </div>
             </FormSection>
 
-            <FormSection title="Cuenta">
+            <FormSection title={t('profile.account')}>
               <div className="flex flex-col gap-4">
                 <FormField
                   name="username"
-                  label="Usuario (nick)"
+                  label={t('profile.username')}
                   type="text"
                   value={formData.username}
                   onChange={handleChange('username')}
@@ -335,7 +337,7 @@ function ProfilePage() {
                 />
                 <FormField
                   name="role"
-                  label="Rol"
+                  label={t('profile.role')}
                   type="text"
                   value={formData.role}
                   onChange={handleChange('role')}
@@ -343,7 +345,7 @@ function ProfilePage() {
                 />
                 <FormField
                   name="bio"
-                  label="Bio"
+                  label={t('profile.bio')}
                   type="textarea"
                   value={formData.bio}
                   onChange={handleChange('bio')}
@@ -361,7 +363,7 @@ function ProfilePage() {
               onClick={handleCancel}
               disabled={saving}
             >
-              Cancelar
+              {t('profile.cancel')}
             </button>
             <button
               type="button"
@@ -369,7 +371,7 @@ function ProfilePage() {
               onClick={handleSave}
               disabled={saving}
             >
-              {saving ? 'Guardando...' : 'Guardar'}
+              {saving ? t('profile.saving') : t('profile.save')}
             </button>
           </FormActions>
         </section>

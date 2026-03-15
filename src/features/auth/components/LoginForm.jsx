@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import useLogin from '../hooks/useLogin'
+import { useLocale } from '../../../shared/i18n'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-
+  const { t } = useLocale()
   const { checkLogin, loading, error } = useLogin()
 
   const onSubmit = async (event) => {
@@ -16,7 +17,7 @@ function LoginForm() {
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-gray-600 dark:text-odoo-dark-muted">
-          Email
+          {t('auth.email')}
         </label>
         <input
           id="email"
@@ -24,7 +25,7 @@ function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="tuemail@ejemplo.com"
+          placeholder={t('auth.placeholderEmail')}
           required
           className="py-2 px-3 rounded-lg border border-slate-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text text-[0.95rem] placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:outline-2 focus:outline-odoo-primary focus:outline-offset-1 focus:border-transparent"
         />
@@ -32,7 +33,7 @@ function LoginForm() {
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="password" className="text-sm font-medium text-gray-600 dark:text-odoo-dark-muted">
-          Contraseña
+          {t('auth.password')}
         </label>
         <input
           id="password"
@@ -40,7 +41,7 @@ function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="********"
+          placeholder={t('auth.placeholderPasswordMasked')}
           required
           className="py-2 px-3 rounded-lg border border-slate-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text text-[0.95rem] placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:outline-2 focus:outline-odoo-primary focus:outline-offset-1 focus:border-transparent"
         />
@@ -53,7 +54,7 @@ function LoginForm() {
         disabled={loading}
         className="mt-2 w-full sm:w-auto py-2.5 px-4 rounded-xl border-none bg-odoo-primary text-gray-50 font-semibold cursor-pointer text-[0.95rem] disabled:opacity-70 disabled:cursor-default hover:enabled:bg-odoo-primary-hover"
       >
-        {loading ? 'Entrando…' : 'Entrar'}
+        {loading ? t('auth.submitLoginLoading') : t('auth.submitLogin')}
       </button>
     </form>
   )

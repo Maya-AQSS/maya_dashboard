@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/auth/AuthContext'
+import { useLocale } from '../i18n'
 
 function Navbar() {
     const navigate = useNavigate()
     const { user, setUser } = useAuth()
+    const { t, locale, setLocale, localeOptions } = useLocale()
     const [menuOpen, setMenuOpen] = useState(false)
 
     const logout = () => {
@@ -20,27 +22,40 @@ function Navbar() {
         <div className="max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto relative w-full">
             <nav className="py-2 px-4 sm:py-3 sm:px-6 flex flex-row items-center justify-between gap-2">
                 <div className="flex-shrink-0 min-w-0">
-                    <span className="font-semibold tracking-[0.08em] uppercase text-xs sm:text-sm text-gray-50 truncate block">
-                        Dashboard React
-                    </span>
+<span className="font-semibold tracking-[0.08em] uppercase text-xs sm:text-sm text-gray-50 truncate block">
+                                    {t('nav.brand')}
+                                </span>
                 </div>
 
                 {/* Escritorio: enlaces visibles */}
-                <div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 justify-end flex-shrink-0">
-                    <Link to="/tools" className={linkClass}>
-                        Herramientas
-                    </Link>
-                    <Link to="/profile" className={`${linkClass} truncate max-w-[140px] sm:max-w-none`} title={profileLabel}>
-                        <span className="sm:hidden">Perfil</span>
-                        <span className="hidden sm:inline">Perfil de {profileLabel}</span>
-                    </Link>
-                    <button
-                        type="button"
-                        onClick={logout}
-                        className="text-xs sm:text-sm py-1.5 px-3 rounded-full sm:px-3.5 bg-amber-300 dark:bg-amber-900/70 dark:text-amber-200 text-zinc-700 font-medium hover:bg-amber-200 dark:hover:bg-amber-800/80 transition"
+                <div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 justify-end items-center flex-shrink-0">
+                    <select
+                        value={locale}
+                        onChange={(e) => setLocale(e.target.value)}
+                        className="text-xs py-1.5 pl-2 pr-7 rounded-lg border border-white/30 bg-white/10 text-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/40 appearance-none bg-no-repeat bg-[length:0.6rem] bg-[right_0.35rem_center]"
+                        style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f8fafc'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")" }}
+                        aria-label={t('nav.language')}
                     >
-                        Cerrar sesión
-                    </button>
+                        {localeOptions.map(({ code, label }) => (
+                            <option key={code} value={code} className="bg-gray-800 text-gray-100">
+                                {label}
+                            </option>
+                        ))}
+                    </select>
+<Link to="/tools" className={linkClass}>
+                                    {t('nav.tools')}
+                                </Link>
+                                <Link to="/profile" className={`${linkClass} truncate max-w-[140px] sm:max-w-none`} title={profileLabel}>
+                                    <span className="sm:hidden">{t('nav.profile')}</span>
+                                    <span className="hidden sm:inline">{t('nav.profileOf', { name: profileLabel })}</span>
+                                </Link>
+                                <button
+                                    type="button"
+                                    onClick={logout}
+                                    className="text-xs sm:text-sm py-1.5 px-3 rounded-full sm:px-3.5 bg-amber-300 dark:bg-amber-900/70 dark:text-amber-200 text-zinc-700 font-medium hover:bg-amber-200 dark:hover:bg-amber-800/80 transition"
+                                >
+                                    {t('nav.logout')}
+                                </button>
                 </div>
 
                 {/* Móvil: botón hamburguesa */}
@@ -48,7 +63,7 @@ function Navbar() {
                     type="button"
                     onClick={() => setMenuOpen((open) => !open)}
                     className="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg text-gray-50 hover:bg-white/20 transition aria-expanded={menuOpen}"
-                    aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+                    aria-label={menuOpen ? t('nav.menuClose') : t('nav.menuOpen')}
                 >
                     {menuOpen ? (
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -71,13 +86,29 @@ function Navbar() {
                         aria-hidden
                     />
                     <div className="sm:hidden absolute top-full left-0 right-0 z-50 mt-0 py-3 px-4 bg-odoo-primary dark:bg-odoo-dark-surface border-b border-white/10 dark:border-odoo-dark-border shadow-lg rounded-b-lg">
+                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
+                            <label htmlFor="locale-select-mobile" className="text-gray-50 text-xs shrink-0">{t('nav.language')}:</label>
+                            <select
+                                id="locale-select-mobile"
+                                value={locale}
+                                onChange={(e) => setLocale(e.target.value)}
+                                className="text-sm py-2 pl-2 pr-8 rounded-lg border border-white/30 bg-white/10 text-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/40 flex-1 max-w-[140px]"
+                                aria-label={t('nav.language')}
+                            >
+                                {localeOptions.map(({ code, label }) => (
+                                    <option key={code} value={code} className="bg-gray-800 text-gray-100">
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <div className="flex flex-col gap-1">
                             <Link
                                 to="/tools"
                                 className="py-3 px-4 rounded-lg text-gray-50 hover:bg-white/20 transition"
                                 onClick={() => setMenuOpen(false)}
                             >
-                                Herramientas
+                                {t('nav.tools')}
                             </Link>
                             <Link
                                 to="/profile"
@@ -85,14 +116,14 @@ function Navbar() {
                                 onClick={() => setMenuOpen(false)}
                                 title={profileLabel}
                             >
-                                Perfil de {profileLabel}
+                                {t('nav.profileOf', { name: profileLabel })}
                             </Link>
                             <button
                                 type="button"
                                 onClick={logout}
                                 className="w-auto self-start py-2.5 px-4 rounded-lg text-left bg-amber-300 dark:bg-amber-900/70 dark:text-amber-200 text-zinc-700 font-medium hover:bg-amber-200 dark:hover:bg-amber-800/80 transition"
                             >
-                                Cerrar sesión
+                                {t('nav.logout')}
                             </button>
                         </div>
                     </div>

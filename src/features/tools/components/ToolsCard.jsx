@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useLocale } from '../../../shared/i18n'
 
 function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
+  const { t, locale } = useLocale()
   const isFavorite = Boolean(tool.isFavorite)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -19,23 +21,24 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
     setShowConfirm(false)
   }
 
+  const localeForDate = locale === 'es' ? 'es-ES' : 'en-GB'
   const formattedLastUsedAt = tool.lastUsedAt
-    ? new Date(tool.lastUsedAt).toLocaleString('es-ES', {
+    ? new Date(tool.lastUsedAt).toLocaleString(localeForDate, {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
       })
-    : 'Sin datos'
+    : t('tools.noData')
 
   const title = isFavorite
-    ? `Quitar ${tool.name} de favoritas`
-    : `Añadir ${tool.name} a favoritas`
+    ? t('tools.removeFromFavoritesTitle', { name: tool.name })
+    : t('tools.addToFavoritesTitle', { name: tool.name })
 
   const message = isFavorite
-    ? 'Esta herramienta dejará de aparecer en tu listado de favoritas.'
-    : 'Esta herramienta aparecerá en tu listado de favoritas.'
+    ? t('tools.removeFromFavoritesMessage')
+    : t('tools.addToFavoritesMessage')
 
   return (
     <>
@@ -45,7 +48,7 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
             type="button"
             className="py-1 px-2 rounded-full bg-amber-100 dark:bg-amber-900/40 border border-purple-200 dark:border-odoo-dark-border text-odoo-primary text-xs font-semibold uppercase tracking-wide cursor-pointer"
             onClick={handleStarClick}
-            aria-label={isFavorite ? 'Quitar de favoritas' : 'Añadir a favoritas'}
+            aria-label={isFavorite ? t('tools.removeFromFavorites') : t('tools.addToFavorites')}
           >
             {isFavorite ? '★' : '☆'}
           </button>
@@ -61,7 +64,7 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
           <p className="mb-2 text-sm text-gray-600 dark:text-odoo-dark-muted">{tool.description}</p>
           {showLastUsed && (
             <p className="mt-auto text-xs text-gray-500 dark:text-odoo-dark-muted text-center">
-              Último uso: {formattedLastUsedAt}
+              {t('tools.lastUsed')} {formattedLastUsedAt}
             </p>
           )}
         </a>
@@ -84,14 +87,14 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
                 className="py-1.5 px-3.5 rounded-full border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-600 dark:text-odoo-dark-text text-sm font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-odoo-dark-bg"
                 onClick={handleCancel}
               >
-                Cancelar
+                {t('profile.cancel')}
               </button>
               <button
                 type="button"
                 className="py-1.5 px-3.5 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer hover:bg-odoo-primary-hover"
                 onClick={handleConfirm}
               >
-                Confirmar
+                {t('tools.confirm')}
               </button>
             </div>
           </div>

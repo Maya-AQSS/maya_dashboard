@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import useRegister from '../hooks/useRegister'
+import { useLocale } from '../../../shared/i18n'
 
 function RegisterForm() {
+  const { t } = useLocale()
   const { checkRegister, loading, error } = useRegister()
 
   const [name, setName] = useState('')
@@ -13,7 +15,7 @@ function RegisterForm() {
   const onSubmit = async (event) => {
     event.preventDefault()
     if (password !== passwordConfirmation) {
-      setErrorForm('Las contraseñas no coinciden')
+      setErrorForm(t('auth.passwordMismatch'))
       return
     }
     setErrorForm(null)
@@ -28,20 +30,20 @@ function RegisterForm() {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <div className={fieldClass}>
-        <label htmlFor="name" className={labelClass}>Nombre</label>
+        <label htmlFor="name" className={labelClass}>{t('auth.name')}</label>
         <input
           id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Juan Pérez"
+          placeholder={t('auth.placeholderName')}
           required
           className={inputClass}
         />
       </div>
 
       <div className={fieldClass}>
-        <label htmlFor="email" className={labelClass}>Email</label>
+        <label htmlFor="email" className={labelClass}>{t('auth.email')}</label>
         <input
           id="email"
           type="email"
@@ -54,26 +56,26 @@ function RegisterForm() {
       </div>
 
       <div className={fieldClass}>
-        <label htmlFor="password" className={labelClass}>Contraseña</label>
+        <label htmlFor="password" className={labelClass}>{t('auth.password')}</label>
         <input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="contraseña"
+          placeholder={t('auth.placeholderPassword')}
           required
           className={inputClass}
         />
       </div>
 
       <div className={fieldClass}>
-        <label htmlFor="passwordConfirmation" className={labelClass}>Confirmar contraseña</label>
+        <label htmlFor="passwordConfirmation" className={labelClass}>{t('auth.confirmPassword')}</label>
         <input
           id="passwordConfirmation"
           type="password"
           value={passwordConfirmation}
           onChange={(e) => setPasswordConfirmation(e.target.value)}
-          placeholder="contraseña"
+          placeholder={t('auth.placeholderPassword')}
           required
           className={inputClass}
         />
@@ -87,7 +89,7 @@ function RegisterForm() {
         disabled={loading}
         className="mt-2 w-full sm:w-auto py-2.5 px-4 rounded-xl border-none bg-odoo-primary text-gray-50 font-semibold cursor-pointer text-[0.95rem] disabled:opacity-70 disabled:cursor-default hover:enabled:bg-odoo-primary-hover"
       >
-        {loading ? 'Registrando…' : 'Registrarse'}
+        {loading ? t('auth.submitRegisterLoading') : t('auth.submitRegister')}
       </button>
     </form>
   )
