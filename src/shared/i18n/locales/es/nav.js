@@ -1,5 +1,5 @@
 export default {
-  brand: 'Dashboard React',
+  brand: 'Panel principal',
   language: 'Idioma',
   tools: 'Herramientas',
   profile: 'Perfil',
