@@ -16,6 +16,7 @@ export default {
   paginationLabel: 'Paginació',
   pageNumber: 'Anar a la pàgina {page}',
   itemsPerPage: 'Elements per pàgina',
+  loadMore: 'Carregar més',
   noTools: 'No hi ha eines per mostrar.',
   page: 'Pàg.',
   of: 'de',

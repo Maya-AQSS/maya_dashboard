@@ -48,9 +48,8 @@ function Navbar() {
 <Link to="/tools" className={linkClass}>
                                     {t('nav.tools')}
                                 </Link>
-                                <Link to="/profile" className={`${linkClass} truncate max-w-[140px] sm:max-w-none`} title={profileLabel}>
-                                    <span className="sm:hidden">{t('nav.profile')}</span>
-                                    <span className="hidden sm:inline">{t('nav.profileOf', { name: profileLabel })}</span>
+                                <Link to="/profile" className={`${linkClass} truncate max-w-[160px] sm:max-w-none`} title={t('nav.profileOf', { name: profileLabel })}>
+                                    {profileLabel || t('nav.profile')}
                                 </Link>
                                 <button
                                     type="button"
@@ -117,9 +116,9 @@ function Navbar() {
                                 to="/profile"
                                 className="py-3 px-4 rounded-lg text-gray-50 hover:bg-white/20 transition"
                                 onClick={() => setMenuOpen(false)}
-                                title={profileLabel}
+                                title={t('nav.profileOf', { name: profileLabel })}
                             >
-                                {t('nav.profileOf', { name: profileLabel })}
+                                {profileLabel || t('nav.profile')}
                             </Link>
                             <button
                                 type="button"

@@ -16,6 +16,7 @@ export default {
   paginationLabel: 'Paginación',
   pageNumber: 'Ir a la página {page}',
   itemsPerPage: 'Elementos por página',
+  loadMore: 'Cargar más',
   noTools: 'No hay herramientas para mostrar.',
   page: 'Pág.',
   of: 'de',

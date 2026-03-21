@@ -17,6 +17,9 @@ function ToolsListPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches,
+  )
 
   useEffect(() => {
     setCurrentPage(1)
@@ -26,12 +29,30 @@ function ToolsListPage() {
     setCurrentPage(1)
   }, [pageSize])
 
-  const { pageItems, meta } = useMemo(() => {
-    const visible = buildVisibleTools(tools, { showAll, searchTerm })
-    return paginate(visible, { pageSize, currentPage })
-  }, [tools, showAll, searchTerm, currentPage, pageSize])
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mediaQuery = window.matchMedia('(max-width: 639px)')
+    const handleChange = (event) => setIsMobile(event.matches)
+    handleChange(mediaQuery)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
-  const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex, canGoPrev, canGoNext } = meta
+  const visibleTools = useMemo(
+    () => buildVisibleTools(tools, { showAll, searchTerm }),
+    [tools, showAll, searchTerm],
+  )
+
+  const { pageItems: desktopPageItems, meta: desktopMeta } = useMemo(
+    () => paginate(visibleTools, { pageSize, currentPage }),
+    [visibleTools, pageSize, currentPage],
+  )
+
+  const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex, canGoPrev, canGoNext } = desktopMeta
+  const mobileEndIndex = Math.min(currentPageSafe * pageSize, totalItems)
+  const mobilePageItems = visibleTools.slice(0, mobileEndIndex)
+  const pageItems = isMobile ? mobilePageItems : desktopPageItems
+  const canLoadMoreMobile = isMobile && mobileEndIndex < totalItems
   
   const showLastUsed = !showAll
 
@@ -41,6 +62,10 @@ function ToolsListPage() {
 
   const handleNextPage = () => {
     if (canGoNext) setCurrentPage((page) => page + 1)
+  }
+
+  const handleLoadMore = () => {
+    if (canLoadMoreMobile) setCurrentPage((page) => page + 1)
   }
 
   const pageNumbersToShow = useMemo(
@@ -92,7 +117,7 @@ function ToolsListPage() {
               </button>
             )}
           </div>
-          <div className="flex items-center min-w-0 shrink-0 ml-auto">
+          <div className="hidden sm:flex items-center min-w-0 shrink-0 ml-auto">
             <label className="flex items-center gap-2.5 text-sm text-gray-500 dark:text-odoo-dark-muted shrink-0">
               <span className="whitespace-nowrap">{t('tools.itemsPerPage')}</span>
               <select
@@ -123,7 +148,7 @@ function ToolsListPage() {
 
       {totalItems > 0 && (
         <div className="w-full mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-gray-100 dark:border-odoo-dark-border flex flex-col items-center gap-3">
-          {totalItems > pageSize && (
+          {!isMobile && totalItems > pageSize && (
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <button
                 type="button"
@@ -170,10 +195,20 @@ function ToolsListPage() {
             </div>
           )}
 
-          <span className="text-xs sm:text-sm text-gray-500 dark:text-odoo-dark-muted text-center w-full">
+          {isMobile && canLoadMoreMobile && (
+            <button
+              type="button"
+              className="py-2 px-4 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:bg-odoo-primary-hover"
+              onClick={handleLoadMore}
+            >
+              {t('tools.loadMore')}
+            </button>
+          )}
+
+          <span className="hidden sm:block text-xs sm:text-sm text-gray-500 dark:text-odoo-dark-muted text-center w-full">
             {t('tools.showing', {
-              start: startIndex + 1,
-              end: Math.min(endIndex, totalItems),
+              start: isMobile ? 1 : startIndex + 1,
+              end: isMobile ? mobileEndIndex : Math.min(endIndex, totalItems),
               total: totalItems,
               current: currentPageSafe,
               totalPages,
