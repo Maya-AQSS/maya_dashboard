@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../app/auth/AuthContext'
 import { useLocale } from '../i18n'
@@ -8,6 +8,9 @@ function Navbar() {
     const { user, setUser } = useAuth()
     const { t, locale, setLocale, localeOptions } = useLocale()
     const [menuOpen, setMenuOpen] = useState(false)
+    const menuButtonRef = useRef(null)
+    const mobileMenuRef = useRef(null)
+    const previousMenuOpen = useRef(false)
 
     const logout = () => {
         setMenuOpen(false)
@@ -17,6 +20,25 @@ function Navbar() {
 
     const linkClass = "text-xs sm:text-sm py-1.5 px-3 rounded-full sm:px-3.5 text-gray-50 transition bg-transparent hover:bg-white/20 hover:-translate-y-0.5"
     const profileLabel = [user.name, user.surname].filter(Boolean).join(' ') || user.name
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') setMenuOpen(false)
+        }
+
+        if (menuOpen) {
+            document.addEventListener('keydown', handleKeyDown)
+            const firstFocusable = mobileMenuRef.current?.querySelector('select, a, button')
+            firstFocusable?.focus()
+        }
+
+        if (!menuOpen && previousMenuOpen.current) {
+            menuButtonRef.current?.focus()
+        }
+
+        previousMenuOpen.current = menuOpen
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [menuOpen])
 
     return (
             <div className="max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto relative w-full">
@@ -48,7 +70,7 @@ function Navbar() {
 <Link to="/tools" className={linkClass}>
                                     {t('nav.tools')}
                                 </Link>
-                                <Link to="/profile" className={`${linkClass} truncate max-w-[160px] sm:max-w-none`} title={t('nav.profileOf', { name: profileLabel })}>
+                                <Link to="/profile" className={`${linkClass} truncate max-w-[160px] sm:max-w-none`} title={t('nav.profileOf', { name: profileLabel })} aria-label={t('nav.profileOf', { name: profileLabel })}>
                                     {profileLabel || t('nav.profile')}
                                 </Link>
                                 <button
@@ -62,17 +84,20 @@ function Navbar() {
 
                 {/* Móvil: botón hamburguesa */}
                 <button
+                    ref={menuButtonRef}
                     type="button"
                     onClick={() => setMenuOpen((open) => !open)}
-                    className="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg text-gray-50 hover:bg-white/20 transition aria-expanded={menuOpen}"
+                    className="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg text-gray-50 hover:bg-white/20 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                     aria-label={menuOpen ? t('nav.menuClose') : t('nav.menuOpen')}
+                    aria-expanded={menuOpen}
+                    aria-controls="mobile-nav-menu"
                 >
                     {menuOpen ? (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     ) : (
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     )}
@@ -85,9 +110,16 @@ function Navbar() {
                     <div
                         className="sm:hidden fixed inset-0 z-40 bg-black/30"
                         onClick={() => setMenuOpen(false)}
-                        aria-hidden
+                        aria-hidden="true"
                     />
-                    <div className="sm:hidden absolute top-full left-0 right-0 z-50 mt-0 py-3 px-4 bg-odoo-primary border-b border-white/10 dark:border-odoo-dark-border shadow-lg rounded-b-lg">
+                    <div
+                        ref={mobileMenuRef}
+                        id="mobile-nav-menu"
+                        className="sm:hidden absolute top-full left-0 right-0 z-50 mt-0 py-3 px-4 bg-odoo-primary border-b border-white/10 dark:border-odoo-dark-border shadow-lg rounded-b-lg"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={t('nav.mobileNavigation')}
+                    >
                         <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
                             <label htmlFor="locale-select-mobile" className="text-gray-50 text-xs shrink-0">{t('nav.language')}:</label>
                             <select
@@ -117,6 +149,7 @@ function Navbar() {
                                 className="py-3 px-4 rounded-lg text-gray-50 hover:bg-white/20 transition"
                                 onClick={() => setMenuOpen(false)}
                                 title={t('nav.profileOf', { name: profileLabel })}
+                                aria-label={t('nav.profileOf', { name: profileLabel })}
                             >
                                 {profileLabel || t('nav.profile')}
                             </Link>

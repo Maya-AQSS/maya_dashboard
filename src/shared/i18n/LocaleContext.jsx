@@ -9,7 +9,9 @@ function LocaleProvider({ children }) {
     try {
       const stored = localStorage.getItem('locale')
       if (stored && messages[stored]) return stored
-    } catch (_) {}
+    } catch {
+      /* localStorage no disponible */
+    }
     return defaultLocale
   })
 
@@ -20,7 +22,15 @@ function LocaleProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem('locale', locale)
-    } catch (_) {}
+    } catch {
+      /* localStorage no disponible */
+    }
+  }, [locale])
+
+  useEffect(() => {
+    const htmlLang =
+      locale === 'va' ? 'ca' : locale === 'en' ? 'en' : 'es'
+    document.documentElement.lang = htmlLang
   }, [locale])
 
   const value = useMemo(() => {

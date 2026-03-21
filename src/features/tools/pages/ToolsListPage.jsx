@@ -81,28 +81,31 @@ function ToolsListPage() {
   return (
     <>
       <PageHeader
+        centerTitleOnMobile
         title={showAll ? t('tools.allTools') : t('tools.favoriteTools')}
-        subtitle={
-          showAll
-            ? t('tools.allToolsSubtitle')
-            : t('tools.favoriteToolsSubtitle')
-        }
         rightAction={
-          <ToolsToggleButton
-            showAll={showAll}
-            onToggle={() => setShowAll((prev) => !prev)}
-          />
+          !isMobile ? (
+            <ToolsToggleButton
+              showAll={showAll}
+              onToggle={() => setShowAll((prev) => !prev)}
+            />
+          ) : null
         }
       />
 
 
       <div className="w-full mb-6 sm:mb-8 rounded-2xl border border-violet-100 dark:border-odoo-dark-border bg-white/80 dark:bg-odoo-dark-surface/80 shadow-[0_2px_12px_-4px_rgba(113,75,103,0.12),0_0_0_1px_rgba(148,163,184,0.08)] dark:shadow-none p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-5">
-          <div className="relative flex-1 min-w-0 max-w-[420px] sm:max-w-[480px]">
+        <div className="flex flex-row flex-wrap items-center gap-2 sm:gap-5">
+          <div className="relative flex-1 min-w-0 sm:max-w-[480px]">
             <input
-              type="text"
+              type="search"
               className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
-              placeholder={t('tools.searchPlaceholderLong')}
+              placeholder={
+                isMobile ? t('tools.searchPlaceholder') : t('tools.searchPlaceholderLong')
+              }
+              aria-label={
+                isMobile ? t('tools.searchPlaceholder') : t('tools.searchPlaceholderLong')
+              }
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
@@ -116,6 +119,12 @@ function ToolsListPage() {
                 ×
               </button>
             )}
+          </div>
+          <div className="shrink-0 sm:hidden">
+            <ToolsToggleButton
+              showAll={showAll}
+              onToggle={() => setShowAll((prev) => !prev)}
+            />
           </div>
           <div className="hidden sm:flex items-center min-w-0 shrink-0 ml-auto">
             <label className="flex items-center gap-2.5 text-sm text-gray-500 dark:text-odoo-dark-muted shrink-0">
@@ -139,11 +148,13 @@ function ToolsListPage() {
       </div>
 
 
-      <ToolsGrid
-        tools={pageItems}
-        onToggleFavorite={toggleFavorite}
-        showLastUsed={showLastUsed}
-      />
+      <div id="tools-results">
+        <ToolsGrid
+          tools={pageItems}
+          onToggleFavorite={toggleFavorite}
+          showLastUsed={showLastUsed}
+        />
+      </div>
 
 
       {totalItems > 0 && (
@@ -200,9 +211,22 @@ function ToolsListPage() {
               type="button"
               className="py-2 px-4 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:bg-odoo-primary-hover"
               onClick={handleLoadMore}
+              aria-controls="tools-results"
             >
               {t('tools.loadMore')}
             </button>
+          )}
+
+          {isMobile && (
+            <span className="sr-only" aria-live="polite">
+              {t('tools.showing', {
+                start: 1,
+                end: mobileEndIndex,
+                total: totalItems,
+                current: currentPageSafe,
+                totalPages,
+              })}
+            </span>
           )}
 
           <span className="hidden sm:block text-xs sm:text-sm text-gray-500 dark:text-odoo-dark-muted text-center w-full">

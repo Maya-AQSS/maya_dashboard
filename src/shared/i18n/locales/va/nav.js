@@ -7,4 +7,5 @@ export default {
   logout: 'Tancar sessió',
   menuOpen: 'Obrir menú',
   menuClose: 'Tancar menú',
+  mobileNavigation: 'Menú de navegació',
 }

@@ -5,6 +5,12 @@ function AuthLayout() {
   const { t, locale, setLocale, localeOptions } = useLocale()
   return (
     <div className="min-h-screen flex flex-col bg-[radial-gradient(circle_at_top_left,#9c6b98_0,#714b67_40%,#2c2c38_100%)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-3 focus:left-3 focus:rounded-lg focus:bg-white focus:text-gray-900 focus:px-4 focus:py-2 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        {t('layout.skipToContent')}
+      </a>
       <header className="pt-6 sm:pt-10 px-4 sm:px-6 pb-4 text-center text-gray-50 relative">
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
           <select
@@ -26,7 +32,11 @@ function AuthLayout() {
         </p>
       </header>
 
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 flex items-center justify-center p-4 sm:p-6 outline-none"
+      >
         <div className="w-full max-w-[420px] bg-white dark:bg-odoo-dark-surface dark:border dark:border-odoo-dark-border rounded-2xl p-5 sm:p-9 shadow-[0_18px_25px_-10px_rgba(17,24,39,0.35),0_4px_8px_-2px_rgba(17,24,39,0.15)] dark:shadow-none">
           <Outlet />
         </div>

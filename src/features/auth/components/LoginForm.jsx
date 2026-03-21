@@ -47,7 +47,11 @@ function LoginForm() {
         autoComplete="current-password"
       />
 
-      {error && <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>}
+      {error && (
+        <p className="text-red-800 dark:text-red-400 text-sm" role="alert">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

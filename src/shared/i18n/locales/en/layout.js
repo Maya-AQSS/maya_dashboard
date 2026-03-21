@@ -1,4 +1,5 @@
 export default {
+  skipToContent: 'Skip to main content',
   dashboardTitle: 'Dashboard',
   dashboardSubtitle: 'Welcome to your control panel',
   authSubtitle: 'Log in or sign up to continue',

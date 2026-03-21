@@ -83,8 +83,16 @@ function RegisterForm() {
         autoComplete="new-password"
       />
 
-      {errorForm && <p className="text-red-800 dark:text-red-400 text-sm">{errorForm}</p>}
-      {error && <p className="text-red-800 dark:text-red-400 text-sm">{error}</p>}
+      {errorForm && (
+        <p className="text-red-800 dark:text-red-400 text-sm" role="alert">
+          {errorForm}
+        </p>
+      )}
+      {error && (
+        <p className="text-red-800 dark:text-red-400 text-sm" role="alert">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"

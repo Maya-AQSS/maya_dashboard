@@ -1,4 +1,5 @@
 export default {
+  skipToContent: 'Saltar al contenido principal',
   dashboardTitle: 'Dashboard',
   dashboardSubtitle: 'Bienvenido a tu panel de control',
   authSubtitle: 'Accede a tu cuenta o regístrate para continuar',

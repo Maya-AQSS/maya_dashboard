@@ -7,4 +7,5 @@ export default {
   logout: 'Log out',
   menuOpen: 'Open menu',
   menuClose: 'Close menu',
+  mobileNavigation: 'Navigation menu',
 }
