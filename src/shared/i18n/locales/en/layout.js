@@ -11,4 +11,5 @@ export default {
   errorBoundaryTitle: 'Something went wrong in the application',
   errorBoundaryDescription: 'Try reloading the page to continue.',
   errorBoundaryReload: 'Reload page',
+  routeLoading: 'Loading view...',
 }

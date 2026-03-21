@@ -11,4 +11,5 @@ export default {
   errorBoundaryTitle: 'Algo ha fallado en la aplicación',
   errorBoundaryDescription: 'Intenta recargar la página para continuar.',
   errorBoundaryReload: 'Recargar página',
+  routeLoading: 'Cargando vista...',
 }
