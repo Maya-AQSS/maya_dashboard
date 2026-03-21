@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getToolsData, toggleToolFavorite } from '../api/toolsApi'
 
-
 function useToolsData() {
-
   const [tools, setTools] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -40,20 +38,18 @@ function useToolsData() {
     }
   }, [])
 
-  
   const toggleFavorite = async (id) => {
     try {
       const updated = await toggleToolFavorite(id)
 
       setTools((prev) => {
         return prev.map((tool) =>
-          tool.id === updated.id ? { ...tool, isFavorite: updated.isFavorite } : tool
+          tool.id === updated.id ? { ...tool, isFavorite: updated.isFavorite } : tool,
         )
       })
     } catch (error) {
       setError(error.message ?? 'Error al actualizar favoritas')
     }
-
   }
 
   return { tools, loading, error, toggleFavorite }

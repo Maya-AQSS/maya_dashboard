@@ -183,29 +183,33 @@ function ToolsListPage() {
               </button>
 
               <nav className="flex items-center gap-1" aria-label={t('tools.paginationLabel')}>
-              {pageNumbersToShow.map((item, idx) =>
-                item === 'ellipsis' ? (
-                  <span key={`ellipsis-${idx}`} className="px-1.5 text-gray-500 dark:text-odoo-dark-muted text-sm" aria-hidden="true">
-                    …
-                  </span>
-                ) : (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setCurrentPage(item)}
-                    className={`min-w-[2rem] py-1.5 px-2 rounded-full text-sm font-medium cursor-pointer transition ${
-                      item === currentPageSafe
-                        ? 'border-none bg-odoo-primary text-gray-50 shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none hover:bg-odoo-primary-hover'
-                        : 'border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-700 dark:text-odoo-dark-text hover:border-amber-500 dark:hover:border-odoo-primary hover:bg-amber-50 dark:hover:bg-odoo-dark-surface'
-                    }`}
-                    aria-label={t('tools.pageNumber', { page: item })}
-                    aria-current={item === currentPageSafe ? 'page' : undefined}
-                  >
-                    {item}
-                  </button>
-                ),
-              )}
-            </nav>
+                {pageNumbersToShow.map((item, idx) =>
+                  item === 'ellipsis' ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-1.5 text-gray-500 dark:text-odoo-dark-muted text-sm"
+                      aria-hidden="true"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setCurrentPage(item)}
+                      className={`min-w-[2rem] py-1.5 px-2 rounded-full text-sm font-medium cursor-pointer transition ${
+                        item === currentPageSafe
+                          ? 'border-none bg-odoo-primary text-gray-50 shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none hover:bg-odoo-primary-hover'
+                          : 'border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-700 dark:text-odoo-dark-text hover:border-amber-500 dark:hover:border-odoo-primary hover:bg-amber-50 dark:hover:bg-odoo-dark-surface'
+                      }`}
+                      aria-label={t('tools.pageNumber', { page: item })}
+                      aria-current={item === currentPageSafe ? 'page' : undefined}
+                    >
+                      {item}
+                    </button>
+                  ),
+                )}
+              </nav>
 
               <button
                 type="button"
