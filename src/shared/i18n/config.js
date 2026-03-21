@@ -7,7 +7,7 @@ import va from './locales/va/index.js'
 import es from './locales/es/index.js'
 import en from './locales/en/index.js'
 
-export const defaultLocale = 'va'
+export const defaultLocale = 'es'
 
 export const messages = {
   va,
