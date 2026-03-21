@@ -3,6 +3,7 @@ export default {
   dashboardSubtitle: 'Bienvenido a tu panel de control',
   authSubtitle: 'Accede a tu cuenta o regístrate para continuar',
   footer: 'Dashboard React',
+  footerShort: 'Maya - Panel principal',
   notFoundTitle: 'Página no encontrada',
   notFoundDescription: 'La ruta que has abierto no existe o ya no está disponible.',
   notFoundBackDashboard: 'Volver al panel de Dashboard',

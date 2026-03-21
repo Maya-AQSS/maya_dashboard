@@ -16,8 +16,8 @@ function MainLayout() {
         </div>
       </main>
 
-      <footer className="mt-auto py-4 px-5 sm:py-5 sm:px-8 md:px-10 border-t border-transparent dark:border-odoo-dark-border bg-odoo-primary dark:bg-odoo-dark-surface text-center text-xs sm:text-sm text-gray-200 dark:text-odoo-dark-muted shadow-[0_-2px_6px_rgba(15,23,42,0.08)] dark:shadow-none">
-        <p className="m-0 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto">{t('layout.footer')}</p>
+      <footer className="hidden sm:block mt-auto py-3 px-5 sm:px-8 md:px-10 border-t border-transparent dark:border-odoo-dark-border bg-odoo-primary text-center text-xs text-gray-200 dark:text-odoo-dark-muted shadow-[0_-2px_6px_rgba(15,23,42,0.08)] dark:shadow-none">
+        <p className="m-0 max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto uppercase tracking-[0.08em] font-medium">{t('layout.footerShort')}</p>
       </footer>
     </div>
   )

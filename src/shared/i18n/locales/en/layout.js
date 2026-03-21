@@ -3,6 +3,7 @@ export default {
   dashboardSubtitle: 'Welcome to your control panel',
   authSubtitle: 'Log in or sign up to continue',
   footer: 'Dashboard React',
+  footerShort: 'Maya - Main dashboard',
   notFoundTitle: 'Page not found',
   notFoundDescription: 'The route you opened does not exist or is no longer available.',
   notFoundBackDashboard: 'Back to dashboard',
