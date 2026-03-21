@@ -8,4 +8,7 @@ export default {
   notFoundBackDashboard: 'Tornar al panell de Dashboard',
   notFoundGoTools: 'Tornar a ferramentes',
   notFoundGoLogin: 'Anar a iniciar sessió',
+  errorBoundaryTitle: 'Alguna cosa ha fallat en l\'aplicació',
+  errorBoundaryDescription: 'Intenta recarregar la pàgina per a continuar.',
+  errorBoundaryReload: 'Recarregar pàgina',
 }
