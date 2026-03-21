@@ -1,9 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import RegisterForm from '../components/RegisterForm'
 import { useLocale } from '../../../shared/i18n'
+import { useAuth } from '../../../app/auth/useAuth.js'
 
 function RegisterPage() {
   const { t } = useLocale()
+  const { user } = useAuth()
+
+  if (user) {
+    return <Navigate to="/tools" replace />
+  }
+
   return (
     <>
       <h2 className="m-0 mb-5 text-center text-[1.35rem] text-gray-900 dark:text-odoo-dark-text uppercase tracking-[0.05em]">
