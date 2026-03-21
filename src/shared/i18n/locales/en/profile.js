@@ -9,6 +9,7 @@ export default {
   saving: 'Saving...',
   noUser: 'No user information available',
   saveError: 'Error saving profile.',
+  errorUpdate: 'Could not update profile.',
   basicData: 'Basic data',
   address: 'Address',
   account: 'Account',

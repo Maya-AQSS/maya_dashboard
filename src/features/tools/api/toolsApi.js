@@ -15,7 +15,7 @@ async function toggleToolFavorite(id) {
   const tool = TOOLS.find((tool) => tool.id === Number(id))
 
   if (!tool) {
-    throw new Error('Herramienta no encontrada')
+    throw new Error('tools.errorNotFound')
   }
 
   tool.is_favorite = !tool.is_favorite

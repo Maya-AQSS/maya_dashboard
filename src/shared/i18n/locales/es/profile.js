@@ -9,6 +9,7 @@ export default {
   saving: 'Guardando...',
   noUser: 'No hay información de usuario',
   saveError: 'Error al guardar el perfil.',
+  errorUpdate: 'No se pudo actualizar el perfil.',
   basicData: 'Datos básicos',
   address: 'Dirección',
   account: 'Cuenta',

@@ -86,7 +86,7 @@ function ToolsListPage() {
   )
 
   if (loading) return <div className="text-gray-900 dark:text-odoo-dark-text">{t('tools.loading')}</div>
-  if (error) return <div className="text-red-600 dark:text-red-400">{t('tools.error')} {error}</div>
+  if (error) return <div className="text-red-600 dark:text-red-400">{error}</div>
   if (!tools || tools.length === 0) return <p className="text-gray-900 dark:text-odoo-dark-text">{t('tools.noTools')}</p>
 
 

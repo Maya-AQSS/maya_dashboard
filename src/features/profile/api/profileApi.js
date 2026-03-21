@@ -11,7 +11,7 @@ async function updateProfile(updates) {
 
   const mapped = mapUserFromApi(USER)
   if (!mapped) {
-    throw new Error('Error al actualizar el perfil')
+    throw new Error('profile.errorUpdate')
   }
   return mapped
 }

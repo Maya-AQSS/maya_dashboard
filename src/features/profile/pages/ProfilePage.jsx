@@ -111,7 +111,10 @@ function ProfilePage() {
       setIsEditing(false)
       setUser(updatedUser)
     } catch (error) {
-      setSaveError(error?.message ?? t('profile.saveError'))
+      const msg = error?.message ?? ''
+      setSaveError(
+        msg.startsWith('profile.') ? t(msg) : msg || t('profile.saveError'),
+      )
     } finally {
       setSaving(false)
     }

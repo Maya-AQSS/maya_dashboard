@@ -1,7 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocale } from '../../../shared/i18n'
 import { getToolsData, toggleToolFavorite } from '../api/toolsApi'
 
+function resolveToolsErrorMessage(err, fallbackKey, t) {
+  const msg = err?.message ?? ''
+  if (msg.startsWith('tools.')) return t(msg)
+  if (msg) return msg
+  return t(fallbackKey)
+}
+
 function useToolsData() {
+  const { t } = useLocale()
+  const tRef = useRef(t)
+  tRef.current = t
+
   const [tools, setTools] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -20,9 +32,9 @@ function useToolsData() {
           const toolsFromApi = response.tools || []
           setTools(toolsFromApi)
         }
-      } catch (error) {
+      } catch (err) {
         if (isMounted) {
-          setError(error.message ?? 'Error al cargar las herramientas')
+          setError(resolveToolsErrorMessage(err, 'tools.errorLoad', tRef.current))
         }
       } finally {
         if (isMounted) {
@@ -47,8 +59,8 @@ function useToolsData() {
           tool.id === updated.id ? { ...tool, isFavorite: updated.isFavorite } : tool,
         )
       })
-    } catch (error) {
-      setError(error.message ?? 'Error al actualizar favoritas')
+    } catch (err) {
+      setError(resolveToolsErrorMessage(err, 'tools.errorToggleFavorite', tRef.current))
     }
   }
 
