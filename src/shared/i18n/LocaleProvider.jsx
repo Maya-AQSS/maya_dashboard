@@ -1,8 +1,7 @@
-import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { getNested, interpolate } from './utils.js'
 import { messages, defaultLocale } from './config.js'
-
-const LocaleContext = createContext(null)
+import { LocaleContext } from './localeContext.js'
 
 function LocaleProvider({ children }) {
   const [locale, setLocaleState] = useState(() => {
@@ -59,10 +58,4 @@ function LocaleProvider({ children }) {
   )
 }
 
-function useLocale() {
-  const ctx = useContext(LocaleContext)
-  if (!ctx) throw new Error('useLocale must be used within LocaleProvider')
-  return ctx
-}
-
-export { LocaleProvider, useLocale }
+export { LocaleProvider }

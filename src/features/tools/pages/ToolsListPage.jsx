@@ -21,13 +21,25 @@ function ToolsListPage() {
     () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches,
   )
 
-  useEffect(() => {
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value)
     setCurrentPage(1)
-  }, [showAll, searchTerm])
+  }
 
-  useEffect(() => {
+  const handleClearSearch = () => {
+    setSearchTerm('')
     setCurrentPage(1)
-  }, [pageSize])
+  }
+
+  const handleToggleShowAll = () => {
+    setShowAll((prev) => !prev)
+    setCurrentPage(1)
+  }
+
+  const handlePageSizeChange = (nextSize) => {
+    setPageSize(nextSize)
+    setCurrentPage(1)
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
@@ -87,7 +99,7 @@ function ToolsListPage() {
           !isMobile ? (
             <ToolsToggleButton
               showAll={showAll}
-              onToggle={() => setShowAll((prev) => !prev)}
+              onToggle={handleToggleShowAll}
             />
           ) : null
         }
@@ -107,13 +119,13 @@ function ToolsListPage() {
                 isMobile ? t('tools.searchPlaceholder') : t('tools.searchPlaceholderLong')
               }
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={handleSearchChange}
             />
             {searchTerm && (
               <button
                 type="button"
                 className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-gray-500 dark:text-odoo-dark-muted cursor-pointer text-lg leading-none hover:text-gray-900 dark:hover:text-odoo-dark-text"
-                onClick={() => setSearchTerm('')}
+                onClick={handleClearSearch}
                 aria-label={t('tools.clearSearch')}
               >
                 ×
@@ -123,7 +135,7 @@ function ToolsListPage() {
           <div className="shrink-0 sm:hidden">
             <ToolsToggleButton
               showAll={showAll}
-              onToggle={() => setShowAll((prev) => !prev)}
+              onToggle={handleToggleShowAll}
             />
           </div>
           <div className="hidden sm:flex items-center min-w-0 shrink-0 ml-auto">
@@ -131,7 +143,7 @@ function ToolsListPage() {
               <span className="whitespace-nowrap">{t('tools.itemsPerPage')}</span>
               <select
                 value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="py-2.5 pl-3.5 pr-9 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text text-sm font-medium outline-none appearance-none cursor-pointer shadow-[0_2px_8px_-4px_rgba(113,75,103,0.2),0_0_0_1px_rgba(148,163,184,0.2)] dark:shadow-none focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_4px_12px_-6px_rgba(245,158,11,0.35),0_0_0_1px_rgba(245,158,11,0.4)] dark:focus:shadow-none bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
                 style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236b7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")' }}
                 aria-label={t('tools.itemsPerPage')}

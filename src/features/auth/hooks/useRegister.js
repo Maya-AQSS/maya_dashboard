@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLocale } from '../../../shared/i18n'
 import { registerApi } from '../api/authApi'
-import { useAuth } from '../../../app/auth/AuthContext'
+import { useAuth } from '../../../app/auth/useAuth.js'
 
 function useRegister() {
   const [loading, setLoading] = useState(false)

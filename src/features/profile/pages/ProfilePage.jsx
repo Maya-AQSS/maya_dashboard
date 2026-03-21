@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../../../app/auth/AuthContext'
+import { useAuth } from '../../../app/auth/useAuth.js'
 import PageHeader from '../../../shared/components/PageHeader'
 import FormField from '../../../shared/components/FormField'
 import FormSection from '../../../shared/components/FormSection'

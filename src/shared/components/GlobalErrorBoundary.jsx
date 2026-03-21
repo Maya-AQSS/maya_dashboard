@@ -12,8 +12,7 @@ class GlobalErrorBoundaryInner extends Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Keep a trace in console for debugging in development.
-    // eslint-disable-next-line no-console
+    // Traza en consola para depuración (desarrollo).
     console.error('GlobalErrorBoundary caught an error:', error, errorInfo)
   }
 

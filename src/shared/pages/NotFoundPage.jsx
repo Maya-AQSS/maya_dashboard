@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../app/auth/AuthContext'
+import { useAuth } from '../../app/auth/useAuth.js'
 import { useLocale } from '../i18n'
 
 function NotFoundPage() {
