@@ -44,4 +44,23 @@ function paginate(items, { pageSize, currentPage }) {
     }
 }
 
-export { buildVisibleTools, paginate }
+
+function getPageNumbersToDisplay(currentPage, totalPages) {
+
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
+
+    const set = new Set([1, totalPages, currentPage, currentPage - 1, currentPage - 2, currentPage + 1, currentPage + 2])
+    const sorted = [...set].filter((p) => p >= 1 && p <= totalPages).sort((a, b) => a - b)
+    const result = []
+    let prev = 0
+
+    for (const p of sorted) {
+        if (p > prev + 1) result.push('ellipsis')
+        result.push(p)
+        prev = p
+    }
+    
+    return result
+}
+
+export { buildVisibleTools, paginate, getPageNumbersToDisplay }

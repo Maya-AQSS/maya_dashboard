@@ -4,10 +4,11 @@ import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
 import { useLocale } from '../../../shared/i18n'
-import { buildVisibleTools, paginate } from '../lib/toolsListView'
+import { buildVisibleTools, paginate, getPageNumbersToDisplay } from '../lib/toolsListView'
 
 
-const PAGE_SIZE = 8
+const PAGE_SIZE_OPTIONS = [8, 16, 24, 48]
+const DEFAULT_PAGE_SIZE = 8
 
 function ToolsListPage() {
   const { t } = useLocale()
@@ -15,21 +16,22 @@ function ToolsListPage() {
   const [showAll, setShowAll] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
 
   useEffect(() => {
     setCurrentPage(1)
   }, [showAll, searchTerm])
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [pageSize])
 
   const { pageItems, meta } = useMemo(() => {
-
     const visible = buildVisibleTools(tools, { showAll, searchTerm })
-    return paginate(visible, { pageSize: PAGE_SIZE, currentPage })
+    return paginate(visible, { pageSize, currentPage })
+  }, [tools, showAll, searchTerm, currentPage, pageSize])
 
-  }, [tools, showAll, searchTerm, currentPage])
-
-  const { totalItems, totalPages, startIndex, endIndex, canGoPrev, canGoNext } = meta
+  const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex, canGoPrev, canGoNext } = meta
   
   const showLastUsed = !showAll
 
@@ -40,6 +42,11 @@ function ToolsListPage() {
   const handleNextPage = () => {
     if (canGoNext) setCurrentPage((page) => page + 1)
   }
+
+  const pageNumbersToShow = useMemo(
+    () => getPageNumbersToDisplay(currentPageSafe, totalPages),
+    [currentPageSafe, totalPages],
+  )
 
   if (loading) return <div className="text-gray-900 dark:text-odoo-dark-text">{t('tools.loading')}</div>
   if (error) return <div className="text-red-600 dark:text-red-400">{t('tools.error')} {error}</div>
@@ -64,25 +71,45 @@ function ToolsListPage() {
       />
 
 
-      <div className="w-full mb-6 sm:mb-8 flex justify-center px-0">
-        <div className="relative w-full sm:w-1/2 min-w-0 max-w-[480px]">
-          <input
-            type="text"
-            className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
-            placeholder={t('tools.searchPlaceholderLong')}
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-          {searchTerm && (
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-gray-500 dark:text-odoo-dark-muted cursor-pointer text-lg leading-none hover:text-gray-900 dark:hover:text-odoo-dark-text"
-              onClick={() => setSearchTerm('')}
-              aria-label={t('tools.clearSearch')}
-            >
-              ×
-            </button>
-          )}
+      <div className="w-full mb-6 sm:mb-8 rounded-2xl border border-violet-100 dark:border-odoo-dark-border bg-white/80 dark:bg-odoo-dark-surface/80 shadow-[0_2px_12px_-4px_rgba(113,75,103,0.12),0_0_0_1px_rgba(148,163,184,0.08)] dark:shadow-none p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-5">
+          <div className="relative flex-1 min-w-0 max-w-[420px] sm:max-w-[480px]">
+            <input
+              type="text"
+              className="w-full py-2.5 px-4 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-sm text-gray-900 dark:text-odoo-dark-text outline-none shadow-[0_4px_10px_-6px_rgba(113,75,103,0.4),0_0_0_1px_rgba(148,163,184,0.3)] dark:shadow-none placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6),0_0_0_1px_rgba(245,158,11,0.5)] dark:focus:shadow-none"
+              placeholder={t('tools.searchPlaceholderLong')}
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-gray-500 dark:text-odoo-dark-muted cursor-pointer text-lg leading-none hover:text-gray-900 dark:hover:text-odoo-dark-text"
+                onClick={() => setSearchTerm('')}
+                aria-label={t('tools.clearSearch')}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <div className="flex items-center min-w-0 shrink-0 ml-auto">
+            <label className="flex items-center gap-2.5 text-sm text-gray-500 dark:text-odoo-dark-muted shrink-0">
+              <span className="whitespace-nowrap">{t('tools.itemsPerPage')}</span>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="py-2.5 pl-3.5 pr-9 rounded-full border border-violet-200 dark:border-odoo-dark-border bg-violet-50 dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text text-sm font-medium outline-none appearance-none cursor-pointer shadow-[0_2px_8px_-4px_rgba(113,75,103,0.2),0_0_0_1px_rgba(148,163,184,0.2)] dark:shadow-none focus:border-amber-500 dark:focus:border-odoo-primary focus:bg-amber-50 dark:focus:bg-odoo-dark-surface focus:shadow-[0_4px_12px_-6px_rgba(245,158,11,0.35),0_0_0_1px_rgba(245,158,11,0.4)] dark:focus:shadow-none bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
+                style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%236b7280\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")' }}
+                aria-label={t('tools.itemsPerPage')}
+              >
+                {PAGE_SIZE_OPTIONS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -94,35 +121,64 @@ function ToolsListPage() {
       />
 
 
-      {totalItems > PAGE_SIZE && (
-        <div className="w-full mt-4 sm:mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            className="py-1.5 px-3.5 rounded-full border border-amber-400 dark:border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-amber-200 dark:hover:enabled:bg-amber-800/50 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"
-            onClick={handlePrevPage}
-            disabled={!canGoPrev}
-          >
-            {t('tools.prev')}
-          </button>
+      {totalItems > 0 && (
+        <div className="w-full mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-gray-100 dark:border-odoo-dark-border flex flex-col items-center gap-3">
+          {totalItems > pageSize && (
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                className="py-1.5 px-3.5 rounded-full border border-amber-400 dark:border-amber-500 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-amber-200 dark:hover:enabled:bg-amber-800/50 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"
+                onClick={handlePrevPage}
+                disabled={!canGoPrev}
+              >
+                {t('tools.prev')}
+              </button>
 
-          <span className="text-xs sm:text-sm text-gray-600 dark:text-odoo-dark-muted text-center order-last w-full sm:order-none sm:w-auto">
+              <nav className="flex items-center gap-1" aria-label={t('tools.paginationLabel')}>
+              {pageNumbersToShow.map((item, idx) =>
+                item === 'ellipsis' ? (
+                  <span key={`ellipsis-${idx}`} className="px-1.5 text-gray-500 dark:text-odoo-dark-muted text-sm" aria-hidden="true">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setCurrentPage(item)}
+                    className={`min-w-[2rem] py-1.5 px-2 rounded-full text-sm font-medium cursor-pointer transition ${
+                      item === currentPageSafe
+                        ? 'border-none bg-odoo-primary text-gray-50 shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none hover:bg-odoo-primary-hover'
+                        : 'border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-700 dark:text-odoo-dark-text hover:border-amber-500 dark:hover:border-odoo-primary hover:bg-amber-50 dark:hover:bg-odoo-dark-surface'
+                    }`}
+                    aria-label={t('tools.pageNumber', { page: item })}
+                    aria-current={item === currentPageSafe ? 'page' : undefined}
+                  >
+                    {item}
+                  </button>
+                ),
+              )}
+            </nav>
+
+              <button
+                type="button"
+                className="py-1.5 px-3.5 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:enabled:bg-odoo-primary-hover hover:enabled:-translate-y-0.5 disabled:opacity-45 disabled:cursor-default disabled:transform-none"
+                onClick={handleNextPage}
+                disabled={!canGoNext}
+              >
+                {t('tools.next')}
+              </button>
+            </div>
+          )}
+
+          <span className="text-xs sm:text-sm text-gray-500 dark:text-odoo-dark-muted text-center w-full">
             {t('tools.showing', {
               start: startIndex + 1,
               end: Math.min(endIndex, totalItems),
               total: totalItems,
-              current: currentPage,
+              current: currentPageSafe,
               totalPages,
             })}
           </span>
-
-          <button
-            type="button"
-            className="py-1.5 px-3.5 rounded-full border-none bg-odoo-primary text-gray-50 text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:enabled:bg-odoo-primary-hover hover:enabled:-translate-y-0.5 disabled:opacity-45 disabled:cursor-default disabled:transform-none"
-            onClick={handleNextPage}
-            disabled={!canGoNext}
-          >
-            {t('tools.next')}
-          </button>
         </div>
       )}
 
