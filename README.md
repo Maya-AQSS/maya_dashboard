@@ -1,16 +1,32 @@
-# React + Vite
+# Maya Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel web (*dashboard*) para que usuarios autenticados consulten un catálogo de herramientas, marquen favoritas y gestionen sus datos personales. Incluye búsqueda, paginación (escritorio) y carga progresiva en móvil, rutas protegidas, página 404 y manejo global de errores de render.
 
-Currently, two official plugins are available:
+**Stack:** React 19 · Vite · React Router · Tailwind CSS v4 · i18n propio (es · en · va).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+> En la versión actual la autenticación y los datos de herramientas/perfil son **mock** (sin API real).
 
-## React Compiler
+## Puesta en marcha
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Por defecto: `http://localhost:5173` (Vite puede proponer otro puerto si 5173 está ocupado).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run build    # producción en dist/
+npm run preview  # sirve dist/ en local
+npm run lint
+```
+
+## Documentación
+
+Manuales de **instalación** y **usuario** (con capturas): carpeta **`docs/`** del repositorio (`manual_instalacion.md`, `manual_usuario.md` y `img/`).
+
+## Estructura principal
+
+- `src/app` — router, layout, autenticación (contexto y rutas protegidas)
+- `src/features` — `auth`, `tools`, `profile`
+- `src/shared` — componentes compartidos, estilos, i18n
