@@ -65,6 +65,8 @@ Abre esa URL en el navegador (Chrome, Firefox, Edge, etc.).
 
 | Comando | Descripción |
 |---------|-------------|
+| `npm run test` | Ejecuta la suite de pruebas (Vitest), una pasada. |
+| `npm run test:watch` | Vitest en modo observación (útil en desarrollo). |
 | `npm run build` | Genera la versión de producción en `dist/`. |
 | `npm run preview` | Sirve localmente el contenido de `dist/` (tras un `build`). |
 | `npm run lint` | Ejecuta ESLint sobre el código fuente. |
@@ -120,6 +122,10 @@ npm install
 
 Ejecuta `npm run lint` y corrige lo que indique la salida antes de integrar cambios.
 
+### Fallan los tests (`npm run test`)
+
+Revisa el mensaje de Vitest en consola (archivo y test concretos). Asegúrate de haber ejecutado `npm install` y de no tener cambios locales que rompan las aserciones.
+
 ---
 
 ## 9. Alcance técnico
@@ -127,3 +133,4 @@ Ejecuta `npm run lint` y corrige lo que indique la salida antes de integrar camb
 - Rutas con **lazy loading** y **Suspense**.
 - Ruta **404** y **error boundary** global.
 - Autenticación simulada; datos de herramientas y perfil mock.
+- **Pruebas automatizadas** con **Vitest** y Testing Library (`src/**/*.test.{js,jsx}`).

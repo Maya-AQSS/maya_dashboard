@@ -16,8 +16,10 @@ npm run dev
 Por defecto: `http://localhost:5173` (Vite puede proponer otro puerto si 5173 está ocupado).
 
 ```bash
-npm run build    # producción en dist/
-npm run preview  # sirve dist/ en local
+npm run test        # Vitest (una pasada)
+npm run test:watch  # Vitest en modo observación
+npm run build       # producción en dist/
+npm run preview     # sirve dist/ en local
 npm run lint
 ```
 
