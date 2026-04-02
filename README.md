@@ -1,16 +1,124 @@
-# React + Vite
+# Maya Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Panel de administración principal del ecosistema **Maya (CEEDCV)**.
 
-Currently, two official plugins are available:
+Frontend con React 19 + Vite 7, conectado a las APIs del ecosistema Maya vía Keycloak (OIDC).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Stack
 
-## React Compiler
+- React 19 + Vite 7
+- Docker (Node 22-alpine)
+- Traefik (reverse proxy compartido)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Prerequisitos
 
-## Expanding the ESLint configuration
+- Docker Engine 20.10+
+- Docker Compose v2+
+- Repo `infra/` clonado al mismo nivel que este proyecto
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Infraestructura compartida
+
+Traefik y Keycloak **no** están en este proyecto — viven en el repo `infra/`, compartido por todo el ecosistema Maya. El script `up.sh` los levanta automáticamente si no están corriendo.
+
+### Clonar infra
+
+Clona el repo de infra **al mismo nivel** que este proyecto:
+
+```bash
+git clone <url-repo-infra> ../infra
+```
+
+Resultado esperado:
+
+```text
+~/desarrollo/
+├── infra/               ← repo infra
+├── maya_authorization/
+├── maya-dms/
+├── log-management-dashboard/
+└── maya-dashboard/      ← este proyecto
+```
+
+Si tienes infra en otra ubicación, usa la variable de entorno:
+
+```bash
+MAYA_INFRA_DIR=/ruta/absoluta/a/infra ./up.sh
+```
+
+## Instalación
+
+```bash
+git clone <repository-url>
+cd maya-dashboard
+./up.sh --build
+```
+
+El script `up.sh` se encarga de todo automáticamente:
+
+- Copia `.env.example` → `.env` si no existe
+- Levanta la infra compartida (Traefik, Keycloak, PostgreSQL, Redis, RabbitMQ)
+- Construye y levanta el contenedor frontend
+
+> Solo necesitas editar `.env` si quieres cambiar las URLs de las APIs o el client ID de Keycloak.
+
+## Arranque diario
+
+```bash
+./up.sh
+```
+
+Para parar:
+
+```bash
+./up.sh down
+```
+
+Otros subcomandos:
+
+```bash
+./up.sh logs            # seguir logs
+./up.sh ps              # ver estado del contenedor
+./up.sh --build         # reconstruir imagen
+```
+
+## URLs de acceso
+
+| Servicio | URL (vía Traefik) | URL directa |
+| --- | --- | --- |
+| Dashboard | <http://dashboard.localhost> | <http://localhost:5175> |
+| Keycloak | <http://keycloak.localhost> | <http://localhost:8180> |
+| Traefik dashboard | <http://localhost:8888> | — |
+
+## Variables de entorno
+
+El `.env` se crea automáticamente desde `.env.example`. Variables disponibles:
+
+```env
+VITE_API_URL=http://api.localhost              # API de maya_authorization
+VITE_KEYCLOAK_URL=http://keycloak.localhost    # Keycloak IdP
+VITE_KEYCLOAK_REALM=maya                       # Realm de Keycloak
+VITE_KEYCLOAK_CLIENT_ID=maya-dashboard         # Client ID en Keycloak
+FRONTEND_PORT=5175                             # Puerto host directo
+```
+
+## Desarrollo local sin Docker
+
+Si prefieres desarrollo sin Docker:
+
+```bash
+npm install
+npm run dev
+```
+
+## Arquitectura
+
+```text
+infra/
+  Traefik (:80, :8888) ──── enruta *.localhost
+  Keycloak (:8180)      ──── IdP compartido del ecosistema
+
+maya-dashboard/
+  Frontend (:5175) ──→ API (api.localhost) vía Keycloak tokens
+```
+
+El contenedor se conecta a la red Docker `maya_network` (compartida).

@@ -1,0 +1,17 @@
+export default {
+  skipToContent: 'Anar al contingut principal',
+  dashboardTitle: 'Dashboard',
+  dashboardSubtitle: 'Benvingut al teu panell de control',
+  authSubtitle: 'Accedeix al teu compte o registra\'t per continuar',
+  footer: 'Dashboard React',
+  footerShort: 'Maya - Panell principal',
+  notFoundTitle: 'Pàgina no trobada',
+  notFoundDescription: 'La ruta que has obert no existeix o ja no està disponible.',
+  notFoundBackDashboard: 'Tornar al panell de Dashboard',
+  notFoundGoTools: 'Tornar a ferramentes',
+  notFoundGoLogin: 'Anar a iniciar sessió',
+  errorBoundaryTitle: 'Alguna cosa ha fallat en l\'aplicació',
+  errorBoundaryDescription: 'Intenta recarregar la pàgina per a continuar.',
+  errorBoundaryReload: 'Recarregar pàgina',
+  routeLoading: 'Carregant vista...',
+}
