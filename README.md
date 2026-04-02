@@ -1,34 +1,124 @@
 # Maya Dashboard
 
-Panel web (*dashboard*) para que usuarios autenticados consulten un catálogo de herramientas, marquen favoritas y gestionen sus datos personales. Incluye búsqueda, paginación (escritorio) y carga progresiva en móvil, rutas protegidas, página 404 y manejo global de errores de render.
+Panel de administración principal del ecosistema **Maya (CEEDCV)**.
 
-**Stack:** React 19 · Vite · React Router · Tailwind CSS v4 · i18n propio (es · en · va).
+Frontend con React 19 + Vite 7, conectado a las APIs del ecosistema Maya vía Keycloak (OIDC).
 
-> En la versión actual la autenticación y los datos de herramientas/perfil son **mock** (sin API real).
+## Stack
 
-## Puesta en marcha
+- React 19 + Vite 7
+- Docker (Node 22-alpine)
+- Traefik (reverse proxy compartido)
+
+## Prerequisitos
+
+- Docker Engine 20.10+
+- Docker Compose v2+
+- Repo `infra/` clonado al mismo nivel que este proyecto
+
+## Infraestructura compartida
+
+Traefik y Keycloak **no** están en este proyecto — viven en el repo `infra/`, compartido por todo el ecosistema Maya. El script `up.sh` los levanta automáticamente si no están corriendo.
+
+### Clonar infra
+
+Clona el repo de infra **al mismo nivel** que este proyecto:
+
+```bash
+git clone <url-repo-infra> ../infra
+```
+
+Resultado esperado:
+
+```text
+~/desarrollo/
+├── infra/               ← repo infra
+├── maya_authorization/
+├── maya-dms/
+├── log-management-dashboard/
+└── maya-dashboard/      ← este proyecto
+```
+
+Si tienes infra en otra ubicación, usa la variable de entorno:
+
+```bash
+MAYA_INFRA_DIR=/ruta/absoluta/a/infra ./up.sh
+```
+
+## Instalación
+
+```bash
+git clone <repository-url>
+cd maya-dashboard
+./up.sh --build
+```
+
+El script `up.sh` se encarga de todo automáticamente:
+
+- Copia `.env.example` → `.env` si no existe
+- Levanta la infra compartida (Traefik, Keycloak, PostgreSQL, Redis, RabbitMQ)
+- Construye y levanta el contenedor frontend
+
+> Solo necesitas editar `.env` si quieres cambiar las URLs de las APIs o el client ID de Keycloak.
+
+## Arranque diario
+
+```bash
+./up.sh
+```
+
+Para parar:
+
+```bash
+./up.sh down
+```
+
+Otros subcomandos:
+
+```bash
+./up.sh logs            # seguir logs
+./up.sh ps              # ver estado del contenedor
+./up.sh --build         # reconstruir imagen
+```
+
+## URLs de acceso
+
+| Servicio | URL (vía Traefik) | URL directa |
+| --- | --- | --- |
+| Dashboard | <http://dashboard.localhost> | <http://localhost:5175> |
+| Keycloak | <http://keycloak.localhost> | <http://localhost:8180> |
+| Traefik dashboard | <http://localhost:8888> | — |
+
+## Variables de entorno
+
+El `.env` se crea automáticamente desde `.env.example`. Variables disponibles:
+
+```env
+VITE_API_URL=http://api.localhost              # API de maya_authorization
+VITE_KEYCLOAK_URL=http://keycloak.localhost    # Keycloak IdP
+VITE_KEYCLOAK_REALM=maya                       # Realm de Keycloak
+VITE_KEYCLOAK_CLIENT_ID=maya-dashboard         # Client ID en Keycloak
+FRONTEND_PORT=5175                             # Puerto host directo
+```
+
+## Desarrollo local sin Docker
+
+Si prefieres desarrollo sin Docker:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Por defecto: `http://localhost:5173` (Vite puede proponer otro puerto si 5173 está ocupado).
+## Arquitectura
 
-```bash
-npm run test        # Vitest (una pasada)
-npm run test:watch  # Vitest en modo observación
-npm run build       # producción en dist/
-npm run preview     # sirve dist/ en local
-npm run lint
+```text
+infra/
+  Traefik (:80, :8888) ──── enruta *.localhost
+  Keycloak (:8180)      ──── IdP compartido del ecosistema
+
+maya-dashboard/
+  Frontend (:5175) ──→ API (api.localhost) vía Keycloak tokens
 ```
 
-## Documentación
-
-Manuales de **instalación** y **usuario** (con capturas): carpeta **`docs/`** del repositorio (`manual_instalacion.md`, `manual_usuario.md` y `img/`).
-
-## Estructura principal
-
-- `src/app` — router, layout, autenticación (contexto y rutas protegidas)
-- `src/features` — `auth`, `tools`, `profile`
-- `src/shared` — componentes compartidos, estilos, i18n
+El contenedor se conecta a la red Docker `maya_network` (compartida).
