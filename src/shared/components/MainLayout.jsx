@@ -5,7 +5,7 @@ import { useLocale } from '../i18n'
 function MainLayout() {
   const { t } = useLocale()
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f5f7] dark:bg-odoo-dark-bg">
+    <div className="min-h-screen flex flex-col bg-odoo-bg dark:bg-odoo-dark-bg">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-3 focus:left-3 focus:rounded-lg focus:bg-white focus:text-gray-900 focus:px-4 focus:py-2 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
