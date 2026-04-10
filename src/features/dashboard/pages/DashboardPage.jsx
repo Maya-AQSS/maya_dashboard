@@ -43,8 +43,8 @@ const navItems = [
 // ─── Sidebar ──────────────────────────────────────────────────
 function Sidebar({ active, onNav }) {
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-ui-sidebar flex flex-col z-[100]">
-      <div className="h-14 flex items-center px-5 border-b border-white/10">
+    <aside className="fixed inset-y-0 left-0 w-64 bg-ui-sidebar dark:bg-ui-dark-bg flex flex-col z-[100] border-r border-white/10 dark:border-ui-dark-border">
+      <div className="h-14 flex items-center px-5 border-b border-white/10 dark:border-ui-dark-border-l">
         <span className="text-lg font-bold text-white tracking-wide">Maya Dashboard</span>
       </div>
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
@@ -52,10 +52,10 @@ function Sidebar({ active, onNav }) {
           <button
             key={id}
             onClick={() => onNav(id)}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors text-left ${
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
               active === id
-                ? 'bg-ui-sidebar-active text-white'
-                : 'text-white/70 hover:bg-ui-sidebar-hover hover:text-white'
+                ? 'bg-ui-sidebar-active dark:bg-odoo-dark-purple text-white'
+                : 'text-white/60 hover:bg-ui-sidebar-hover dark:hover:bg-ui-dark-card hover:text-white/90'
             }`}
           >
             <Icon />
@@ -106,10 +106,10 @@ function KpiCard({ label, value, delta, colorClass }) {
 // ─── Sección principal ─────────────────────────────────────────
 function MainContent() {
   const kpis = [
-    { label: 'Usuarios activos',  value: '—', delta: 'vs. mes anterior',  colorClass: 'bg-odoo-purple/10 text-odoo-purple border-odoo-purple/20' },
-    { label: 'Ingresos',          value: '—', delta: 'vs. mes anterior',  colorClass: 'bg-odoo-teal/10 text-odoo-teal border-odoo-teal/20' },
-    { label: 'Tickets abiertos',  value: '—', delta: 'pendientes',        colorClass: 'bg-warning-light text-warning-dark border-warning/20' },
-    { label: 'Errores críticos',  value: '—', delta: 'últimas 24h',       colorClass: 'bg-danger-light text-danger-dark border-danger/20' },
+    { label: 'Usuarios activos',  value: '—', delta: 'vs. mes anterior',  colorClass: 'bg-odoo-purple/10 dark:bg-odoo-purple/40 text-odoo-purple-d dark:text-white border-odoo-purple/20 dark:border-odoo-purple/50' },
+    { label: 'Ingresos',          value: '—', delta: 'vs. mes anterior',  colorClass: 'bg-odoo-teal/10 dark:bg-odoo-teal/40 text-odoo-teal-d dark:text-white border-odoo-teal/20 dark:border-odoo-teal/50' },
+    { label: 'Tickets abiertos',  value: '—', delta: 'pendientes',        colorClass: 'bg-warning-light dark:bg-warning-dark/50 text-warning-dark dark:text-white border-warning/20 dark:border-warning/50' },
+    { label: 'Errores críticos',  value: '—', delta: 'últimas 24h',       colorClass: 'bg-danger-light dark:bg-danger-dark/50 text-danger-dark dark:text-white border-danger/20 dark:border-danger/50' },
   ]
 
   const recentActivity = [
@@ -117,10 +117,10 @@ function MainContent() {
   ]
 
   const statusBadge = {
-    success: 'bg-success-light text-success-dark',
-    warning: 'bg-warning-light text-warning-dark',
-    danger:  'bg-danger-light text-danger-dark',
-    info:    'bg-info-light text-info-dark',
+    success: 'bg-success-light dark:bg-success-dark/30 text-success-dark dark:text-success-light',
+    warning: 'bg-warning-light dark:bg-warning-dark/30 text-warning-dark dark:text-warning-light',
+    danger:  'bg-danger-light dark:bg-danger-dark/30 text-danger-dark dark:text-danger-light',
+    info:    'bg-info-light dark:bg-info-dark/30 text-info-dark dark:text-info-light',
   }
 
   return (
