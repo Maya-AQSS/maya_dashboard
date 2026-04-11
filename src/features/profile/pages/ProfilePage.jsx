@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../../../app/auth/useAuth.js'
+import { useAuth } from '@maya/shared-auth-react'
 import PageHeader from '../../../shared/components/PageHeader'
 import FormField from '../../../shared/components/FormField'
 import FormSection from '../../../shared/components/FormSection'
@@ -9,7 +9,7 @@ import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
 
 function ProfilePage() {
-  const { user, setUser } = useAuth()
+  const { user } = useAuth()
   const { t } = useLocale()
   const [isEditing, setIsEditing] = useState(false)
   const [errors, setErrors] = useState({})
@@ -109,7 +109,7 @@ function ProfilePage() {
       }
 
       setIsEditing(false)
-      setUser(updatedUser)
+      
     } catch (error) {
       const msg = error?.message ?? ''
       setSaveError(

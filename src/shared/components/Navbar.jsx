@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../app/auth/useAuth.js'
+import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '../i18n'
 
 function Navbar() {
   const navigate = useNavigate()
-  const { user, setUser } = useAuth()
+  const { user, logout: keycloakLogout } = useAuth()
   const { t, locale, setLocale, localeOptions } = useLocale()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef(null)
@@ -14,8 +14,7 @@ function Navbar() {
 
   const logout = () => {
     setMenuOpen(false)
-    setUser(null)
-    navigate('/login')
+    keycloakLogout()
   }
 
   const linkClass =
