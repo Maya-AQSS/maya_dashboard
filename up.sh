@@ -48,7 +48,7 @@ case "${1:-}" in
 esac
 
 # ─── Verificar y levantar infra compartida ───────────────────────────────────
-INFRA_SCRIPT="${MAYA_INFRA_DIR:-$SCRIPT_DIR/../infra}/ensure-running.sh"
+INFRA_SCRIPT="${MAYA_INFRA_DIR:-$SCRIPT_DIR/../maya_infra}/ensure-running.sh"
 if [[ -f "$INFRA_SCRIPT" ]]; then
     bash "$INFRA_SCRIPT"
 else
