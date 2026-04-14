@@ -14,7 +14,7 @@ services:
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
     volumes:
       - .:/app
-      - ../packages:/packages
+      - ../maya_infra/packages:/packages
       - /app/node_modules
     ports:
       - "${FRONTEND_PORT:-5175}:5173"
