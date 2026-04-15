@@ -68,7 +68,7 @@ docker compose up -d ${EXTRA_FLAGS[@]+"${EXTRA_FLAGS[@]}"}
 # ─── URLs de acceso ───────────────────────────────────────────────────────────
 echo ""
 success "Dashboard listo. Accesos disponibles:"
-echo -e "  ${GREEN}Dashboard:${NC}         http://dashboard.localhost"
+echo -e "  ${GREEN}Dashboard:${NC}         http://maya_dashboard.localhost"
 echo -e "  ${GREEN}Keycloak:${NC}          http://keycloak.localhost"
 echo -e "  ${GREEN}Traefik dashboard:${NC}  http://localhost:8888"
 echo ""
