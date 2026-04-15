@@ -1,4 +1,4 @@
-import { sortToolsByName, sortFavoriteToolsByLastUsedAt } from './sortTools'
+import { sortToolsByName, sortByLastUsedAtDesc } from './sortTools'
 
 function buildVisibleTools(tools, { showAll, searchTerm }) {
   if (!tools || tools.length === 0) return []
@@ -17,7 +17,7 @@ function buildVisibleTools(tools, { showAll, searchTerm }) {
 
   return showAll
     ? sortToolsByName(filtered)
-    : sortFavoriteToolsByLastUsedAt(filtered)
+    : sortByLastUsedAtDesc(filtered)
 }
 
 function paginate(items, { pageSize, currentPage }) {

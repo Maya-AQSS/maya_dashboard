@@ -18,9 +18,7 @@ async function toggleToolFavorite(id) {
     throw new Error('tools.errorNotFound')
   }
 
-  tool.is_favorite = !tool.is_favorite
-
-  return mapToolFromApi(tool)
+  return mapToolFromApi({ ...tool, is_favorite: !tool.is_favorite })
 }
 
 export { getToolsData, toggleToolFavorite }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sortToolsByName, sortFavoriteToolsByLastUsedAt } from './sortTools'
+import { sortToolsByName, sortByLastUsedAtDesc } from './sortTools'
 
 describe('sortToolsByName', () => {
   it('ordena por nombre con localeCompare', () => {
@@ -19,23 +19,32 @@ describe('sortToolsByName', () => {
   })
 })
 
-describe('sortFavoriteToolsByLastUsedAt', () => {
-  it('excluye no favoritas y ordena por lastUsedAt descendente', () => {
+describe('sortByLastUsedAtDesc', () => {
+  it('ordena por lastUsedAt descendente', () => {
     const tools = [
-      { name: 'a', isFavorite: true, lastUsedAt: '2024-01-01' },
-      { name: 'b', isFavorite: false, lastUsedAt: '2025-01-01' },
-      { name: 'c', isFavorite: true, lastUsedAt: '2025-06-01' },
+      { name: 'a', lastUsedAt: '2024-01-01' },
+      { name: 'b', lastUsedAt: '2025-06-01' },
+      { name: 'c', lastUsedAt: '2025-01-01' },
     ]
-    const sorted = sortFavoriteToolsByLastUsedAt(tools)
-    expect(sorted.map((t) => t.name)).toEqual(['c', 'a'])
+    const sorted = sortByLastUsedAtDesc(tools)
+    expect(sorted.map((t) => t.name)).toEqual(['b', 'c', 'a'])
   })
 
-  it('trata lastUsedAt ausente como cadena vacía', () => {
+  it('trata lastUsedAt ausente como cadena vacía (va al final)', () => {
     const tools = [
-      { name: 'x', isFavorite: true },
-      { name: 'y', isFavorite: true, lastUsedAt: '2024-01-01' },
+      { name: 'x' },
+      { name: 'y', lastUsedAt: '2024-01-01' },
     ]
-    const sorted = sortFavoriteToolsByLastUsedAt(tools)
+    const sorted = sortByLastUsedAtDesc(tools)
     expect(sorted[0].name).toBe('y')
+  })
+
+  it('no muta el array original', () => {
+    const tools = [
+      { name: 'B', lastUsedAt: '2025-01-01' },
+      { name: 'A', lastUsedAt: '2026-01-01' },
+    ]
+    sortByLastUsedAtDesc(tools)
+    expect(tools[0].name).toBe('B')
   })
 })
