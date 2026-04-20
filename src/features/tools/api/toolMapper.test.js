@@ -30,4 +30,13 @@ describe('toolMapper', () => {
     const back = mapToolToApi(domain)
     expect(back).toEqual(apiPayload)
   })
+
+  it.each([
+    ['string inválido', 'no-es-una-fecha'],
+    ['undefined', undefined],
+    ['null', null],
+  ])('mapToolFromApi convierte last_used_at %s a null', (_, value) => {
+    const tool = mapToolFromApi({ ...apiPayload, last_used_at: value })
+    expect(tool.lastUsedAt).toBeNull()
+  })
 })

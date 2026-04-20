@@ -3,6 +3,11 @@ import { getNested, interpolate } from './utils.js'
 import { messages, defaultLocale } from './config.js'
 import { LocaleContext } from './localeContext.js'
 
+const localeOptions = Object.entries(messages).map(([code, m]) => ({
+  code,
+  label: m.meta?.localeName ?? code,
+}))
+
 function LocaleProvider({ children }) {
   const [locale, setLocaleState] = useState(() => {
     try {
@@ -38,10 +43,6 @@ function LocaleProvider({ children }) {
       const out = getNested(dict, key)
       return out != null ? interpolate(out, vars) : key
     }
-    const localeOptions = Object.entries(messages).map(([code, m]) => ({
-      code,
-      label: m.meta?.localeName ?? code,
-    }))
     return {
       locale,
       setLocale,

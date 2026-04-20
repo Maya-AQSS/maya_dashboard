@@ -1,3 +1,15 @@
+/**
+ * Valida que un string sea una fecha ISO válida.
+ * Retorna el string original si es válido, null en caso contrario.
+ * @param {string|null|undefined} value
+ * @returns {string|null}
+ */
+function validateIsoDate(value) {
+  if (!value) return null
+  const date = new Date(value)
+  return isNaN(date.getTime()) ? null : value
+}
+
 function mapToolFromApi(tool) {
   return {
     id: tool.id,
@@ -6,7 +18,7 @@ function mapToolFromApi(tool) {
     description: tool.description,
     isFavorite: tool.is_favorite,
     documentationUrl: tool.documentation_url,
-    lastUsedAt: tool.last_used_at,
+    lastUsedAt: validateIsoDate(tool.last_used_at),
   }
 }
 

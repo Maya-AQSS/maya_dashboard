@@ -1,5 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useCallback } from 'react'
 import useToolsData from '../hooks/useToolsData'
+import { useToolsListFilters, PAGE_SIZE_OPTIONS } from '../hooks/useToolsListFilters'
+import { useDebounce } from '../../../shared/hooks/useDebounce'
+import { useIsMobile } from '../../../shared/hooks/useIsMobile'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
 import PageHeader from '../../../shared/components/PageHeader'
@@ -7,52 +10,25 @@ import { useLocale } from '../../../shared/i18n'
 import { buildVisibleTools, paginate, getPageNumbersToDisplay } from '../lib/toolsListView'
 
 
-const PAGE_SIZE_OPTIONS = [8, 16, 24, 48]
-const DEFAULT_PAGE_SIZE = 8
-
 function ToolsListPage() {
   const { t } = useLocale()
   const { tools, loading, error, toggleFavorite } = useToolsData()
-  const [showAll, setShowAll] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches,
-  )
+  const { filters, actions } = useToolsListFilters()
+  const { showAll, searchTerm, currentPage, pageSize } = filters
+  const {
+    handleSearchChange,
+    handleClearSearch,
+    handleToggleShowAll,
+    handlePageSizeChange,
+    setCurrentPage,
+  } = actions
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value)
-    setCurrentPage(1)
-  }
-
-  const handleClearSearch = () => {
-    setSearchTerm('')
-    setCurrentPage(1)
-  }
-
-  const handleToggleShowAll = () => {
-    setShowAll((prev) => !prev)
-    setCurrentPage(1)
-  }
-
-  const handlePageSizeChange = (nextSize) => {
-    setPageSize(nextSize)
-    setCurrentPage(1)
-  }
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-    const mediaQuery = window.matchMedia('(max-width: 639px)')
-    const handleChange = (event) => setIsMobile(event.matches)
-    handleChange(mediaQuery)
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
+  const isMobile = useIsMobile()
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   const visibleTools = useMemo(
-    () => buildVisibleTools(tools, { showAll, searchTerm }),
-    [tools, showAll, searchTerm],
+    () => buildVisibleTools(tools, { showAll, searchTerm: debouncedSearchTerm }),
+    [tools, showAll, debouncedSearchTerm],
   )
 
   const { pageItems: desktopPageItems, meta: desktopMeta } = useMemo(
@@ -61,24 +37,27 @@ function ToolsListPage() {
   )
 
   const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex, canGoPrev, canGoNext } = desktopMeta
-  const mobileEndIndex = Math.min(currentPageSafe * pageSize, totalItems)
-  const mobilePageItems = visibleTools.slice(0, mobileEndIndex)
+
+  const { mobileEndIndex, mobilePageItems } = useMemo(() => {
+    const endIdx = Math.min(currentPageSafe * pageSize, totalItems)
+    return { mobileEndIndex: endIdx, mobilePageItems: visibleTools.slice(0, endIdx) }
+  }, [visibleTools, currentPageSafe, pageSize, totalItems])
+
   const pageItems = isMobile ? mobilePageItems : desktopPageItems
   const canLoadMoreMobile = isMobile && mobileEndIndex < totalItems
-  
   const showLastUsed = !showAll
 
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (canGoPrev) setCurrentPage((page) => page - 1)
-  }
+  }, [canGoPrev, setCurrentPage])
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (canGoNext) setCurrentPage((page) => page + 1)
-  }
+  }, [canGoNext, setCurrentPage])
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (canLoadMoreMobile) setCurrentPage((page) => page + 1)
-  }
+  }, [canLoadMoreMobile, setCurrentPage])
 
   const pageNumbersToShow = useMemo(
     () => getPageNumbersToDisplay(currentPageSafe, totalPages),
