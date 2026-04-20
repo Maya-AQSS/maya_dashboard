@@ -4,6 +4,10 @@
 /* ─── Tailwind v4 ───────────────────────────────────────── */
 @import "tailwindcss";
 
+/* ─── Asegurar escaneo del paquete compartido ───────────── */
+/* Funciona en Docker (/packages) y local (workspace/packages) */
+@source "../../../../packages/maya-shared-layout-react/src/**/*.{tsx,ts}";
+
 /* ─── Dark mode basado en clase .dark ─────────────────────  */
 @custom-variant dark (&:where(.dark, .dark *));
 

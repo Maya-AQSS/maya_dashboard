@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import DashboardPage from '../features/dashboard/pages/DashboardPage'
 import { useAuth } from '@maya/shared-auth-react'
+import AppRouter from './router'
 
 // ── SSO return_to handler ─────────────────────────────────────────────────────
 // Las apps server-rendered (ej: maya_logs) no pueden hacer el PKCE flow en el
@@ -48,7 +48,7 @@ function App() {
   return (
     <>
       <ReturnToHandler />
-      <DashboardPage />
+      <AppRouter />
     </>
   )
 }
