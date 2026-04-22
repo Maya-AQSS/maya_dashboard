@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '../../../shared/i18n'
-import { getToolsData, toggleToolFavorite } from '../api/toolsApi'
+import { getToolsData } from '../api/toolsApi'
 
 function resolveToolsErrorMessage(err, fallbackKey, t) {
   const msg = err?.message ?? ''
@@ -10,6 +11,7 @@ function resolveToolsErrorMessage(err, fallbackKey, t) {
 }
 
 function useToolsData() {
+  const { user } = useAuth()
   const { t } = useLocale()
   const tRef = useRef(t)
   tRef.current = t
@@ -19,6 +21,12 @@ function useToolsData() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (!user?.sub) {
+      setTools([])
+      setLoading(false)
+      return
+    }
+
     let isMounted = true
 
     async function fetchData() {
@@ -26,7 +34,7 @@ function useToolsData() {
       setError(null)
 
       try {
-        const response = await getToolsData()
+        const response = await getToolsData(user.sub)
 
         if (isMounted) {
           const toolsFromApi = response.tools || []
@@ -48,20 +56,14 @@ function useToolsData() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [user?.sub])
 
   const toggleFavorite = async (id) => {
-    try {
-      const updated = await toggleToolFavorite(id)
-
-      setTools((prev) => {
-        return prev.map((tool) =>
-          tool.id === updated.id ? { ...tool, isFavorite: updated.isFavorite } : tool,
-        )
-      })
-    } catch (err) {
-      setError(resolveToolsErrorMessage(err, 'tools.errorToggleFavorite', tRef.current))
-    }
+    setTools((prev) => {
+      return prev.map((tool) =>
+        tool.id === id ? { ...tool, isFavorite: !tool.isFavorite } : tool,
+      )
+    })
   }
 
   return { tools, loading, error, toggleFavorite }

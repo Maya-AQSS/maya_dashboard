@@ -11,14 +11,16 @@ function validateIsoDate(value) {
 }
 
 function mapToolFromApi(tool) {
+  const defaultUrl = '#'
+
   return {
     id: tool.id,
     name: tool.name,
-    category: tool.category,
+    category: tool.category || 'aplicacion',
     description: tool.description,
-    isFavorite: tool.is_favorite,
-    documentationUrl: tool.documentation_url,
-    lastUsedAt: validateIsoDate(tool.last_used_at),
+    isFavorite: Boolean(tool.is_favorite),
+    documentationUrl: tool.traefik_url || tool.documentation_url || defaultUrl,
+    lastUsedAt: validateIsoDate(tool.last_used_at || tool.updated_at),
   }
 }
 

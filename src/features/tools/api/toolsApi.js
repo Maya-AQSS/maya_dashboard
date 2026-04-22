@@ -1,24 +1,74 @@
-import { TOOLS } from '../data/toolsData'
 import { mapToolFromApi } from './toolMapper'
 
-async function getToolsData() {
-  await new Promise((resolve) => setTimeout(resolve, 500)) // Simular una llamada a la API
+function getApiBaseUrl() {
+  return (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+}
+
+function getAppKey() {
+  const appKey = import.meta.env.VITE_APP_KEY || ''
+
+  if (import.meta.env.PROD && appKey.includes('changeme')) {
+    throw new Error('tools.errorConfig')
+  }
+
+  return appKey
+}
+
+function mapAppsResponseToTools(payload) {
+  const apps = Array.isArray(payload?.data) ? payload.data : []
+  return apps.map(mapToolFromApi)
+}
+
+async function getToolsData(userId) {
+  if (!userId) {
+    throw new Error('tools.errorLoad')
+  }
+
+  const baseUrl = getApiBaseUrl()
+  const appKey = getAppKey()
+
+  if (!baseUrl || !appKey) {
+    throw new Error('tools.errorConfig')
+  }
+
+  const url = `${baseUrl}/api/v1/auth/user/${encodeURIComponent(userId)}/apps`
+  let response
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'X-App-Key': appKey,
+      },
+    })
+  } catch {
+    throw new Error('tools.errorNetwork')
+  } finally {
+    clearTimeout(timeoutId)
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('tools.errorUnauthorized')
+    }
+    if (response.status === 403) {
+      throw new Error('tools.errorForbidden')
+    }
+    if (response.status >= 500) {
+      throw new Error('tools.errorServer')
+    }
+    throw new Error('tools.errorLoad')
+  }
+
+  const payload = await response.json()
 
   return {
-    tools: TOOLS.map(mapToolFromApi),
+    tools: mapAppsResponseToTools(payload),
   }
 }
 
-async function toggleToolFavorite(id) {
-  await new Promise((resolve) => setTimeout(resolve, 400))
-
-  const tool = TOOLS.find((tool) => tool.id === Number(id))
-
-  if (!tool) {
-    throw new Error('tools.errorNotFound')
-  }
-
-  return mapToolFromApi({ ...tool, is_favorite: !tool.is_favorite })
-}
-
-export { getToolsData, toggleToolFavorite }
+export { getToolsData }

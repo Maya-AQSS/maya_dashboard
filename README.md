@@ -98,6 +98,7 @@ VITE_API_URL=http://api.localhost              # API de maya_authorization
 VITE_KEYCLOAK_URL=http://keycloak.localhost    # Keycloak IdP
 VITE_KEYCLOAK_REALM=maya                       # Realm de Keycloak
 VITE_KEYCLOAK_CLIENT_ID=maya-dashboard         # Client ID en Keycloak
+VITE_APP_KEY=<app-key-maquina-registrada>      # X-App-Key para catálogo de apps
 FRONTEND_PORT=5175                             # Puerto host directo
 ```
 
