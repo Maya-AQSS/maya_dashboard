@@ -89,6 +89,31 @@ return [
             ],
         ],
 
+        // RabbitMQ transport used only for Laravel-native jobs (Horizon-style).
+        // Raw AMQP publishing to maya.logs / maya.notifications / maya.alerts
+        // is handled directly by maya/shared-messaging-laravel, not through
+        // this queue driver.
+        'rabbitmq' => [
+            'driver'     => 'rabbitmq',
+            'queue'      => env('RABBITMQ_QUEUE', 'default'),
+            'connection' => PhpAmqpLib\Connection\AMQPLazyConnection::class,
+            'hosts' => [
+                [
+                    'host'     => env('RABBITMQ_HOST', 'maya_rabbitmq'),
+                    'port'     => (int) env('RABBITMQ_PORT', 5672),
+                    'user'     => env('RABBITMQ_USER', 'admin'),
+                    'password' => env('RABBITMQ_PASSWORD', 'admin'),
+                    'vhost'    => env('RABBITMQ_VHOST', '/'),
+                ],
+            ],
+            'options' => [
+                'queue' => [
+                    'job' => VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob::class,
+                ],
+            ],
+            'worker' => env('RABBITMQ_WORKER', 'default'),
+        ],
+
     ],
 
     /*

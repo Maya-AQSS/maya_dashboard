@@ -12,8 +12,10 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10",
         "maya/shared-auth-laravel": "@dev",
+        "maya/shared-messaging-laravel": "@dev",
         "predis/predis": "^2.3",
-        "tymon/jwt-auth": "^2.3"
+        "tymon/jwt-auth": "^2.3",
+        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -93,6 +95,10 @@
         "maya-shared-auth": {
             "type": "path",
             "url": "../../packages/maya-shared-auth-laravel"
+        },
+        "maya-shared-messaging": {
+            "type": "path",
+            "url": "../../packages/maya-shared-messaging-laravel"
         }
     }
 }

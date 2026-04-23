@@ -57,5 +57,9 @@ class DatabaseSeeder extends Seeder
         foreach ($apps as $app) {
             Application::firstOrCreate(['slug' => $app['slug']], $app);
         }
+
+        $this->call([
+            AlertRuleSeeder::class,
+        ]);
     }
 }

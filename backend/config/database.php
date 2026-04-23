@@ -99,6 +99,20 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        // Read-only connection to log_mgmt_db used by EvaluateAlertRules.
+        'pgsql_logs' => [
+            'driver'   => 'pgsql',
+            'host'     => env('LOG_MGMT_DB_HOST', 'maya_infra_postgres'),
+            'port'     => env('LOG_MGMT_DB_PORT', '5432'),
+            'database' => env('LOG_MGMT_DB_DATABASE', 'log_mgmt_db'),
+            'username' => env('LOG_MGMT_DB_USERNAME', 'log_mgmt_user'),
+            'password' => env('LOG_MGMT_DB_PASSWORD', 'secret'),
+            'charset'  => 'utf8',
+            'prefix'   => '',
+            'search_path' => 'public',
+            'sslmode'     => env('LOG_MGMT_DB_SSLMODE', 'prefer'),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

@@ -26,6 +26,18 @@ services:
       JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
       JWT_ISSUER: ${JWT_ISSUER:-http://keycloak.localhost/realms/maya}
       JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MAYA_MESSAGING_APP: maya_dashboard
+      LOG_STACK: "daily,rabbit"
+      LOG_RABBIT_LEVEL: warning
+      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/packages
@@ -37,6 +49,88 @@ services:
       - "traefik.http.routers.maya-dashboard-api.rule=Host(`maya_dashboard_api.localhost`)"
       - "traefik.http.routers.maya-dashboard-api.entrypoints=web"
       - "traefik.http.services.maya-dashboard-api.loadbalancer.server.port=8000"
+    networks:
+      - maya_network
+
+  # ─── Worker: consumers AMQP (notifications.ingest + alerts.ingest) ───
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maya_dashboard_worker
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      DB_CONNECTION: pgsql
+      DB_HOST: maya_infra_postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: maya_redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MAYA_MESSAGING_APP: maya_dashboard
+      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+    command:
+      - /bin/sh
+      - -c
+      - "php artisan notifications:consume & php artisan alerts:consume & wait"
+    volumes:
+      - ./backend:/var/www/html
+      - ../maya_infra/packages:/var/packages
+      - /var/www/html/vendor
+    networks:
+      - maya_network
+
+  # ─── Scheduler: runs `php artisan schedule:run` every minute ────
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maya_dashboard_scheduler
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      DB_CONNECTION: pgsql
+      DB_HOST: maya_infra_postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: maya_redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      MAYA_MESSAGING_APP: maya_dashboard
+      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+    command:
+      - /bin/sh
+      - -c
+      - "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
+    volumes:
+      - ./backend:/var/www/html
+      - ../maya_infra/packages:/var/packages
+      - /var/www/html/vendor
     networks:
       - maya_network
 
