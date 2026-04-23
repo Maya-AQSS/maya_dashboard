@@ -83,10 +83,27 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
-    command:
+    # Skip the backend entrypoint (que hace composer install + migrate + seed)
+    # y solo espera a que backend haya poblado vendor + schema. Asi evitamos
+    # migrations concurrentes y seeds duplicados.
+    entrypoint:
       - /bin/sh
       - -c
-      - "php artisan notifications:consume & php artisan alerts:consume & wait"
+      - |
+        cd /var/www/html
+        until [ -f vendor/autoload.php ]; do
+          echo "[worker] waiting for vendor/autoload.php..."
+          sleep 3
+        done
+        until php artisan migrate:status --no-interaction >/dev/null 2>&1; do
+          echo "[worker] waiting for migrations to complete..."
+          sleep 3
+        done
+        echo "[worker] ready — starting notifications:consume + alerts:consume"
+        php artisan notifications:consume &
+        php artisan alerts:consume &
+        wait
+    command: []
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/packages
@@ -123,10 +140,25 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
-    command:
+    entrypoint:
       - /bin/sh
       - -c
-      - "while true; do php artisan schedule:run --no-interaction; sleep 60; done"
+      - |
+        cd /var/www/html
+        until [ -f vendor/autoload.php ]; do
+          echo "[scheduler] waiting for vendor/autoload.php..."
+          sleep 3
+        done
+        until php artisan migrate:status --no-interaction >/dev/null 2>&1; do
+          echo "[scheduler] waiting for migrations..."
+          sleep 3
+        done
+        echo "[scheduler] ready — ticking schedule:run every 60s"
+        while true; do
+          php artisan schedule:run --no-interaction || true
+          sleep 60
+        done
+    command: []
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/packages
