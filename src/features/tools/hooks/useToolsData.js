@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '../../../shared/i18n'
 import { getToolsData } from '../api/toolsApi'
+import { addFavorite, removeFavorite } from '../../favorites/api/favoritesApi'
 
 function resolveToolsErrorMessage(err, fallbackKey, t) {
   const msg = err?.message ?? ''
@@ -58,13 +59,37 @@ function useToolsData() {
     }
   }, [user?.sub])
 
-  const toggleFavorite = async (id) => {
-    setTools((prev) => {
-      return prev.map((tool) =>
-        tool.id === id ? { ...tool, isFavorite: !tool.isFavorite } : tool,
+  const toggleFavorite = useCallback(
+    async (id) => {
+      const current = tools.find((tool) => tool.id === id)
+      if (!current) return
+
+      const wasFavorite = current.isFavorite
+
+      // Optimistic update
+      setTools((prev) =>
+        prev.map((tool) =>
+          tool.id === id ? { ...tool, isFavorite: !wasFavorite } : tool,
+        ),
       )
-    })
-  }
+
+      try {
+        if (wasFavorite) {
+          await removeFavorite(user.sub, id, user.token)
+        } else {
+          await addFavorite(user.sub, id, user.token)
+        }
+      } catch {
+        // Rollback on failure
+        setTools((prev) =>
+          prev.map((tool) =>
+            tool.id === id ? { ...tool, isFavorite: wasFavorite } : tool,
+          ),
+        )
+      }
+    },
+    [tools, user],
+  )
 
   return { tools, loading, error, toggleFavorite }
 }

@@ -20,12 +20,24 @@
   --color-odoo-teal:         #017E84;
   --color-odoo-teal-d:       #015F65;
 
+  /* Aliases semánticos — primary */
+  --color-odoo-primary:      #714B67;
+  --color-odoo-primary-hover: #5A3A52;
+  --color-odoo-bg:           #F4F5F7;
+
   /* Paleta Odoo — Dark */
   --color-odoo-dark-purple:   #9B7B93;
   --color-odoo-dark-purple-d: #714B67;
   --color-odoo-dark-purple-l: #5A3A52;
   --color-odoo-dark-teal:     #20A8AE;
   --color-odoo-dark-teal-d:   #017E84;
+
+  /* Aliases dark — surface / text / border */
+  --color-odoo-dark-surface: #232323;
+  --color-odoo-dark-card:    #2C2C2C;
+  --color-odoo-dark-text:    #E9ECEF;
+  --color-odoo-dark-muted:   #6C757D;
+  --color-odoo-dark-border:  #404040;
 
       /* Grises de interfaz — Light */
   --color-ui-sidebar:         #2C2C2C;
@@ -124,5 +136,8 @@
   }
   body {
     @apply bg-ui-body text-text-primary font-sans;
+  }
+  .dark body {
+    @apply bg-ui-dark-bg text-text-dark-primary;
   }
 }

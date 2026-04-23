@@ -114,4 +114,8 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    'jwks_url'     => env('JWKS_URL'),
+    'jwt_audience' => env('JWT_AUDIENCE'),
+    'jwt_issuer'   => env('JWT_ISSUER'),
+
 ];

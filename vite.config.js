@@ -8,6 +8,11 @@ const sharedLayoutRoot = path.resolve(__dirname, '../packages/maya-shared-layout
 
 // https://vite.dev/config/
 export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: [],
+  },
   plugins: [react(), tailwindcss()],
   server: {
     fs: {
@@ -22,7 +27,12 @@ export default defineConfig({
     exclude: ['@maya/shared-layout-react']
   },
   resolve: {
+    dedupe: ['react', 'react-dom', 'react-router-dom'],
+    preserveSymlinks: true,
     alias: {
+      'react': fileURLToPath(new URL('./node_modules/react', import.meta.url)),
+      'react-dom': fileURLToPath(new URL('./node_modules/react-dom', import.meta.url)),
+      'react-router-dom': fileURLToPath(new URL('./node_modules/react-router-dom', import.meta.url)),
       '@maya/shared-auth-react': fileURLToPath(
         new URL('./node_modules/@maya/shared-auth-react/src/index.ts', import.meta.url)
       ),

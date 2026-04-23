@@ -13,6 +13,7 @@ class UserFavoriteApplicationResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'traefik_url' => $this->traefik_url,
         ];
     }
 }

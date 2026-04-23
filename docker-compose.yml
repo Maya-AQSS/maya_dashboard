@@ -1,5 +1,45 @@
 services:
 
+  # ─── Backend (Laravel) ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maya_dashboard_backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      APP_URL: ${APP_URL:-http://maya_dashboard_api.localhost}
+      DB_CONNECTION: pgsql
+      DB_HOST: maya_infra_postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: maya_redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://maya_auth_keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-maya}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-maya-dashboard-backend}
+      JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
+      JWT_ISSUER: ${JWT_ISSUER:-http://keycloak.localhost/realms/maya}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+    volumes:
+      - ./backend:/var/www/html
+      - ../maya_infra/packages:/var/packages
+      - /var/www/html/vendor
+    ports:
+      - "${BACKEND_PORT:-8003}:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maya-dashboard-api.rule=Host(`maya_dashboard_api.localhost`)"
+      - "traefik.http.routers.maya-dashboard-api.entrypoints=web"
+      - "traefik.http.services.maya-dashboard-api.loadbalancer.server.port=8000"
+    networks:
+      - maya_network
+
   # ─── Frontend (React 19 + Vite 7) ────────────────────────────
   frontend:
     build:
@@ -8,11 +48,10 @@ services:
     container_name: maya_dashboard_frontend
     restart: unless-stopped
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://maya_authorization_api.localhost}
+      VITE_API_URL: ${VITE_API_URL:-http://maya_dashboard_api.localhost}
       VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://keycloak.localhost}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
-      VITE_APP_KEY: ${VITE_APP_KEY:-}
     volumes:
       - .:/app
       - ../maya_infra/packages:/packages

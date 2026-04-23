@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import AppRouter from './router'
+import { FavoritesProvider } from '../features/favorites/context/FavoritesContext'
+import { TopbarActionsProvider } from '../shared/context/TopbarActionsContext'
 
 // ── SSO return_to handler ─────────────────────────────────────────────────────
 // Las apps server-rendered (ej: maya_logs) no pueden hacer el PKCE flow en el
@@ -46,10 +48,12 @@ function App() {
   }
 
   return (
-    <>
-      <ReturnToHandler />
-      <AppRouter />
-    </>
+    <TopbarActionsProvider>
+      <FavoritesProvider>
+        <ReturnToHandler />
+        <AppRouter />
+      </FavoritesProvider>
+    </TopbarActionsProvider>
   )
 }
 
