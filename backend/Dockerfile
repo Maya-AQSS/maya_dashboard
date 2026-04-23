@@ -19,7 +19,8 @@ RUN docker-php-ext-install \
     exif \
     pcntl \
     bcmath \
-    gd
+    gd \
+    sockets
 
 RUN apk add --no-cache $PHPIZE_DEPS \
     && pecl install redis \
