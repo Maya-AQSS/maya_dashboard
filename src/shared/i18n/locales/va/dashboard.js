@@ -6,6 +6,9 @@ export default {
   addWidget: 'Afegir widget',
   resetLayout: 'Restablir',
   noWidgets: "No hi ha widgets. Entra en mode d'edició per a afegir-ne.",
+  savedSuccess: 'Tauler desat',
+  savedError: "No s'ha pogut desar. Torna-ho a intentar.",
+  resetSuccess: 'Disposició restablida',
   widgets: {
     fichajeAlert: 'Alerta de fitxatge',
     fichajeDaily: 'Fitxatges d\'avui',

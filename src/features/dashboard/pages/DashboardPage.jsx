@@ -4,6 +4,18 @@ import { WIDGET_REGISTRY } from '../widgets/registry'
 import WidgetGrid from '../components/WidgetGrid'
 import DashboardEditControls from '../components/DashboardEditControls'
 import { useTopbarActions } from '../../../shared/context/TopbarActionsContext'
+import { useToast } from '../../../shared/context/ToastContext'
+import { useLocale } from '../../../shared/i18n'
+
+function DashboardSkeleton() {
+  return (
+    <div className="p-4 sm:p-6 grid grid-cols-12 gap-4 animate-pulse">
+      <div className="col-span-12 sm:col-span-6 h-48 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
+      <div className="col-span-12 sm:col-span-6 h-48 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
+      <div className="col-span-12 h-32 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
+    </div>
+  )
+}
 
 function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
@@ -11,6 +23,8 @@ function DashboardPage() {
   const [draftLayout, setDraftLayout] = useState(null)
   const snapshotRef = useRef(null)
   const { setActions } = useTopbarActions()
+  const toast = useToast()
+  const { t } = useLocale()
 
   const activeLayout = editable ? (draftLayout ?? layout) : layout
 
@@ -21,10 +35,15 @@ function DashboardPage() {
   }, [layout])
 
   const handleSave = useCallback(async () => {
-    await saveLayout(draftLayout ?? layout)
-    setEditable(false)
-    setDraftLayout(null)
-  }, [saveLayout, draftLayout, layout])
+    try {
+      await saveLayout(draftLayout ?? layout)
+      setEditable(false)
+      setDraftLayout(null)
+      toast.success(t('dashboard.savedSuccess'))
+    } catch {
+      toast.error(t('dashboard.savedError'))
+    }
+  }, [saveLayout, draftLayout, layout, toast, t])
 
   const handleCancel = useCallback(() => {
     setDraftLayout(null)
@@ -57,11 +76,16 @@ function DashboardPage() {
   }, [draftLayout, layout])
 
   const handleReset = useCallback(async () => {
-    setDraftLayout(DEFAULT_LAYOUT)
-    await resetToDefault()
-    setEditable(false)
-    setDraftLayout(null)
-  }, [resetToDefault])
+    try {
+      setDraftLayout(DEFAULT_LAYOUT)
+      await resetToDefault()
+      setEditable(false)
+      setDraftLayout(null)
+      toast.info(t('dashboard.resetSuccess'))
+    } catch {
+      toast.error(t('dashboard.savedError'))
+    }
+  }, [resetToDefault, toast, t])
 
   useEffect(() => {
     if (loading) return
@@ -80,7 +104,7 @@ function DashboardPage() {
   }, [loading, activeLayout, editable, handleToggleEdit, handleSave, handleCancel, handleAddWidget, handleReset, setActions])
 
   if (loading) {
-    return <div className="p-6 text-gray-500 dark:text-odoo-dark-muted text-sm">Cargando...</div>
+    return <DashboardSkeleton />
   }
 
   return (

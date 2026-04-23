@@ -6,6 +6,9 @@ export default {
   addWidget: 'Añadir widget',
   resetLayout: 'Restablecer',
   noWidgets: 'No hay widgets. Entra en modo edición para añadir alguno.',
+  savedSuccess: 'Dashboard guardado',
+  savedError: 'No se pudo guardar. Inténtalo de nuevo.',
+  resetSuccess: 'Layout restablecido',
   widgets: {
     fichajeAlert: 'Alerta de fichaje',
     fichajeDaily: 'Fichajes de hoy',

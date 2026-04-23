@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '@maya/shared-auth-react'
 import { AppLayout, HomeIcon, GridIcon } from '@maya/shared-layout-react'
 import { useFavoritesContext } from '../../features/favorites/context/FavoritesContext'
@@ -48,6 +48,15 @@ function LocaleSelector() {
   )
 }
 
+function AnimatedOutlet() {
+  const location = useLocation()
+  return (
+    <div key={location.key} className="animate-fade-in h-full">
+      <Outlet />
+    </div>
+  )
+}
+
 function MainLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -77,7 +86,9 @@ function MainLayout() {
       onProfile={() => navigate('/profile')}
       sidebarFooter={<SidebarFavorites favorites={favorites} />}
       topbarActions={combinedActions}
-    />
+    >
+      <AnimatedOutlet />
+    </AppLayout>
   )
 }
 

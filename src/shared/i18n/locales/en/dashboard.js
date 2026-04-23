@@ -6,6 +6,9 @@ export default {
   addWidget: 'Add widget',
   resetLayout: 'Reset',
   noWidgets: 'No widgets. Enter edit mode to add some.',
+  savedSuccess: 'Dashboard saved',
+  savedError: 'Could not save. Please try again.',
+  resetSuccess: 'Layout reset',
   widgets: {
     fichajeAlert: 'Clock-in alert',
     fichajeDaily: 'Today\'s clock-ins',

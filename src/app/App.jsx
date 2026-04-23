@@ -3,6 +3,7 @@ import { useAuth } from '@maya/shared-auth-react'
 import AppRouter from './router'
 import { FavoritesProvider } from '../features/favorites/context/FavoritesContext'
 import { TopbarActionsProvider } from '../shared/context/TopbarActionsContext'
+import { ToastProvider } from '../shared/context/ToastContext'
 
 // ── SSO return_to handler ─────────────────────────────────────────────────────
 // Las apps server-rendered (ej: maya_logs) no pueden hacer el PKCE flow en el
@@ -41,19 +42,24 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Cargando autenticación...
+      <div className="flex items-center justify-center min-h-screen bg-ui-body dark:bg-ui-dark-bg">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-odoo-primary border-t-transparent animate-spin" />
+          <span className="text-sm text-gray-500 dark:text-odoo-dark-muted">Cargando...</span>
+        </div>
       </div>
     )
   }
 
   return (
-    <TopbarActionsProvider>
-      <FavoritesProvider>
-        <ReturnToHandler />
-        <AppRouter />
-      </FavoritesProvider>
-    </TopbarActionsProvider>
+    <ToastProvider>
+      <TopbarActionsProvider>
+        <FavoritesProvider>
+          <ReturnToHandler />
+          <AppRouter />
+        </FavoritesProvider>
+      </TopbarActionsProvider>
+    </ToastProvider>
   )
 }
 
