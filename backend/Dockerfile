@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     zip \
     unzip \
     postgresql-dev \
-    oniguruma-dev
+    oniguruma-dev \
+    linux-headers
 
 RUN docker-php-ext-install \
     pdo \
