@@ -279,7 +279,7 @@ function DailyFichajesWidget() {
                     {pending && !isEditing && (
                       <tr key={`pending-${i}`} className="bg-amber-50/50 dark:bg-amber-900/10">
                         <td colSpan={4} className="px-3 pb-2">
-                          <div className="flex items-center gap-2 text-xs">
+                          <div className="flex items-center justify-center gap-2 text-xs">
                             <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 font-medium">
                               {t('dashboard.fichaje.pendingApproval')}
                             </span>

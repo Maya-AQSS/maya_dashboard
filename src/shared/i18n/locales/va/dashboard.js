@@ -1,6 +1,7 @@
 export default {
   editDashboard: 'Editar tauler',
-  exitEdit: 'Eixir',
+  exitEdit: "Eixir del mode d'edició",
+  editMode: "Mode d'edició",
   save: 'Guardar',
   cancel: 'Cancel·lar',
   addWidget: 'Afegir widget',

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '../../../shared/i18n'
 import { getToolsData } from '../api/toolsApi'
-import { addFavorite, removeFavorite } from '../../favorites/api/favoritesApi'
+import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 
 function resolveToolsErrorMessage(err, fallbackKey, t) {
   const msg = err?.message ?? ''
@@ -14,6 +14,7 @@ function resolveToolsErrorMessage(err, fallbackKey, t) {
 function useToolsData() {
   const { user } = useAuth()
   const { t } = useLocale()
+  const { add: addToSidebar, remove: removeFromSidebar } = useFavoritesContext()
   const tRef = useRef(t)
   tRef.current = t
 
@@ -66,7 +67,7 @@ function useToolsData() {
 
       const wasFavorite = current.isFavorite
 
-      // Optimistic update
+      // Optimistic update of the tools grid
       setTools((prev) =>
         prev.map((tool) =>
           tool.id === id ? { ...tool, isFavorite: !wasFavorite } : tool,
@@ -74,13 +75,14 @@ function useToolsData() {
       )
 
       try {
+        // Delegate to FavoritesContext so the sidebar updates in sync
         if (wasFavorite) {
-          await removeFavorite(user.sub, id, user.token)
+          await removeFromSidebar(id)
         } else {
-          await addFavorite(user.sub, id, user.token)
+          await addToSidebar(id)
         }
       } catch {
-        // Rollback on failure
+        // Rollback tools grid on failure (sidebar handles its own rollback)
         setTools((prev) =>
           prev.map((tool) =>
             tool.id === id ? { ...tool, isFavorite: wasFavorite } : tool,
@@ -88,7 +90,7 @@ function useToolsData() {
         )
       }
     },
-    [tools, user],
+    [tools, addToSidebar, removeFromSidebar],
   )
 
   return { tools, loading, error, toggleFavorite }

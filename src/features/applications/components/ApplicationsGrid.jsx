@@ -1,7 +1,7 @@
 import { useLocale } from '../../../shared/i18n'
 import ApplicationCard from './ApplicationCard'
 
-function ApplicationsGrid({ apps, onToggleFavorite, showLastUsed }) {
+function ApplicationsGrid({ apps, onToggleFavorite }) {
   const { t } = useLocale()
   if (!apps || apps.length === 0) return <p className="text-gray-900 dark:text-odoo-dark-text">{t('applications.noApplications')}</p>
 
@@ -12,7 +12,6 @@ function ApplicationsGrid({ apps, onToggleFavorite, showLastUsed }) {
           key={app.id}
           app={app}
           onToggleFavorite={onToggleFavorite}
-          showLastUsed={showLastUsed}
         />
       ))}
     </div>

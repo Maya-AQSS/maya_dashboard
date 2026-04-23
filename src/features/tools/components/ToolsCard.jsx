@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useId } from 'react'
-import { useLocale, getDateLocale } from '../../../shared/i18n'
+import { useLocale } from '../../../shared/i18n'
 
-function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
-  const { t, locale } = useLocale()
+function ToolsCard({ tool, onToggleFavorite }) {
+  const { t } = useLocale()
   const isFavorite = Boolean(tool.isFavorite)
   const [showConfirm, setShowConfirm] = useState(false)
   const titleId = useId()
@@ -45,16 +45,6 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
     prevConfirmOpen.current = showConfirm
   }, [showConfirm])
 
-  const formattedLastUsedAt = tool.lastUsedAt
-    ? new Date(tool.lastUsedAt).toLocaleString(getDateLocale(locale), {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : t('tools.noData')
-
   const title = isFavorite
     ? t('tools.removeFromFavoritesTitle', { name: tool.name })
     : t('tools.addToFavoritesTitle', { name: tool.name })
@@ -70,9 +60,14 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
           <button
             ref={starButtonRef}
             type="button"
-            className="py-1 px-2 rounded-full bg-amber-100 dark:bg-amber-900/40 border border-purple-200 dark:border-odoo-dark-border text-odoo-primary text-xs font-semibold uppercase tracking-wide cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-odoo-dark-surface"
+            className={`py-1 px-2 rounded-full border text-xs font-semibold uppercase tracking-wide cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-odoo-dark-surface ${
+              isFavorite
+                ? 'bg-amber-100 dark:bg-amber-900/40 border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-300 focus-visible:ring-amber-500'
+                : 'bg-transparent dark:bg-transparent border-gray-300 dark:border-odoo-dark-border text-gray-400 dark:text-gray-500 hover:border-gray-400 hover:text-gray-600 dark:hover:border-gray-500 dark:hover:text-gray-300 focus-visible:ring-gray-400'
+            }`}
             onClick={handleStarClick}
             aria-label={isFavorite ? t('tools.removeFromFavorites') : t('tools.addToFavorites')}
+            aria-pressed={isFavorite}
             aria-haspopup="dialog"
             aria-expanded={showConfirm}
           >
@@ -88,11 +83,6 @@ function ToolsCard({ tool, onToggleFavorite, showLastUsed }) {
         >
           <h3 className="m-0 text-base font-semibold text-purple-800 dark:text-odoo-dark-text">{tool.name}</h3>
           <p className="mb-2 text-sm text-gray-600 dark:text-odoo-dark-muted">{tool.description}</p>
-          {showLastUsed && (
-            <p className="mt-auto text-xs text-gray-500 dark:text-odoo-dark-muted text-center">
-              {t('tools.lastUsed')} {formattedLastUsedAt}
-            </p>
-          )}
         </a>
       </article>
 

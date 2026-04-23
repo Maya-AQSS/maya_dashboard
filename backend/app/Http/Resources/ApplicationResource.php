@@ -16,6 +16,7 @@ class ApplicationResource extends JsonResource
             'description' => $this->description,
             'traefik_url' => $this->traefik_url,
             'is_active'   => (bool) $this->is_active,
+            'is_favorite' => (bool) ($this->is_favorite ?? false),
         ];
     }
 }

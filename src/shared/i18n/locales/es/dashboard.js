@@ -1,6 +1,7 @@
 export default {
   editDashboard: 'Editar dashboard',
-  exitEdit: 'Salir',
+  exitEdit: 'Salir de edición',
+  editMode: 'Modo edición',
   save: 'Guardar',
   cancel: 'Cancelar',
   addWidget: 'Añadir widget',

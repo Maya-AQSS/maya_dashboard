@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
 import { WIDGET_REGISTRY } from '../widgets/registry'
 import WidgetGrid from '../components/WidgetGrid'
-import DashboardEditControls from '../components/DashboardEditControls'
+import DashboardEditToggleButton from '../components/DashboardEditToggleButton'
+import DashboardEditToolbar from '../components/DashboardEditToolbar'
 import { useTopbarActions } from '../../../shared/context/TopbarActionsContext'
 import { useToast } from '../../../shared/context/ToastContext'
 import { useLocale } from '../../../shared/i18n'
@@ -29,9 +30,15 @@ function DashboardPage() {
   const activeLayout = editable ? (draftLayout ?? layout) : layout
 
   const handleToggleEdit = useCallback(() => {
-    snapshotRef.current = layout
-    setDraftLayout(layout)
-    setEditable(true)
+    setEditable((prev) => {
+      if (prev) {
+        setDraftLayout(null)
+        return false
+      }
+      snapshotRef.current = layout
+      setDraftLayout(layout)
+      return true
+    })
   }, [layout])
 
   const handleSave = useCallback(async () => {
@@ -90,18 +97,10 @@ function DashboardPage() {
   useEffect(() => {
     if (loading) return
     setActions(
-      <DashboardEditControls
-        layout={activeLayout}
-        editable={editable}
-        onToggleEdit={handleToggleEdit}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        onAddWidget={handleAddWidget}
-        onReset={handleReset}
-      />
+      <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
     )
     return () => setActions(null)
-  }, [loading, activeLayout, editable, handleToggleEdit, handleSave, handleCancel, handleAddWidget, handleReset, setActions])
+  }, [loading, editable, handleToggleEdit, setActions])
 
   if (loading) {
     return <DashboardSkeleton />
@@ -109,6 +108,15 @@ function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6">
+      {editable && (
+        <DashboardEditToolbar
+          layout={activeLayout}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          onAddWidget={handleAddWidget}
+          onReset={handleReset}
+        />
+      )}
       <WidgetGrid
         layout={activeLayout}
         onLayoutChange={handleLayoutChange}

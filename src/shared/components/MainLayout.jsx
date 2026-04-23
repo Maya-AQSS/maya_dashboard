@@ -1,14 +1,10 @@
+import { useMemo } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '@maya/shared-auth-react'
 import { AppLayout, HomeIcon, GridIcon } from '@maya/shared-layout-react'
 import { useFavoritesContext } from '../../features/favorites/context/FavoritesContext'
 import { useTopbarActions } from '../context/TopbarActionsContext'
 import { useLocale } from '../i18n'
-
-const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: HomeIcon, path: '/' },
-  { id: 'applications', label: 'Aplicaciones', icon: GridIcon, path: '/applications' },
-]
 
 function SidebarFavorites({ favorites }) {
   if (!favorites.length) return null
@@ -62,6 +58,12 @@ function MainLayout() {
   const navigate = useNavigate()
   const { favorites } = useFavoritesContext()
   const { actions: topbarActions } = useTopbarActions()
+  const { t } = useLocale()
+
+  const navItems = useMemo(() => [
+    { id: 'dashboard', label: t('layout.navDashboard'), icon: HomeIcon, path: '/' },
+    { id: 'applications', label: t('applications.title'), icon: GridIcon, path: '/applications' },
+  ], [t])
 
   const displayName = user?.name ?? user?.preferred_username ?? ''
   const initials = displayName
@@ -70,14 +72,14 @@ function MainLayout() {
 
   const combinedActions = (
     <div className="flex items-center gap-2">
-      <LocaleSelector />
       {topbarActions}
+      <LocaleSelector />
     </div>
   )
 
   return (
     <AppLayout
-      navItems={NAV_ITEMS}
+      navItems={navItems}
       brandName="Maya Dashboard"
       brandVersion="Maya Dashboard v1.0"
       userName={displayName}

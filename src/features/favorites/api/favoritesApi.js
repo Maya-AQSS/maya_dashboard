@@ -84,7 +84,9 @@ async function addFavorite(userId, applicationId, token) {
     throw new Error('favorites.errorAdd')
   }
 
-  return await response.json()
+  const payload = await response.json()
+  // JsonResource wraps single items in {data: {...}}; collections in {data: [...]}
+  return payload?.data ?? payload
 }
 
 async function removeFavorite(userId, applicationId, token) {

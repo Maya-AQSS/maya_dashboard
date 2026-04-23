@@ -58,7 +58,6 @@ function ApplicationsListPage() {
 
   const pageItems = isMobile ? mobilePageItems : desktopPageItems
   const canLoadMoreMobile = isMobile && mobileEndIndex < totalItems
-  const showLastUsed = !showAll
 
   const handlePrevPage = useCallback(() => {
     if (canGoPrev) setCurrentPage((page) => page - 1)
@@ -145,7 +144,6 @@ function ApplicationsListPage() {
         <ApplicationsGrid
           apps={pageItems}
           onToggleFavorite={toggleFavorite}
-          showLastUsed={showLastUsed}
         />
       </div>
 
