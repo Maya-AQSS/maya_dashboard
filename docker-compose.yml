@@ -84,19 +84,20 @@ services:
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
     # Skip the backend entrypoint (que hace composer install + migrate + seed)
-    # y solo espera a que backend haya poblado vendor + schema. Asi evitamos
-    # migrations concurrentes y seeds duplicados.
+    # pero si este contenedor no tiene vendor (su propio anonymous volume),
+    # hace su composer install. Espera a que el backend complete migrations
+    # antes de consumir, para evitar race conditions con las tablas.
     entrypoint:
       - /bin/sh
       - -c
       - |
         cd /var/www/html
-        until [ -f vendor/autoload.php ]; do
-          echo "[worker] waiting for vendor/autoload.php..."
-          sleep 3
-        done
-        until php artisan migrate:status --no-interaction >/dev/null 2>&1; do
-          echo "[worker] waiting for migrations to complete..."
+        if [ ! -f vendor/autoload.php ]; then
+          echo "[worker] vendor missing, running composer install..."
+          composer install --optimize-autoloader --no-interaction --no-ansi
+        fi
+        until php artisan migrate:status --no-interaction 2>/dev/null | grep -q "create_notifications_table"; do
+          echo "[worker] waiting for migrations (notifications table)..."
           sleep 3
         done
         echo "[worker] ready — starting notifications:consume + alerts:consume"
@@ -145,11 +146,11 @@ services:
       - -c
       - |
         cd /var/www/html
-        until [ -f vendor/autoload.php ]; do
-          echo "[scheduler] waiting for vendor/autoload.php..."
-          sleep 3
-        done
-        until php artisan migrate:status --no-interaction >/dev/null 2>&1; do
+        if [ ! -f vendor/autoload.php ]; then
+          echo "[scheduler] vendor missing, running composer install..."
+          composer install --optimize-autoloader --no-interaction --no-ansi
+        fi
+        until php artisan migrate:status --no-interaction 2>/dev/null | grep -q "create_alert_rules_table"; do
           echo "[scheduler] waiting for migrations..."
           sleep 3
         done
