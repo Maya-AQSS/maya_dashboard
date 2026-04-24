@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '../../../shared/i18n'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
@@ -200,8 +200,8 @@ function DailyFichajesWidget() {
                 const isEditing = editingRow === i
 
                 return (
-                  <>
-                    <tr key={`row-${i}`} className={pending ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
+                  <Fragment key={`pair-${i}`}>
+                    <tr className={pending ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
                       <td className="px-2 py-1.5 text-center text-green-700 dark:text-green-300 font-medium">
                         {isEditing ? (
                           <input
@@ -277,7 +277,7 @@ function DailyFichajesWidget() {
                     </tr>
 
                     {pending && !isEditing && (
-                      <tr key={`pending-${i}`} className="bg-amber-50/50 dark:bg-amber-900/10">
+                      <tr className="bg-amber-50/50 dark:bg-amber-900/10">
                         <td colSpan={4} className="px-3 pb-2">
                           <div className="flex items-center justify-center gap-2 text-xs">
                             <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 font-medium">
@@ -291,7 +291,7 @@ function DailyFichajesWidget() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 )
               })}
             </tbody>

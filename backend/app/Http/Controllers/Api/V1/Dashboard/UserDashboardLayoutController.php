@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1\Dashboard;
 
+use App\Http\Controllers\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DashboardLayoutUpdateRequest;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserDashboardLayoutController extends Controller
 {
-    public function show(User $user): JsonResponse
+    use ResolvesKeycloakUser;
+
+    public function show(Request $request): JsonResponse
     {
+        $user = $this->resolveKeycloakUser($request);
         $layout = $user->dashboardLayout ?? $user->dashboardLayout()->make(['layout' => []]);
 
         return response()->json([
@@ -19,8 +23,9 @@ class UserDashboardLayoutController extends Controller
         ]);
     }
 
-    public function update(DashboardLayoutUpdateRequest $request, User $user): JsonResponse
+    public function update(DashboardLayoutUpdateRequest $request): JsonResponse
     {
+        $user = $this->resolveKeycloakUser($request);
         $layout = $user->dashboardLayout()->updateOrCreate(
             ['user_id' => $user->id],
             [
