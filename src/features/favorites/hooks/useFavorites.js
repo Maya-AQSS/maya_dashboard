@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
+import { notifyFavoritesChanged } from '@maya/shared-sidebar-react'
 import { useLocale } from '../../../shared/i18n'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
@@ -66,6 +67,7 @@ function useFavorites() {
         const exists = prev.some((f) => f.id === added.id)
         return exists ? prev : [...prev, added]
       })
+      notifyFavoritesChanged()
     } catch (err) {
       setError(resolveFavoritesErrorMessage(err, 'favorites.errorAdd', tRef.current))
     }
@@ -77,6 +79,7 @@ function useFavorites() {
     try {
       await removeFavorite(user.sub, applicationId, token)
       setFavorites((prev) => prev.filter((f) => f.id !== applicationId))
+      notifyFavoritesChanged()
     } catch (err) {
       setError(resolveFavoritesErrorMessage(err, 'favorites.errorRemove', tRef.current))
     }

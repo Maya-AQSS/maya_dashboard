@@ -14,6 +14,7 @@
   "dependencies": {
     "@maya/shared-auth-react": "file:../packages/maya-shared-auth-react",
     "@maya/shared-layout-react": "file:../packages/maya-shared-layout-react",
+    "@maya/shared-sidebar-react": "file:../packages/maya-shared-sidebar-react",
     "axios": "^1.15.0",
     "keycloak-js": "^26.2.3",
     "react": "^19.2.0",

@@ -14,13 +14,13 @@ import App from './App.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <LocaleProvider>
-        <GlobalErrorBoundary>
-          <AuthProvider keycloak={authService.keycloak} enableLogging={import.meta.env.DEV}>
+      <AuthProvider keycloak={authService.keycloak} enableLogging={import.meta.env.DEV}>
+        <LocaleProvider>
+          <GlobalErrorBoundary>
             <App />
-          </AuthProvider>
-        </GlobalErrorBoundary>
-      </LocaleProvider>
+          </GlobalErrorBoundary>
+        </LocaleProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )

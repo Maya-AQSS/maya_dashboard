@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
+import { notifyFavoritesChanged } from '@maya/shared-sidebar-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
 const FavoritesContext = createContext(null)
@@ -32,6 +33,7 @@ export function FavoritesProvider({ children }) {
     try {
       const added = await addFavorite(user.sub, applicationId, token)
       setFavorites((prev) => prev.map((f) => (f.id === applicationId ? added : f)))
+      notifyFavoritesChanged()
     } catch {
       setFavorites((prev) => prev.filter((f) => f.id !== applicationId))
     }
@@ -46,6 +48,7 @@ export function FavoritesProvider({ children }) {
     })
     try {
       await removeFavorite(user.sub, applicationId, token)
+      notifyFavoritesChanged()
     } catch {
       if (removed) setFavorites((prev) => [...prev, removed])
     }

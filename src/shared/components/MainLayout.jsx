@@ -2,32 +2,11 @@ import { useMemo } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '@maya/shared-auth-react'
 import { AppLayout, HomeIcon, GridIcon } from '@maya/shared-layout-react'
-import { useFavoritesContext } from '../../features/favorites/context/FavoritesContext'
+import { SidebarFavorites } from '@maya/shared-sidebar-react'
 import { useTopbarActions } from '../context/TopbarActionsContext'
 import { useLocale } from '../i18n'
 
-function SidebarFavorites({ favorites }) {
-  if (!favorites.length) return null
-
-  return (
-    <div className="px-1">
-      <p className="text-xs font-semibold text-white/40 uppercase tracking-wider px-2 mb-1">Favoritas</p>
-      {favorites.map((fav) => (
-        <a
-          key={fav.id}
-          href={fav.traefik_url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={fav.name}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm text-white/60 hover:text-white/90 hover:bg-ui-sidebar-hover dark:hover:bg-ui-dark-card transition-colors whitespace-nowrap overflow-hidden"
-        >
-          <span className="text-amber-400 text-xs shrink-0">★</span>
-          <span className="truncate">{fav.name}</span>
-        </a>
-      ))}
-    </div>
-  )
-}
+const DASHBOARD_API_URL = import.meta.env.VITE_API_URL
 
 function LocaleSelector() {
   const { locale, setLocale, localeOptions } = useLocale()
@@ -56,7 +35,6 @@ function AnimatedOutlet() {
 function MainLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const { favorites } = useFavoritesContext()
   const { actions: topbarActions } = useTopbarActions()
   const { t } = useLocale()
 
@@ -86,7 +64,7 @@ function MainLayout() {
       userInitials={initials}
       onLogout={logout}
       onProfile={() => navigate('/profile')}
-      sidebarFooter={<SidebarFavorites favorites={favorites} />}
+      sidebarFooter={<SidebarFavorites label={t('favorites.title')} dashboardApiUrl={DASHBOARD_API_URL} />}
       topbarActions={combinedActions}
     >
       <AnimatedOutlet />
