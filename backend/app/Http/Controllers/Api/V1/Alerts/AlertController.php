@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Alerts;
 
+use App\Http\Controllers\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use Illuminate\Http\JsonResponse;
@@ -9,6 +10,8 @@ use Illuminate\Http\Request;
 
 class AlertController extends Controller
 {
+    use ResolvesKeycloakUser;
+
     public function index(Request $request): JsonResponse
     {
         $query = Alert::query()->with('rule')->orderByDesc('created_at');
@@ -27,7 +30,7 @@ class AlertController extends Controller
 
     public function acknowledge(Request $request, int $alertId): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
         $alert = Alert::findOrFail($alertId);
 
         if ($alert->acknowledged_at === null) {
@@ -42,7 +45,7 @@ class AlertController extends Controller
 
     public function resolve(Request $request, int $alertId): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
         $alert = Alert::findOrFail($alertId);
 
         $alert->update([

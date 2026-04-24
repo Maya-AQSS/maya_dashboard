@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Notifications;
 
+use App\Http\Controllers\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
@@ -9,9 +10,11 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    use ResolvesKeycloakUser;
+
     public function index(Request $request): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
 
         $query = Notification::forRecipient($userId)->orderByDesc('created_at');
 
@@ -29,7 +32,7 @@ class NotificationController extends Controller
 
     public function markRead(Request $request, int $notificationId): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
 
         $notification = Notification::forRecipient($userId)->findOrFail($notificationId);
         if ($notification->read_at === null) {
@@ -41,7 +44,7 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
 
         $count = Notification::forRecipient($userId)
             ->unread()
@@ -52,7 +55,8 @@ class NotificationController extends Controller
 
     public function unreadCount(Request $request): JsonResponse
     {
-        $userId = (int) $request->user()->id;
+        $userId = (int) $this->resolveKeycloakUser($request)->id;
+
         return response()->json([
             'unread' => Notification::forRecipient($userId)->unread()->count(),
         ]);

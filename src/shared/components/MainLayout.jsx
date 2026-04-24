@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '@maya/shared-auth-react'
 import { AppLayout, HomeIcon, GridIcon } from '@maya/shared-layout-react'
-import { SidebarFavorites } from '@maya/shared-sidebar-react'
+import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
 import { useTopbarActions } from '../context/TopbarActionsContext'
 import { useLocale } from '../i18n'
 
@@ -51,6 +51,7 @@ function MainLayout() {
   const combinedActions = (
     <div className="flex items-center gap-2">
       {topbarActions}
+      <NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />
       <LocaleSelector />
     </div>
   )

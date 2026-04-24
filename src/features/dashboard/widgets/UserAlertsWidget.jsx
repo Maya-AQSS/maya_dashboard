@@ -1,4 +1,3 @@
-import { useAuth } from '@maya/shared-auth-react'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
 
 const COLOR_CLASSES = {
@@ -16,8 +15,7 @@ const BUTTON_CLASSES = {
 }
 
 function UserAlertsWidget() {
-  const { user } = useAuth()
-  const { alerts, loading } = useUserAlerts(user?.sub)
+  const { alerts, loading, dismiss, clockIn } = useUserAlerts()
 
   if (loading) {
     return (
@@ -37,6 +35,16 @@ function UserAlertsWidget() {
     )
   }
 
+  const handleAction = (alert) => {
+    if (alert.actionKind === 'clockIn') {
+      clockIn()
+      return
+    }
+    if (alert.actionUrl) {
+      window.location.assign(alert.actionUrl)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2 overflow-auto h-full">
       {alerts.map((alert) => {
@@ -48,13 +56,25 @@ function UserAlertsWidget() {
             className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorCls}`}
           >
             <span className="flex-1">{alert.text}</span>
-            {alert.actionLabel && alert.actionUrl && (
-              <a
-                href={alert.actionUrl}
+            {alert.actionLabel && (
+              <button
+                type="button"
+                onClick={() => handleAction(alert)}
                 className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium transition ${btnCls}`}
               >
                 {alert.actionLabel}
-              </a>
+              </button>
+            )}
+            {alert.canDismiss !== false && (
+              <button
+                type="button"
+                onClick={() => dismiss(alert.id)}
+                aria-label="Descartar alerta"
+                title="Descartar"
+                className={`shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-sm transition ${btnCls}`}
+              >
+                ×
+              </button>
             )}
           </div>
         )
