@@ -14,7 +14,7 @@ function LocaleSelector() {
     <select
       value={locale}
       onChange={(e) => setLocale(e.target.value)}
-      className="text-xs border border-gray-300 dark:border-white/20 bg-transparent text-gray-600 dark:text-white/70 rounded px-1.5 py-0.5 outline-none focus:border-odoo-primary cursor-pointer"
+      className="text-xs border border-ui-border dark:border-ui-dark-border bg-transparent text-text-secondary dark:text-text-dark-secondary rounded px-1.5 py-0.5 outline-none focus:border-odoo-purple cursor-pointer"
     >
       {localeOptions.map((opt) => (
         <option key={opt.code} value={opt.code}>{opt.label}</option>

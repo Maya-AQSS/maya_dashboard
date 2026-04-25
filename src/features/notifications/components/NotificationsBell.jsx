@@ -6,7 +6,7 @@ export default function NotificationsBell({ token }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="notifications-bell" style={{ position: 'relative' }}>
+    <div className="relative">
       <button
         type="button"
         aria-label="Notificaciones"
@@ -25,50 +25,40 @@ export default function NotificationsBell({ token }) {
         <div
           role="dialog"
           aria-label="Lista de notificaciones"
-          className="notifications-bell__panel"
-          style={{
-            position: 'absolute', right: 0, top: '100%', minWidth: 340,
-            maxHeight: 400, overflowY: 'auto', background: 'var(--ui-card, #fff)',
-            border: '1px solid var(--ui-border, #e5e7eb)', borderRadius: 8,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.08)', padding: 8, zIndex: 50,
-          }}
+          className="absolute right-0 top-full min-w-[340px] max-h-[400px] overflow-y-auto bg-ui-card dark:bg-ui-dark-card border border-ui-border dark:border-ui-dark-border rounded-lg shadow-dropdown p-2 z-[210]"
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px' }}>
+          <div className="flex justify-between items-center px-2 py-1">
             <strong>Notificaciones</strong>
             {unread > 0 && (
-              <button type="button" onClick={onMarkAllRead} style={{ fontSize: 12 }}>
+              <button type="button" onClick={onMarkAllRead} className="text-sm text-odoo-purple hover:underline">
                 Marcar todas como leídas
               </button>
             )}
           </div>
 
-          {loading && <p style={{ padding: 12 }}>Cargando…</p>}
+          {loading && <p className="p-3">Cargando…</p>}
 
           {!loading && notifications.length === 0 && (
-            <p style={{ padding: 12, color: 'var(--text-muted, #6b7280)' }}>
+            <p className="p-3 text-text-muted dark:text-text-dark-muted">
               No tienes notificaciones.
             </p>
           )}
 
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <ul className="list-none m-0 p-0">
             {notifications.map((n) => (
               <li
                 key={n.id}
-                style={{
-                  padding: 10,
-                  borderTop: '1px solid var(--ui-border, #e5e7eb)',
-                  background: n.read_at ? 'transparent' : 'rgba(59,130,246,0.06)',
-                }}
+                className={`p-2.5 border-t border-ui-border dark:border-ui-dark-border ${n.read_at ? '' : 'bg-info-light/60 dark:bg-info-dark/10'}`}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                  <strong style={{ fontSize: 14 }}>{n.title}</strong>
-                  <small style={{ color: 'var(--text-muted, #6b7280)' }}>
+                <div className="flex justify-between gap-2">
+                  <strong className="text-sm">{n.title}</strong>
+                  <small className="text-text-muted dark:text-text-dark-muted">
                     {new Date(n.created_at).toLocaleString()}
                   </small>
                 </div>
-                <p style={{ margin: '4px 0 6px', fontSize: 13 }}>{n.body}</p>
+                <p className="my-1 text-sm">{n.body}</p>
                 {!n.read_at && (
-                  <button type="button" onClick={() => onMarkRead(n.id)} style={{ fontSize: 12 }}>
+                  <button type="button" onClick={() => onMarkRead(n.id)} className="text-sm text-odoo-purple hover:underline">
                     Marcar como leída
                   </button>
                 )}

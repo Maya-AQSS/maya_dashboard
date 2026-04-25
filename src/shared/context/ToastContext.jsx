@@ -10,17 +10,17 @@ const ICONS = {
 }
 
 const STYLES = {
-  success: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200',
-  error: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700 text-red-800 dark:text-red-200',
-  info: 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200',
-  warning: 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-200',
+  success: 'bg-success-light dark:bg-success-dark/30 border-success/20 dark:border-success/50 text-success-dark dark:text-success-light',
+  error: 'bg-danger-light dark:bg-danger-dark/30 border-danger/20 dark:border-danger/50 text-danger-dark dark:text-danger-light',
+  info: 'bg-info-light dark:bg-info-dark/30 border-info/20 dark:border-info/50 text-info-dark dark:text-info-light',
+  warning: 'bg-warning-light dark:bg-warning-dark/30 border-warning/20 dark:border-warning/50 text-warning-dark dark:text-warning-light',
 }
 
 const ICON_STYLES = {
-  success: 'text-green-600 dark:text-green-400',
-  error: 'text-red-600 dark:text-red-400',
-  info: 'text-blue-600 dark:text-blue-400',
-  warning: 'text-amber-600 dark:text-amber-400',
+  success: 'text-success dark:text-success-light',
+  error: 'text-danger dark:text-danger-light',
+  info: 'text-info dark:text-info-light',
+  warning: 'text-warning-dark dark:text-warning-light',
 }
 
 let nextId = 0

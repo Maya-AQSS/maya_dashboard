@@ -139,7 +139,7 @@ function DailyFichajesWidget() {
           type="button"
           onClick={goToPrevDay}
           aria-label={t('dashboard.fichaje.prevDay')}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-odoo-dark-border transition text-gray-600 dark:text-odoo-dark-muted"
+          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary"
         >
           ←
         </button>
@@ -148,14 +148,14 @@ function DailyFichajesWidget() {
           value={toDateString(selectedDate)}
           max={toDateString(new Date())}
           onChange={handleDatePick}
-          className="text-sm border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text rounded px-2 py-1 outline-none focus:border-amber-500"
+          className="text-sm border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary rounded px-2 py-1 outline-none focus:border-warning-dark"
         />
         <button
           type="button"
           onClick={goToNextDay}
           disabled={isToday(selectedDate)}
           aria-label={t('dashboard.fichaje.nextDay')}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-odoo-dark-border transition text-gray-600 dark:text-odoo-dark-muted disabled:opacity-40 disabled:cursor-default"
+          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary disabled:opacity-40 disabled:cursor-default"
         >
           →
         </button>
@@ -164,34 +164,34 @@ function DailyFichajesWidget() {
       <div className="flex-1 overflow-auto">
         {loading && (
           <div className="flex items-center justify-center h-full">
-            <div className="h-6 w-24 bg-gray-200 dark:bg-odoo-dark-border rounded animate-pulse" />
+            <div className="h-6 w-24 bg-ui-border-l dark:bg-ui-dark-border rounded animate-pulse" />
           </div>
         )}
         {error && !loading && (
-          <p className="text-red-600 dark:text-red-400 text-sm text-center py-4">{error}</p>
+          <p className="text-danger dark:text-danger text-sm text-center py-4">{error}</p>
         )}
         {!loading && !error && pairs.length === 0 && (
-          <p className="text-gray-500 dark:text-odoo-dark-muted text-sm text-center py-4">
+          <p className="text-text-secondary dark:text-text-dark-secondary text-sm text-center py-4">
             {t('dashboard.fichaje.noEntries')}
           </p>
         )}
         {!loading && !error && pairs.length > 0 && (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-odoo-dark-border">
-                <th className="text-center px-2 py-1 text-green-600 dark:text-green-400 font-medium">
+              <tr className="border-b border-ui-border dark:border-ui-dark-border">
+                <th className="text-center px-2 py-1 text-success dark:text-success font-medium">
                   {t('dashboard.fichaje.entrada')}
                 </th>
-                <th className="text-center px-2 py-1 text-blue-600 dark:text-blue-400 font-medium">
+                <th className="text-center px-2 py-1 text-info dark:text-info font-medium">
                   {t('dashboard.fichaje.salida')}
                 </th>
-                <th className="text-center px-2 py-1 text-gray-500 dark:text-odoo-dark-muted font-medium">
+                <th className="text-center px-2 py-1 text-text-secondary dark:text-text-dark-secondary font-medium">
                   {t('dashboard.fichaje.columnHoras')}
                 </th>
                 <th className="w-8" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-odoo-dark-border">
+            <tbody className="divide-y divide-gray-100 dark:divide-ui-dark-border">
               {pairs.map((pair, i) => {
                 const ms = pair.salida
                   ? new Date(pair.salida.timestamp) - new Date(pair.entrada.timestamp)
@@ -201,14 +201,14 @@ function DailyFichajesWidget() {
 
                 return (
                   <Fragment key={`pair-${i}`}>
-                    <tr className={pending ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}>
-                      <td className="px-2 py-1.5 text-center text-green-700 dark:text-green-300 font-medium">
+                    <tr className={pending ? 'bg-warning-light/50 dark:bg-warning-dark/10' : ''}>
+                      <td className="px-2 py-1.5 text-center text-success-dark dark:text-success font-medium">
                         {isEditing ? (
                           <input
                             type="time"
                             value={requestForm.from}
                             onChange={(e) => setRequestForm((f) => ({ ...f, from: e.target.value }))}
-                            className="w-full border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text rounded px-1.5 py-0.5 outline-none focus:border-violet-500 text-xs"
+                            className="w-full border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary rounded px-1.5 py-0.5 outline-none focus:border-odoo-purple text-xs"
                           />
                         ) : (
                           formatTime(pair.entrada.timestamp)
@@ -220,27 +220,27 @@ function DailyFichajesWidget() {
                             type="time"
                             value={requestForm.to}
                             onChange={(e) => setRequestForm((f) => ({ ...f, to: e.target.value }))}
-                            className="w-full border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text rounded px-1.5 py-0.5 outline-none focus:border-violet-500 text-xs"
+                            className="w-full border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary rounded px-1.5 py-0.5 outline-none focus:border-odoo-purple text-xs"
                           />
                         ) : !pair.salida ? (
-                          <span className="text-amber-500 dark:text-amber-400 text-xs">
+                          <span className="text-warning-dark dark:text-warning text-xs">
                             {t('dashboard.fichaje.inProgress')}
                           </span>
                         ) : pair.autoClose ? (
-                          <span className="text-gray-400 dark:text-gray-500 text-xs italic">
+                          <span className="text-text-muted dark:text-text-secondary text-xs italic">
                             {formatTime(pair.salida.timestamp)}
                             <br />
-                            <span className="text-red-400 dark:text-red-500 not-italic">
+                            <span className="text-danger dark:text-danger not-italic">
                               {t('dashboard.fichaje.salidaNoFichada')}
                             </span>
                           </span>
                         ) : (
-                          <span className="text-blue-700 dark:text-blue-300">
+                          <span className="text-info-dark dark:text-info">
                             {formatTime(pair.salida.timestamp)}
                           </span>
                         )}
                       </td>
-                      <td className="px-2 py-1.5 text-center text-gray-700 dark:text-odoo-dark-muted">
+                      <td className="px-2 py-1.5 text-center text-text-primary dark:text-text-dark-secondary">
                         {!isEditing && formatHours(ms)}
                       </td>
                       <td className="px-1 py-1.5 text-center">
@@ -249,26 +249,26 @@ function DailyFichajesWidget() {
                             <button
                               type="button"
                               onClick={() => handleSubmitRequest(i)}
-                              className="py-0.5 px-1.5 rounded-full bg-odoo-primary hover:bg-odoo-primary-hover text-white font-medium transition text-xs whitespace-nowrap"
+                              className="py-0.5 px-1.5 rounded-full bg-odoo-purple hover:bg-odoo-purple-d text-text-inverse font-medium transition text-xs whitespace-nowrap"
                             >
                               {t('dashboard.fichaje.submitModification')}
                             </button>
                             <button
                               type="button"
                               onClick={() => setEditingRow(null)}
-                              className="py-0.5 px-1.5 rounded-full border border-gray-300 dark:border-odoo-dark-border text-gray-500 dark:text-odoo-dark-muted hover:bg-gray-100 dark:hover:bg-odoo-dark-card transition text-xs"
+                              className="py-0.5 px-1.5 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:bg-ui-body dark:hover:bg-ui-dark-card transition text-xs"
                             >
                               {t('dashboard.cancel')}
                             </button>
                           </div>
                         ) : pending ? (
-                          <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">⏳</span>
+                          <span className="text-xs text-warning-dark dark:text-warning font-medium">⏳</span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(i, pair)}
                             title={t('dashboard.fichaje.requestModification')}
-                            className="text-gray-400 hover:text-violet-600 dark:hover:text-violet-400 transition text-xs p-0.5 rounded"
+                            className="text-text-muted hover:text-violet-600 dark:hover:text-violet-400 transition text-xs p-0.5 rounded"
                           >
                             ✏️
                           </button>
@@ -277,13 +277,13 @@ function DailyFichajesWidget() {
                     </tr>
 
                     {pending && !isEditing && (
-                      <tr className="bg-amber-50/50 dark:bg-amber-900/10">
+                      <tr className="bg-warning-light/50 dark:bg-warning-dark/10">
                         <td colSpan={4} className="px-3 pb-2">
                           <div className="flex items-center justify-center gap-2 text-xs">
-                            <span className="px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 font-medium">
+                            <span className="px-1.5 py-0.5 rounded-full bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning font-medium">
                               {t('dashboard.fichaje.pendingApproval')}
                             </span>
-                            <span className="text-gray-500 dark:text-odoo-dark-muted">
+                            <span className="text-text-secondary dark:text-text-dark-secondary">
                               {t('dashboard.fichaje.requestModification')}:
                               {' '}{pending.from} → {pending.to}
                             </span>
@@ -297,11 +297,11 @@ function DailyFichajesWidget() {
             </tbody>
             {pairs.filter((p) => p.salida).length > 0 && (
               <tfoot>
-                <tr className="border-t-2 border-gray-300 dark:border-odoo-dark-border">
-                  <td colSpan={2} className="px-2 py-1.5 text-right text-xs font-semibold text-gray-500 dark:text-odoo-dark-muted uppercase tracking-wide">
+                <tr className="border-t-2 border-ui-border dark:border-ui-dark-border">
+                  <td colSpan={2} className="px-2 py-1.5 text-right text-xs font-semibold text-text-secondary dark:text-text-dark-secondary uppercase tracking-wide">
                     {t('dashboard.fichaje.total')}
                   </td>
-                  <td className="px-2 py-1.5 text-center font-semibold text-gray-900 dark:text-odoo-dark-text">
+                  <td className="px-2 py-1.5 text-center font-semibold text-text-primary dark:text-text-dark-primary">
                     {formatHours(totalMs)}
                   </td>
                   <td />

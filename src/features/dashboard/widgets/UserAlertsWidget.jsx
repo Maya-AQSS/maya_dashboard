@@ -1,17 +1,17 @@
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
 
 const COLOR_CLASSES = {
-  amber: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-200',
-  blue: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200',
-  red: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-800 dark:text-red-200',
-  green: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200',
+  amber: 'bg-warning-light dark:bg-warning-dark/20 border-warning/20 dark:border-warning/50 text-warning-dark dark:text-warning',
+  blue: 'bg-info-light dark:bg-info-dark/20 border-info/20 dark:border-info/50 text-info-dark dark:text-info',
+  red: 'bg-danger-light dark:bg-danger-dark/20 border-danger/20 dark:border-danger/50 text-danger-dark dark:text-danger',
+  green: 'bg-success-light dark:bg-success-dark/20 border-success/20 dark:border-success/50 text-success-dark dark:text-success',
 }
 
 const BUTTON_CLASSES = {
-  amber: 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-800/40 dark:hover:bg-amber-700/40 text-amber-900 dark:text-amber-100',
-  blue: 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-800/40 dark:hover:bg-blue-700/40 text-blue-900 dark:text-blue-100',
-  red: 'bg-red-100 hover:bg-red-200 dark:bg-red-800/40 dark:hover:bg-red-700/40 text-red-900 dark:text-red-100',
-  green: 'bg-green-100 hover:bg-green-200 dark:bg-green-800/40 dark:hover:bg-green-700/40 text-green-900 dark:text-green-100',
+  amber: 'bg-warning-light hover:bg-warning/20 dark:bg-warning-dark/40 dark:hover:bg-warning-dark/60 text-warning-dark dark:text-warning',
+  blue: 'bg-info-light hover:bg-info/20 dark:bg-info-dark/40 dark:hover:bg-info-dark/60 text-info-dark dark:text-info',
+  red: 'bg-danger-light hover:bg-danger/20 dark:bg-danger-dark/40 dark:hover:bg-danger-dark/60 text-danger-dark dark:text-danger',
+  green: 'bg-success-light hover:bg-success/20 dark:bg-success-dark/40 dark:hover:bg-success-dark/60 text-success-dark dark:text-success',
 }
 
 function UserAlertsWidget() {
@@ -21,7 +21,7 @@ function UserAlertsWidget() {
     return (
       <div className="flex flex-col gap-2 p-1">
         {[1, 2].map((n) => (
-          <div key={n} className="h-10 bg-gray-200 dark:bg-odoo-dark-border rounded-lg animate-pulse" />
+          <div key={n} className="h-10 bg-ui-border-l dark:bg-ui-dark-border rounded-lg animate-pulse" />
         ))}
       </div>
     )
@@ -29,7 +29,7 @@ function UserAlertsWidget() {
 
   if (!alerts.length) {
     return (
-      <p className="text-sm text-gray-500 dark:text-odoo-dark-muted text-center py-4">
+      <p className="text-sm text-text-secondary dark:text-text-dark-secondary text-center py-4">
         No hay alertas
       </p>
     )

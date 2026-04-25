@@ -26,7 +26,7 @@ function WidgetGrid({ layout, onLayoutChange, editable, onRemoveWidget }) {
 
   if (validItems.length === 0) {
     return (
-      <p className="text-gray-500 dark:text-odoo-dark-muted text-sm text-center py-12">
+      <p className="text-text-secondary dark:text-text-dark-secondary text-sm text-center py-12">
         {t('dashboard.noWidgets')}
       </p>
     )

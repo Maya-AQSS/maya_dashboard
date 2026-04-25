@@ -33,8 +33,8 @@ function DashboardEditToggleButton({ editable, onToggle }) {
       title={editable ? t('dashboard.exitEdit') : t('dashboard.editDashboard')}
       className={`inline-flex items-center justify-center w-8 h-8 rounded-full border transition ${
         editable
-          ? 'bg-odoo-primary border-odoo-primary text-white hover:bg-odoo-primary-hover'
-          : 'border-gray-300 dark:border-white/30 text-gray-600 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-white/10'
+          ? 'bg-odoo-purple border-odoo-purple text-text-inverse hover:bg-odoo-purple-d'
+          : 'border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-primary hover:bg-ui-body dark:hover:bg-ui-dark-bg'
       }`}
     >
       <GearIcon />

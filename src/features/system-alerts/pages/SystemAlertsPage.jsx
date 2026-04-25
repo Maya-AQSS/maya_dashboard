@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 
-const SEVERITY_COLORS = {
-  critical: '#dc2626',
-  high:     '#ea580c',
-  medium:   '#ca8a04',
-  low:      '#2563eb',
+const SEVERITY_CLASSES = {
+  critical: 'border-l-danger',
+  high:     'border-l-orange-500',
+  medium:   'border-l-warning',
+  low:      'border-l-info',
 }
 
 export default function SystemAlertsPage() {
@@ -19,13 +19,13 @@ export default function SystemAlertsPage() {
   })
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 600 }}>Alertas del sistema</h1>
-      <p style={{ color: 'var(--text-muted, #6b7280)', marginBottom: 16 }}>
+    <div className="max-w-[960px] mx-auto p-4">
+      <h1 className="text-2xl font-semibold">Alertas del sistema</h1>
+      <p className="text-text-muted dark:text-text-dark-muted mb-4">
         Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio.
       </p>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+      <div className="flex gap-3 mb-4">
         <label>
           Severidad:{' '}
           <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
@@ -43,27 +43,26 @@ export default function SystemAlertsPage() {
       </div>
 
       {loading && <p>Cargando…</p>}
-      {error && <p role="alert" style={{ color: '#dc2626' }}>{error}</p>}
+      {error && <p role="alert" className="text-danger">{error}</p>}
 
       {!loading && alerts.length === 0 && (
-        <p style={{ color: 'var(--text-muted, #6b7280)' }}>No hay alertas {activeOnly ? 'activas' : ''}.</p>
+        <p className="text-text-muted dark:text-text-dark-muted">No hay alertas {activeOnly ? 'activas' : ''}.</p>
       )}
 
-      <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8 }}>
+      <ul className="list-none p-0 grid gap-2">
         {alerts.map((a) => (
-          <li key={a.id}
-              style={{
-                border: '1px solid var(--ui-border, #e5e7eb)', borderLeft: `4px solid ${SEVERITY_COLORS[a.severity]}`,
-                borderRadius: 8, padding: 12, background: 'var(--ui-card, #fff)',
-              }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <li
+            key={a.id}
+            className={`border border-ui-border dark:border-ui-dark-border border-l-4 ${SEVERITY_CLASSES[a.severity] ?? 'border-l-ui-border'} rounded-lg p-3 bg-ui-card dark:bg-ui-dark-card`}
+          >
+            <div className="flex justify-between gap-4">
               <div>
                 <strong>{a.title}</strong>
-                <div style={{ fontSize: 12, color: 'var(--text-muted, #6b7280)' }}>
+                <div className="text-sm text-text-muted dark:text-text-dark-muted">
                   {a.rule_slug || 'ad-hoc'} · {a.source} · {new Date(a.created_at).toLocaleString()}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
+              <div className="flex gap-1.5">
                 {!a.acknowledged_at && (
                   <button type="button" onClick={() => onAcknowledge(a.id)}>Reconocer</button>
                 )}
@@ -73,7 +72,7 @@ export default function SystemAlertsPage() {
               </div>
             </div>
             {a.context && Object.keys(a.context).length > 0 && (
-              <pre style={{ marginTop: 8, padding: 8, background: 'var(--ui-body, #f8fafc)', borderRadius: 6, fontSize: 12, overflow: 'auto' }}>
+              <pre className="mt-2 p-2 bg-ui-body dark:bg-ui-dark-bg rounded-md text-sm overflow-auto">
                 {JSON.stringify(a.context, null, 2)}
               </pre>
             )}

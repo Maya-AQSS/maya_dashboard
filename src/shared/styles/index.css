@@ -21,11 +21,6 @@
   --color-odoo-teal:         #017E84;
   --color-odoo-teal-d:       #015F65;
 
-  /* Aliases semánticos — primary */
-  --color-odoo-primary:      #714B67;
-  --color-odoo-primary-hover: #5A3A52;
-  --color-odoo-bg:           #F4F5F7;
-
   /* Paleta Odoo — Dark */
   --color-odoo-dark-purple:   #9B7B93;
   --color-odoo-dark-purple-d: #714B67;
@@ -33,14 +28,7 @@
   --color-odoo-dark-teal:     #20A8AE;
   --color-odoo-dark-teal-d:   #017E84;
 
-  /* Aliases dark — surface / text / border */
-  --color-odoo-dark-surface: #232323;
-  --color-odoo-dark-card:    #2C2C2C;
-  --color-odoo-dark-text:    #E9ECEF;
-  --color-odoo-dark-muted:   #6C757D;
-  --color-odoo-dark-border:  #404040;
-
-      /* Grises de interfaz — Light */
+  /* Grises de interfaz — Light */
   --color-ui-sidebar:         #2C2C2C;
   --color-ui-sidebar-hover:   #3D3D3D;
   --color-ui-sidebar-active:  #714B67;
@@ -131,33 +119,48 @@
 
 /* ─── Base global ───────────────────────────────────────── */
 @layer base {
+  html, body, #root {
+    height: 100%;
+  }
   html {
     font-size: 13px;
     -webkit-font-smoothing: antialiased;
   }
   body {
-    @apply bg-ui-body text-text-primary font-sans;
-  }
-  .dark body {
-    @apply bg-ui-dark-bg text-text-dark-primary;
+    @apply bg-ui-body text-text-primary font-sans dark:bg-ui-dark-bg dark:text-text-dark-primary;
   }
 }
 
+/* ─── Mobile typography floor ───────────────────────────── */
+/* Los tokens de texto están calibrados a la escala Odoo desktop (13px base).
+   En viewports pequeños subimos el mínimo para legibilidad. */
+@media (max-width: 767px) {
+  .text-xs   { font-size: 12px; }
+  .text-sm   { font-size: 13px; }
+  .text-base { font-size: 14px; }
+}
+
+/* ─── Animaciones canónicas ──────────────────────────────── */
 @layer utilities {
-  .animate-slide-up {
-    animation: slide-up 0.25s ease-out;
-  }
-  .animate-fade-in {
-    animation: fade-in 0.18s ease-out both;
-  }
+  .animate-slide-up      { animation: slide-up      0.25s ease-out both; }
+  .animate-slide-up-full { animation: slide-up-full 0.3s  ease-out both; }
+  .animate-fade-in       { animation: fade-in       0.18s ease-out both; }
+  .animate-fade-in-up    { animation: fade-in-up    0.18s ease-out both; }
 }
 
 @keyframes slide-up {
   from { transform: translateY(12px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
-
+@keyframes slide-up-full {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
 @keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fade-in-up {
   from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  to   { opacity: 1; transform: translateY(0); }
 }

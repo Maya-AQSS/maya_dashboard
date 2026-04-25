@@ -33,7 +33,7 @@ function ProfilePage() {
   })
 
   if (!user) {
-    return <p className="text-gray-900 dark:text-odoo-dark-text">{t('profile.noUser')}</p>
+    return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
   }
 
   const handleEdit = () => {
@@ -129,7 +129,7 @@ function ProfilePage() {
           !isEditing ? (
             <button
               type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium border-none cursor-pointer bg-odoo-primary text-gray-50 hover:bg-odoo-primary-hover"
+              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium border-none cursor-pointer bg-odoo-purple text-text-inverse hover:bg-odoo-purple-d"
               onClick={handleEdit}
             >
               {t('profile.edit')}
@@ -140,74 +140,74 @@ function ProfilePage() {
 
       {!isEditing ? (
         <section className="max-w-[600px] mx-auto flex flex-col gap-4 sm:gap-6">
-          <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.basicData')}</h4>
+          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.basicData')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.name')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.name ?? '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.name')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.name ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.surname')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.surname ?? '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.surname')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.surname ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.dni')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.dni || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.dni')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.dni || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('auth.email')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.email ?? '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.email')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.email ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.phone')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.phone || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.phone')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.phone || '—'}</dd>
               </div>
             </dl>
           </div>
-          <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.address')}</h4>
+          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.address')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.street')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.street || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.street')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.street || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressNumber')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressNumber || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressNumber')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.addressNumber || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressFloor')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressFloor || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressFloor')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.addressFloor || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.addressDoor')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.addressDoor || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressDoor')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.addressDoor || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.postalCode')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.postalCode || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.postalCode')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.postalCode || '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.city')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.city || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.city')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.city || '—'}</dd>
               </div>
             </dl>
           </div>
-          <div className="p-4 sm:p-5 rounded-lg border border-gray-200 dark:border-odoo-dark-border bg-gray-50 dark:bg-odoo-dark-surface">
-            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-gray-700 dark:text-odoo-dark-muted">{t('profile.account')}</h4>
+          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
+            <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.account')}</h4>
             <dl className="m-0 flex flex-col gap-3">
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.username')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.username ?? '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.username')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.username ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.role')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text">{user.role ?? '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.role')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary">{user.role ?? '—'}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-gray-500 dark:text-odoo-dark-muted">{t('profile.bio')}</dt>
-                <dd className="m-0 text-[0.95rem] text-gray-900 dark:text-odoo-dark-text whitespace-pre-wrap leading-normal">{user.bio || '—'}</dd>
+                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.bio')}</dt>
+                <dd className="m-0 text-[0.95rem] text-text-primary dark:text-text-dark-primary whitespace-pre-wrap leading-normal">{user.bio || '—'}</dd>
               </div>
             </dl>
           </div>
@@ -215,7 +215,7 @@ function ProfilePage() {
       ) : (
         <section className="max-w-[600px] mx-auto min-w-0">
           {saveError && (
-            <p className="mb-4 py-2 px-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-lg" role="alert">
+            <p className="mb-4 py-2 px-3 text-sm text-danger dark:text-danger bg-danger-light dark:bg-danger-dark/30 rounded-lg" role="alert">
               {saveError}
             </p>
           )}
@@ -362,7 +362,7 @@ function ProfilePage() {
           <FormActions>
             <button
               type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border border-gray-300 dark:border-odoo-dark-border bg-white dark:bg-odoo-dark-surface text-gray-600 dark:text-odoo-dark-text hover:bg-gray-100 dark:hover:bg-odoo-dark-bg disabled:opacity-70"
+              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-secondary dark:text-text-dark-primary hover:bg-ui-body dark:hover:bg-ui-dark-bg disabled:opacity-70"
               onClick={handleCancel}
               disabled={saving}
             >
@@ -370,7 +370,7 @@ function ProfilePage() {
             </button>
             <button
               type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border-none bg-odoo-primary text-gray-50 hover:bg-odoo-primary-hover disabled:opacity-70"
+              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border-none bg-odoo-purple text-text-inverse hover:bg-odoo-purple-d disabled:opacity-70"
               onClick={handleSave}
               disabled={saving}
             >

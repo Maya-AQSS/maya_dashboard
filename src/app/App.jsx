@@ -44,8 +44,8 @@ function App() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-ui-body dark:bg-ui-dark-bg">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-odoo-primary border-t-transparent animate-spin" />
-          <span className="text-sm text-gray-500 dark:text-odoo-dark-muted">Cargando...</span>
+          <div className="w-8 h-8 rounded-full border-2 border-odoo-purple border-t-transparent animate-spin" />
+          <span className="text-sm text-text-secondary dark:text-text-dark-secondary">Cargando...</span>
         </div>
       </div>
     )

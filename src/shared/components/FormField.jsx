@@ -1,10 +1,10 @@
 import { forwardRef } from 'react'
 
 const inputBase =
-  'py-2 px-3 border border-gray-300 dark:border-odoo-dark-border rounded-lg text-[0.9rem] bg-white dark:bg-odoo-dark-surface text-gray-900 dark:text-odoo-dark-text placeholder:text-gray-500 dark:placeholder:text-odoo-dark-muted focus:outline-none focus:border-odoo-primary dark:focus:border-odoo-primary focus:ring-1 focus:ring-odoo-primary/25'
+  'py-2 px-3 border border-ui-border dark:border-ui-dark-border rounded-lg text-[0.9rem] bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary placeholder:text-text-secondary dark:placeholder:text-text-dark-secondary focus:outline-none focus:border-odoo-purple dark:focus:border-odoo-purple focus:ring-1 focus:ring-odoo-purple/25'
 const inputInvalid =
-  'border-red-600 dark:border-red-500 bg-red-50 dark:bg-red-950/40 focus:border-red-600 dark:focus:border-red-500 focus:ring-red-600/25'
-const errorText = 'text-[0.8rem] text-red-600 dark:text-red-400'
+  'border-danger dark:border-danger/80 bg-danger-light dark:bg-danger-dark/40 focus:border-danger dark:focus:border-danger/80 focus:ring-danger/25'
+const errorText = 'text-[0.8rem] text-danger dark:text-danger'
 const textareaExtra = 'resize-y min-h-16'
 
 const FormField = forwardRef(function FormField(
@@ -55,7 +55,7 @@ const FormField = forwardRef(function FormField(
   }
 
   return (
-    <label htmlFor={name} className="flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-odoo-dark-muted">
+    <label htmlFor={name} className="flex flex-col gap-1 text-sm font-medium text-text-primary dark:text-text-dark-secondary">
       {displayLabel}
       {type === 'textarea' ? (
         <textarea

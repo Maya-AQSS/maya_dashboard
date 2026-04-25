@@ -20,22 +20,22 @@ function DashboardEditToolbar({ layout, onSave, onCancel, onAddWidget, onReset }
   const availableToAdd = Object.values(WIDGET_REGISTRY).filter((def) => !existingIds.has(def.id))
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 mb-4 px-4 sm:px-6 py-2 bg-white/95 dark:bg-odoo-dark-surface/95 backdrop-blur border-b border-gray-200 dark:border-odoo-dark-border">
+    <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 mb-4 px-4 sm:px-6 py-2 bg-ui-card/95 dark:bg-ui-dark-card/95 backdrop-blur border-b border-ui-border dark:border-ui-dark-border">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs font-medium text-gray-500 dark:text-odoo-dark-muted mr-2">
+        <span className="text-xs font-medium text-text-secondary dark:text-text-dark-secondary mr-2">
           {t('dashboard.editMode')}
         </span>
         <button
           type="button"
           onClick={onSave}
-          className="py-1 px-3 rounded-full bg-odoo-primary hover:bg-odoo-primary-hover text-white text-xs font-medium transition"
+          className="py-1 px-3 rounded-full bg-odoo-purple hover:bg-odoo-purple-d text-text-inverse text-xs font-medium transition"
         >
           {t('dashboard.save')}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="py-1 px-3 rounded-full border border-gray-300 dark:border-white/20 text-gray-600 dark:text-white/70 text-xs font-medium hover:bg-gray-100 dark:hover:bg-white/10 transition"
+          className="py-1 px-3 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary text-xs font-medium hover:bg-ui-body dark:hover:bg-ui-dark-bg transition"
         >
           {t('dashboard.cancel')}
         </button>
@@ -44,7 +44,7 @@ function DashboardEditToolbar({ layout, onSave, onCancel, onAddWidget, onReset }
             type="button"
             onClick={() => setDropdownOpen((v) => !v)}
             disabled={availableToAdd.length === 0}
-            className="py-1 px-3 rounded-full border border-amber-500 dark:border-amber-400/60 text-amber-700 dark:text-amber-300 text-xs font-medium hover:enabled:bg-amber-50 dark:hover:enabled:bg-amber-400/10 transition disabled:opacity-40 disabled:cursor-default"
+            className="py-1 px-3 rounded-full border border-warning/80 dark:border-warning/60 text-warning-dark dark:text-warning text-xs font-medium hover:enabled:bg-warning-light dark:hover:enabled:bg-warning/10 transition disabled:opacity-40 disabled:cursor-default"
           >
             + {t('dashboard.addWidget')}
           </button>
@@ -66,7 +66,7 @@ function DashboardEditToolbar({ layout, onSave, onCancel, onAddWidget, onReset }
         <button
           type="button"
           onClick={onReset}
-          className="py-1 px-3 rounded-full border border-gray-300 dark:border-white/20 text-gray-600 dark:text-white/50 text-xs font-medium hover:bg-gray-100 dark:hover:bg-white/10 transition"
+          className="py-1 px-3 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-muted text-xs font-medium hover:bg-ui-body dark:hover:bg-ui-dark-bg transition"
         >
           {t('dashboard.resetLayout')}
         </button>

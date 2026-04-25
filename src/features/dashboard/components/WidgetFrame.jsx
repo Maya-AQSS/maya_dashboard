@@ -1,8 +1,8 @@
 function WidgetFrame({ title, children, editable, onRemove }) {
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-odoo-dark-surface rounded-2xl border border-gray-200 dark:border-odoo-dark-border shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-odoo-dark-border">
-        <span className="text-sm font-semibold text-gray-700 dark:text-odoo-dark-text truncate">
+    <div className="h-full flex flex-col bg-ui-card dark:bg-ui-dark-card rounded-2xl border border-ui-border dark:border-ui-dark-border shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-ui-border-l dark:border-ui-dark-border">
+        <span className="text-sm font-semibold text-text-primary dark:text-text-dark-primary truncate">
           {title}
         </span>
         {editable && onRemove && (
@@ -10,7 +10,7 @@ function WidgetFrame({ title, children, editable, onRemove }) {
             type="button"
             onClick={onRemove}
             aria-label="Eliminar widget"
-            className="ml-2 shrink-0 text-gray-400 hover:text-red-500 dark:text-odoo-dark-muted dark:hover:text-red-400 transition text-lg leading-none"
+            className="ml-2 shrink-0 text-text-muted hover:text-danger dark:text-text-dark-secondary dark:hover:text-danger transition text-lg leading-none"
           >
             ×
           </button>

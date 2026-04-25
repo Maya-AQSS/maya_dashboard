@@ -11,9 +11,9 @@ import { useLocale } from '../../../shared/i18n'
 function DashboardSkeleton() {
   return (
     <div className="p-4 sm:p-6 grid grid-cols-12 gap-4 animate-pulse">
-      <div className="col-span-12 sm:col-span-6 h-48 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
-      <div className="col-span-12 sm:col-span-6 h-48 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
-      <div className="col-span-12 h-32 bg-gray-200 dark:bg-odoo-dark-border rounded-2xl" />
+      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
+      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
+      <div className="col-span-12 h-32 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
     </div>
   )
 }
