@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
+const defaultSharedAuthRoot = path.resolve(__dirname, '../packages/maya-shared-auth-react')
 const sharedLayoutRoot = path.resolve(__dirname, '../packages/maya-shared-layout-react')
 const sharedSidebarRoot = path.resolve(__dirname, '../packages/maya-shared-sidebar-react')
+const sharedAuthRoot = process.env.SHARED_AUTH_PACKAGE_ROOT
+  ? path.resolve(process.env.SHARED_AUTH_PACKAGE_ROOT)
+  : defaultSharedAuthRoot
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,8 +20,10 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss()],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: true,
     fs: {
-      allow: ['..', sharedLayoutRoot, sharedSidebarRoot]
+      allow: ['..', sharedAuthRoot, sharedLayoutRoot, sharedSidebarRoot]
     },
     watch: {
       usePolling: true,
@@ -29,14 +35,8 @@ export default defineConfig({
   },
   resolve: {
     dedupe: ['react', 'react-dom', 'react-router-dom'],
-    preserveSymlinks: true,
     alias: {
-      'react': fileURLToPath(new URL('./node_modules/react', import.meta.url)),
-      'react-dom': fileURLToPath(new URL('./node_modules/react-dom', import.meta.url)),
-      'react-router-dom': fileURLToPath(new URL('./node_modules/react-router-dom', import.meta.url)),
-      '@maya/shared-auth-react': fileURLToPath(
-        new URL('./node_modules/@maya/shared-auth-react/src/index.ts', import.meta.url)
-      ),
+      '@maya/shared-auth-react': path.join(sharedAuthRoot, 'src/index.ts'),
       '@maya/shared-layout-react': path.join(sharedLayoutRoot, 'src/index.ts'),
       '@maya/shared-sidebar-react': path.join(sharedSidebarRoot, 'src/index.ts')
     }
