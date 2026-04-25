@@ -1,0 +1,50 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath, URL } from 'node:url'
+import path from 'node:path'
+
+const defaultSharedAuthRoot = fileURLToPath(
+  new URL('../../maya_infra/packages/maya-shared-auth-react', import.meta.url),
+)
+const sharedLayoutRoot = fileURLToPath(
+  new URL('../../maya_infra/packages/maya-shared-layout-react', import.meta.url),
+)
+const sharedSidebarRoot = fileURLToPath(
+  new URL('../../maya_infra/packages/maya-shared-sidebar-react', import.meta.url),
+)
+const sharedI18nRoot = fileURLToPath(
+  new URL('../../maya_infra/packages/maya-shared-i18n-react', import.meta.url),
+)
+
+const sharedAuthRoot = process.env.SHARED_AUTH_PACKAGE_ROOT
+  ? path.resolve(process.env.SHARED_AUTH_PACKAGE_ROOT)
+  : defaultSharedAuthRoot
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: true,
+    fs: {
+      allow: ['..', sharedAuthRoot, sharedLayoutRoot, sharedSidebarRoot, sharedI18nRoot],
+    },
+    watch: {
+      usePolling: true,
+    },
+  },
+  optimizeDeps: {
+    include: ['keycloak-js', 'axios'],
+    exclude: ['@maya/shared-auth-react', '@maya/shared-i18n-react', '@maya/shared-layout-react', '@maya/shared-sidebar-react'],
+  },
+  resolve: {
+    dedupe: ['react', 'react-dom', 'react-router-dom'],
+    alias: {
+      '@maya/shared-auth-react': path.join(sharedAuthRoot, 'src/index.ts'),
+      '@maya/shared-i18n-react': path.join(sharedI18nRoot, 'src/index.ts'),
+      '@maya/shared-layout-react': path.join(sharedLayoutRoot, 'src/index.ts'),
+      '@maya/shared-sidebar-react': path.join(sharedSidebarRoot, 'src/index.ts'),
+    },
+  },
+})

@@ -167,10 +167,10 @@ services:
     networks:
       - maya_network
 
-  # ─── Frontend (React 19 + Vite 7) ────────────────────────────
+  # ─── Frontend (React 19 + Vite 8) ────────────────────────────
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: maya_dashboard_frontend
     restart: unless-stopped
@@ -180,7 +180,7 @@ services:
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
     volumes:
-      - .:/app
+      - ./frontend:/app
       - ../maya_infra/packages:/packages
       - /app/node_modules
     ports:
