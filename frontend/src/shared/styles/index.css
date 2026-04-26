@@ -5,7 +5,7 @@
 @import "tailwindcss";
 
 /* ─── Asegurar escaneo del paquete compartido ───────────── */
-/* Funciona en Docker (/packages) y local (workspace/packages) */
+/* Docker: packages en /maya_infra/packages | Local: workspace/packages */
 @source "../../../../maya_infra/packages/maya-shared-layout-react/src/**/*.{tsx,ts}";
 @source "../../../../../packages/maya-shared-layout-react/src/**/*.{tsx,ts}";
 @source "../../../../maya_infra/packages/maya-shared-sidebar-react/src/**/*.{tsx,ts}";
