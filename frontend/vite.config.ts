@@ -100,7 +100,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['keycloak-js', 'axios', 'html-parse-stringify', 'void-elements'],
+    include: ['keycloak-js', 'axios', 'html-parse-stringify', 'void-elements', 'use-sync-external-store', 'use-sync-external-store/shim'],
     exclude: ['@maya/shared-auth-react', '@maya/shared-i18n-react', '@maya/shared-layout-react', '@maya/shared-sidebar-react'],
   },
   resolve: {
