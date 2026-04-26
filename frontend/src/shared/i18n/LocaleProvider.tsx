@@ -29,6 +29,17 @@ function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user?.locale, i18n])
 
+  // Sync locale changes made in other browser tabs
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'locale' && e.newValue && messages[e.newValue]) {
+        void i18n.changeLanguage(e.newValue)
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [i18n])
+
   // Update <html lang> whenever i18n language changes
   useEffect(() => {
     const lang = i18n.resolvedLanguage ?? i18n.language ?? 'es'
