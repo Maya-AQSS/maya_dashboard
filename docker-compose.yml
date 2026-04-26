@@ -40,7 +40,7 @@ services:
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/packages
+      - ../maya_infra/packages:/var/maya_infra/packages
       - /var/www/html/vendor
     ports:
       - "${BACKEND_PORT:-8003}:8000"
@@ -107,7 +107,7 @@ services:
     command: []
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/packages
+      - ../maya_infra/packages:/var/maya_infra/packages
       - /var/www/html/vendor
     networks:
       - maya_network
@@ -162,7 +162,7 @@ services:
     command: []
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/packages
+      - ../maya_infra/packages:/var/maya_infra/packages
       - /var/www/html/vendor
     networks:
       - maya_network
