@@ -9,7 +9,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: ${APP_ENV:-local}
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      APP_KEY: ${APP_KEY:-}
       APP_URL: ${APP_URL:-http://maya_dashboard_api.localhost}
       DB_CONNECTION: pgsql
       DB_HOST: maya_infra_postgres
@@ -63,7 +63,7 @@ services:
       - backend
     environment:
       APP_ENV: ${APP_ENV:-local}
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      APP_KEY: ${APP_KEY:-}
       DB_CONNECTION: pgsql
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
@@ -123,7 +123,7 @@ services:
       - backend
     environment:
       APP_ENV: ${APP_ENV:-local}
-      APP_KEY: ${APP_KEY:-base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      APP_KEY: ${APP_KEY:-}
       DB_CONNECTION: pgsql
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
@@ -134,6 +134,7 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       MAYA_MESSAGING_APP: maya_dashboard
@@ -179,6 +180,8 @@ services:
       VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://keycloak.localhost}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
+    depends_on:
+      - backend
     volumes:
       - ./frontend:/app
       - ../maya_infra/packages:/maya_infra/packages
@@ -187,9 +190,9 @@ services:
       - "${FRONTEND_PORT:-5175}:5173"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maya-dashboard.rule=Host(`maya_dashboard.localhost`)"
-      - "traefik.http.routers.maya-dashboard.entrypoints=web"
-      - "traefik.http.services.maya-dashboard.loadbalancer.server.port=5173"
+      - "traefik.http.routers.maya-dashboard-front.rule=Host(`maya_dashboard.localhost`)"
+      - "traefik.http.routers.maya-dashboard-front.entrypoints=web"
+      - "traefik.http.services.maya-dashboard-front.loadbalancer.server.port=5173"
     networks:
       - maya_network
 
