@@ -8,13 +8,13 @@ apps server-rendered (patrón `?return_to=<url>` + `?session_token=<jwt>`).
 - **Frontend**: React 19 + Vite + TypeScript
 - **IdP**: Keycloak 24 (realm `maya`)
 - **BD**: PostgreSQL 17
-- **Colas**: RabbitMQ (Laravel Horizon + scheduler)
+- **Colas**: RabbitMQ (worker dedicado: `notifications:consume` + `alerts:consume`)
 
 ## Infraestructura
 - Reverse proxy: **Traefik latest**
 - Red Docker compartida: `maya_network`
 - Script de arranque: `./up.sh` (no usar `docker compose up` directamente)
-- Servicios: `backend`, `worker` (Horizon), `scheduler`, `frontend`
+- Servicios: `backend` (API HTTP), `worker` (consumers AMQP), `scheduler` (`schedule:run` cada 60s para `alerts:evaluate`), `frontend`
 
 ## Accesos locales (vía Traefik)
 - Frontend:  http://maya_dashboard.localhost
