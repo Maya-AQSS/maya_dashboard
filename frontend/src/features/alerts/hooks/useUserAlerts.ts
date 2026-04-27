@@ -48,7 +48,7 @@ export function useUserAlerts() {
 
     async function load() {
       try {
-        const resp = await fetch(`${API_BASE}/api/v1/alerts?per_page=20`, {
+        const resp = await fetch(`${API_BASE}/alerts?per_page=20`, {
           headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
           signal: controller.signal,
         })

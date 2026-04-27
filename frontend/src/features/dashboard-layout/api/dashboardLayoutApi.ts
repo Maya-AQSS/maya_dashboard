@@ -13,7 +13,7 @@ async function getDashboardLayout(userId, token) {
     throw new Error('dashboardLayout.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
@@ -54,7 +54,7 @@ async function updateDashboardLayout(userId, layout, token) {
     throw new Error('dashboardLayout.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)

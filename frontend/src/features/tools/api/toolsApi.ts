@@ -15,7 +15,7 @@ async function getToolsData(userId, token) {
     throw new Error('tools.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/applications`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/applications`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)

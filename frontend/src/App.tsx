@@ -13,7 +13,7 @@ import { FavoritesProvider } from './features/favorites/context/FavoritesContext
 import GlobalErrorBoundary from './shared/components/GlobalErrorBoundary'
 import PageSkeleton from './shared/components/PageSkeleton'
 
-const DASHBOARD_API_URL = (import.meta.env.VITE_API_URL as string | undefined)
+const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | undefined)
   ?? 'http://maya_dashboard_api.localhost'
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,

@@ -13,7 +13,7 @@ async function getFavorites(userId, token) {
     throw new Error('favorites.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/favorites`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/favorites`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
@@ -55,7 +55,7 @@ async function addFavorite(userId, applicationId, token) {
     throw new Error('favorites.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/favorites`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/favorites`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
@@ -100,7 +100,7 @@ async function removeFavorite(userId, applicationId, token) {
     throw new Error('favorites.errorConfig')
   }
 
-  const url = `${baseUrl}/api/v1/dashboard/user/${encodeURIComponent(userId)}/favorites/${encodeURIComponent(applicationId)}`
+  const url = `${baseUrl}/dashboard/user/${encodeURIComponent(userId)}/favorites/${encodeURIComponent(applicationId)}`
   let response
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)

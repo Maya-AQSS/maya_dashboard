@@ -3,7 +3,7 @@ function baseUrl() {
 }
 
 async function request(path, { method = 'GET', token, body } = {}) {
-  const url = `${baseUrl()}/api/v1/alerts${path}`
+  const url = `${baseUrl()}/alerts${path}`
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
 
