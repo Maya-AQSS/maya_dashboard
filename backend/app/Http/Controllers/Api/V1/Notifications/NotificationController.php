@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Notifications;
 
-use App\Http\Controllers\Concerns\ResolvesKeycloakUser;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;

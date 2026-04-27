@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Alerts;
 
-use App\Http\Controllers\Concerns\ResolvesKeycloakUser;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
 use App\Models\Alert;
 use Illuminate\Http\JsonResponse;
