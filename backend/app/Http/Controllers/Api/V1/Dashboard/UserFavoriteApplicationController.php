@@ -32,10 +32,13 @@ class UserFavoriteApplicationController extends Controller
         return new UserFavoriteApplicationResource($application);
     }
 
-    public function destroy(Request $request, string $applicationId): JsonResponse
+    public function destroy(Request $request, string $user, string $applicationId): JsonResponse
     {
-        $user = $this->resolveUser($request);
-        $user->favoriteApplications()->detach((int) $applicationId);
+        // El parámetro $user de la URL no se usa: el usuario real viene del JWT.
+        unset($user);
+
+        $resolved = $this->resolveUser($request);
+        $resolved->favoriteApplications()->detach((int) $applicationId);
 
         return response()->json(null, 204);
     }

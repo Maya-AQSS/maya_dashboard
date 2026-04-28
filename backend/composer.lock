@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "237609c1ef818ece9b06d9e2ddb3a6e4",
+    "content-hash": "f5b075071d5428eb251cf00da51c4164",
     "packages": [
         {
             "name": "brick/math",
@@ -2129,6 +2129,35 @@
                 "MIT"
             ],
             "description": "Shared JWT Authentication logic for MAyA Laravel microservices.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "maya/shared-http-laravel",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../../maya_infra/packages/maya-shared-http-laravel",
+                "reference": "568637370d72ab3212ac530255c4ea68c299d0b4"
+            },
+            "require": {
+                "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/http": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/routing": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Maya\\Http\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Shared HTTP utilities for MAyA Laravel microservices: response envelope, health checks, base resources.",
             "transport-options": {
                 "relative": true
             }
@@ -9671,6 +9700,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "maya/shared-auth-laravel": 20,
+        "maya/shared-http-laravel": 20,
         "maya/shared-messaging-laravel": 20,
         "vladimir-yuldashev/laravel-queue-rabbitmq": 20
     },
