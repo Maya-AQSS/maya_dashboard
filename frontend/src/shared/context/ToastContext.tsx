@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import { Button } from '@maya/shared-ui-react'
 
 const ToastContext = createContext(null)
 
@@ -64,14 +65,15 @@ export function ToastProvider({ children }) {
               {ICONS[t.type]}
             </span>
             <span className="flex-1">{t.message}</span>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={() => dismiss(t.id)}
-              className="shrink-0 ml-1 opacity-50 hover:opacity-100 transition-opacity text-base leading-none"
               aria-label="Cerrar"
+              className="shrink-0 ml-1 opacity-60 hover:opacity-100 !text-base leading-none"
             >
               ×
-            </button>
+            </Button>
           </div>
         ))}
       </div>

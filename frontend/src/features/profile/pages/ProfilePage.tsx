@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@maya/shared-auth-react'
-import PageHeader from '../../../shared/components/PageHeader'
+import {Button, PageTitle} from '@maya/shared-ui-react'
 import FormField from '../../../shared/components/FormField'
 import FormSection from '../../../shared/components/FormSection'
 import FormActions from '../../../shared/components/FormActions'
@@ -11,6 +12,7 @@ import { validateProfileForm } from '../lib/profileValidation'
 function ProfilePage() {
   const { user } = useAuth()
   const { t } = useLocale()
+  const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [errors, setErrors] = useState({})
   const [saveError, setSaveError] = useState(null)
@@ -122,18 +124,15 @@ function ProfilePage() {
 
   return (
     <>
-      <PageHeader
+      <PageTitle
         title={isEditing ? t('profile.editTitle') : t('profile.title')}
         subtitle={isEditing ? t('profile.editSubtitle') : t('profile.hello', { name: [user.name, user.surname].filter(Boolean).join(' ') || user.name })}
-        rightAction={
+        onBack={() => navigate(-1)}
+        actions={
           !isEditing ? (
-            <button
-              type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium border-none cursor-pointer bg-odoo-purple text-text-inverse hover:bg-odoo-purple-d"
-              onClick={handleEdit}
-            >
+            <Button variant="primary" size="sm" onClick={handleEdit} className="w-full sm:w-auto">
               {t('profile.edit')}
-            </button>
+            </Button>
           ) : null
         }
       />
@@ -211,6 +210,9 @@ function ProfilePage() {
               </div>
             </dl>
           </div>
+
+          {/* Preferencias: idioma (sustituye al LocaleSelector global). */}
+          <PreferencesCard />
         </section>
       ) : (
         <section className="max-w-[600px] mx-auto min-w-0">
@@ -360,26 +362,64 @@ function ProfilePage() {
           </div>
 
           <FormActions>
-            <button
-              type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-secondary dark:text-text-dark-primary hover:bg-ui-body dark:hover:bg-ui-dark-bg disabled:opacity-70"
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleCancel}
               disabled={saving}
+              className="w-full sm:w-auto"
             >
               {t('profile.cancel')}
-            </button>
-            <button
-              type="button"
-              className="w-full sm:w-auto py-2 sm:py-1.5 px-3.5 rounded-full text-sm font-medium cursor-pointer border-none bg-odoo-purple text-text-inverse hover:bg-odoo-purple-d disabled:opacity-70"
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleSave}
               disabled={saving}
+              loading={saving}
+              className="w-full sm:w-auto"
             >
               {saving ? t('profile.saving') : t('profile.save')}
-            </button>
+            </Button>
           </FormActions>
         </section>
       )}
     </>
+  )
+}
+
+/**
+ * Tarjeta de preferencias en el perfil.
+ * Sustituye al `LocaleSelector` global del antiguo topbar.
+ */
+function PreferencesCard() {
+  const { t, locale, setLocale, localeOptions } = useLocale()
+  return (
+    <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
+      <h4 className="m-0 mb-4 text-[0.95rem] font-semibold text-text-primary dark:text-text-dark-secondary">
+        {t('profile.preferences') || 'Preferencias'}
+      </h4>
+      <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2 sm:gap-3 items-center">
+        <label
+          htmlFor="profile-locale-select"
+          className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary"
+        >
+          {t('profile.language') || 'Idioma'}
+        </label>
+        <select
+          id="profile-locale-select"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+          className="max-w-[260px] py-2 px-3 rounded-md border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-bg text-sm text-text-primary dark:text-text-dark-primary outline-none focus:border-odoo-purple dark:focus:border-odoo-dark-purple focus:shadow-input"
+        >
+          {localeOptions.map((opt: { code: string; label: string }) => (
+            <option key={opt.code} value={opt.code}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   )
 }
 

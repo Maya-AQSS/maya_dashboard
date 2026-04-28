@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef, useId } from 'react'
+import { useState, useRef } from 'react'
+import { ConfirmDialog } from '@maya/shared-ui-react'
 import { useLocale } from '../../../shared/i18n'
 
 function ToolsCard({ tool, onToggleFavorite }) {
   const { t } = useLocale()
   const isFavorite = Boolean(tool.isFavorite)
   const [showConfirm, setShowConfirm] = useState(false)
-  const titleId = useId()
   const starButtonRef = useRef(null)
-  const cancelButtonRef = useRef(null)
-  const prevConfirmOpen = useRef(false)
 
   const handleStarClick = (event) => {
     event.preventDefault()
@@ -24,26 +22,6 @@ function ToolsCard({ tool, onToggleFavorite }) {
   const handleCancel = () => {
     setShowConfirm(false)
   }
-
-  useEffect(() => {
-    if (!showConfirm) return undefined
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        setShowConfirm(false)
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    cancelButtonRef.current?.focus()
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [showConfirm])
-
-  useEffect(() => {
-    if (prevConfirmOpen.current && !showConfirm) {
-      requestAnimationFrame(() => starButtonRef.current?.focus())
-    }
-    prevConfirmOpen.current = showConfirm
-  }, [showConfirm])
 
   const title = isFavorite
     ? t('tools.removeFromFavoritesTitle', { name: tool.name })
@@ -86,42 +64,16 @@ function ToolsCard({ tool, onToggleFavorite }) {
         </a>
       </article>
 
-      {showConfirm && (
-        <div
-          className="fixed inset-0 bg-black/50 dark:bg-ui-dark-bg/80 flex items-center justify-center z-40"
-          onClick={handleCancel}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            className="bg-ui-card dark:bg-ui-dark-card rounded-[0.9rem] p-4 sm:p-5 max-w-[360px] w-[90%] border border-transparent dark:border-ui-dark-border shadow-[0_20px_40px_-16px_rgba(15,23,42,0.4),0_0_0_1px_rgba(148,163,184,0.4)] dark:shadow-none"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4 id={titleId} className="m-0 mb-2 text-base font-semibold text-text-primary dark:text-text-dark-primary">
-              {title}
-            </h4>
-            <p className="m-0 mb-4 text-sm text-text-secondary dark:text-text-dark-secondary">{message}</p>
-            <div className="flex justify-end gap-2">
-              <button
-                ref={cancelButtonRef}
-                type="button"
-                className="py-1.5 px-3.5 rounded-full border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-secondary dark:text-text-dark-primary text-sm font-medium cursor-pointer hover:bg-ui-body dark:hover:bg-ui-dark-bg focus:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple"
-                onClick={handleCancel}
-              >
-                {t('profile.cancel')}
-              </button>
-              <button
-                type="button"
-                className="py-1.5 px-3.5 rounded-full border-none bg-odoo-purple text-text-inverse text-sm font-medium cursor-pointer hover:bg-odoo-purple-d focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-                onClick={handleConfirm}
-              >
-                {t('tools.confirm')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showConfirm}
+        title={title}
+        description={message}
+        confirmLabel={t('tools.confirm')}
+        cancelLabel={t('profile.cancel')}
+        variant={isFavorite ? 'danger' : 'primary'}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </>
   )
 }

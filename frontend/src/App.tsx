@@ -2,12 +2,11 @@ import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@maya/shared-layout-react'
-import { LocaleSelector, NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
+import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
 import { useAuth, useOidcSession } from '@maya/shared-auth-react'
 import { useNavItems } from './components/layout'
 import { LocaleProvider } from './shared/i18n'
 import { ToastProvider } from './shared/context/ToastContext'
-import { TopbarActionsProvider, useTopbarActions } from './shared/context/TopbarActionsContext'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
 import GlobalErrorBoundary from './shared/components/GlobalErrorBoundary'
 import PageSkeleton from './shared/components/PageSkeleton'
@@ -63,12 +62,12 @@ function AppRoutes() {
 
 function AppWithLayout() {
   const { logout, user } = useOidcSession()
-  const { actions: topbarActions } = useTopbarActions()
   const navItems = useNavItems()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
 
   const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
+  const userEmail = (user?.email as string | undefined) ?? undefined
   const userInitials = displayName
     ? displayName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : 'U'
@@ -79,21 +78,16 @@ function AppWithLayout() {
       <AppLayout
         navItems={navItems}
         brandName="Maya Dashboard"
-        brandVersion="Maya Dashboard v1.0"
+        brandVersion="v1.0"
         userName={displayName}
+        userEmail={userEmail}
         userInitials={userInitials}
         onLogout={logout}
         onProfile={() => navigate('/profile')}
-        topbarActions={
-          <div className="flex items-center gap-2">
-            {topbarActions}
-            <NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />
-            <LocaleSelector />
-          </div>
-        }
-        sidebarFooter={
+        favoritesSlot={
           <SidebarFavorites label={t('favorites.title')} dashboardApiUrl={DASHBOARD_API_URL} />
         }
+        notificationsSlot={<NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />}
       >
         <AppRoutes />
       </AppLayout>
@@ -107,13 +101,11 @@ function AppProviders({ children }: { children: ReactNode }) {
   return (
     <LocaleProvider>
       <ToastProvider>
-        <TopbarActionsProvider>
-          <GlobalErrorBoundary>
-            <FavoritesProvider>
-              {children}
-            </FavoritesProvider>
-          </GlobalErrorBoundary>
-        </TopbarActionsProvider>
+        <GlobalErrorBoundary>
+          <FavoritesProvider>
+            {children}
+          </FavoritesProvider>
+        </GlobalErrorBoundary>
       </ToastProvider>
     </LocaleProvider>
   )

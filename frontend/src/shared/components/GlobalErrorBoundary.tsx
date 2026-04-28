@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { Button } from '@maya/shared-ui-react'
 import { useLocale } from '../i18n'
 
 class GlobalErrorBoundaryInner extends Component {
@@ -34,13 +35,11 @@ class GlobalErrorBoundaryInner extends Component {
             <p className="m-0 text-sm sm:text-base text-text-secondary dark:text-text-dark-secondary">
               {this.props.description}
             </p>
-            <button
-              type="button"
-              onClick={this.handleReload}
-              className="inline-flex items-center justify-center mt-6 py-2.5 px-5 rounded-full border-none bg-odoo-purple !text-text-inverse text-sm font-semibold cursor-pointer transition hover:bg-odoo-purple-d"
-            >
-              {this.props.reloadLabel}
-            </button>
+            <div className="mt-6">
+              <Button variant="primary" size="md" onClick={this.handleReload}>
+                {this.props.reloadLabel}
+              </Button>
+            </div>
           </div>
         </div>
       )

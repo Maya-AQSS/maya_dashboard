@@ -1,10 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
+import { DashboardEditToggleButton } from '@maya/shared-dashboard-react'
 import { WIDGET_REGISTRY } from '../widgets/registry'
 import WidgetGrid from '../components/WidgetGrid'
-import DashboardEditToggleButton from '../components/DashboardEditToggleButton'
 import DashboardEditToolbar from '../components/DashboardEditToolbar'
-import { useTopbarActions } from '../../../shared/context/TopbarActionsContext'
 import { useToast } from '../../../shared/context/ToastContext'
 import { useLocale } from '../../../shared/i18n'
 
@@ -23,7 +22,6 @@ function DashboardPage() {
   const [editable, setEditable] = useState(false)
   const [draftLayout, setDraftLayout] = useState(null)
   const snapshotRef = useRef(null)
-  const { setActions } = useTopbarActions()
   const toast = useToast()
   const { t } = useLocale()
 
@@ -94,20 +92,16 @@ function DashboardPage() {
     }
   }, [resetToDefault, toast, t])
 
-  useEffect(() => {
-    if (loading) return
-    setActions(
-      <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
-    )
-    return () => setActions(null)
-  }, [loading, editable, handleToggleEdit, setActions])
-
   if (loading) {
     return <DashboardSkeleton />
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div>
+      {/* Botón de edición inline (antes vivía en el topbar). */}
+      <div className="flex items-center justify-end mb-3">
+        <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
+      </div>
       {editable && (
         <DashboardEditToolbar
           layout={activeLayout}

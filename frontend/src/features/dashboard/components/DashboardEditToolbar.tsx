@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { Button } from '@maya/shared-ui-react'
 import { useLocale } from '../../../shared/i18n'
 import { WIDGET_REGISTRY } from '../widgets/registry'
 
@@ -25,35 +26,31 @@ function DashboardEditToolbar({ layout, onSave, onCancel, onAddWidget, onReset }
         <span className="text-xs font-medium text-text-secondary dark:text-text-dark-secondary mr-2">
           {t('dashboard.editMode')}
         </span>
-        <button
-          type="button"
-          onClick={onSave}
-          className="py-1 px-3 rounded-full bg-odoo-purple hover:bg-odoo-purple-d text-text-inverse text-xs font-medium transition"
-        >
+        <Button variant="primary" size="xs" onClick={onSave}>
           {t('dashboard.save')}
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="py-1 px-3 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary text-xs font-medium hover:bg-ui-body dark:hover:bg-ui-dark-bg transition"
-        >
+        </Button>
+        <Button variant="secondary" size="xs" onClick={onCancel}>
           {t('dashboard.cancel')}
-        </button>
+        </Button>
         <div className="relative" ref={dropdownRef}>
-          <button
-            type="button"
+          <Button
+            variant="outlineWarning"
+            size="xs"
             onClick={() => setDropdownOpen((v) => !v)}
             disabled={availableToAdd.length === 0}
-            className="py-1 px-3 rounded-full border border-warning/80 dark:border-warning/60 text-warning-dark dark:text-warning text-xs font-medium hover:enabled:bg-warning-light dark:hover:enabled:bg-warning/10 transition disabled:opacity-40 disabled:cursor-default"
           >
             + {t('dashboard.addWidget')}
-          </button>
+          </Button>
           {dropdownOpen && availableToAdd.length > 0 && (
-            <div className="absolute left-0 top-full mt-1 z-[300] min-w-[180px] bg-ui-card dark:bg-ui-dark-card border border-ui-border dark:border-ui-dark-border rounded-xl shadow-lg overflow-hidden">
+            <div
+              role="menu"
+              className="absolute left-0 top-full mt-1 z-[300] min-w-[180px] bg-ui-card dark:bg-ui-dark-card border border-ui-border dark:border-ui-dark-border rounded-xl shadow-lg overflow-hidden"
+            >
               {availableToAdd.map((def) => (
                 <button
                   key={def.id}
                   type="button"
+                  role="menuitem"
                   onClick={() => { onAddWidget(def.id); setDropdownOpen(false) }}
                   className="w-full text-left px-4 py-2 text-sm text-text-primary dark:text-text-dark-primary hover:bg-ui-body dark:hover:bg-ui-dark-bg transition"
                 >
@@ -63,13 +60,9 @@ function DashboardEditToolbar({ layout, onSave, onCancel, onAddWidget, onReset }
             </div>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onReset}
-          className="py-1 px-3 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-muted text-xs font-medium hover:bg-ui-body dark:hover:bg-ui-dark-bg transition"
-        >
+        <Button variant="outline" size="xs" onClick={onReset}>
           {t('dashboard.resetLayout')}
-        </button>
+        </Button>
       </div>
     </div>
   )

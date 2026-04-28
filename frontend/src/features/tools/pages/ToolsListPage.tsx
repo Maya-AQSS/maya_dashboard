@@ -1,11 +1,11 @@
 import { useMemo, useCallback } from 'react'
+import {Button, PageTitle} from '@maya/shared-ui-react'
 import useToolsData from '../hooks/useToolsData'
 import { useToolsListFilters, PAGE_SIZE_OPTIONS } from '../hooks/useToolsListFilters'
 import { useDebounce } from '../../../shared/hooks/useDebounce'
 import { useIsMobile } from '../../../shared/hooks/useIsMobile'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
-import PageHeader from '../../../shared/components/PageHeader'
 import { useLocale } from '../../../shared/i18n'
 import { buildVisibleTools, paginate, getPageNumbersToDisplay } from '../lib/toolsListView'
 
@@ -64,16 +64,21 @@ function ToolsListPage() {
   )
 
   if (loading) return <div className="text-text-primary dark:text-text-dark-primary">{t('tools.loading')}</div>
-  if (error) return <div className="text-danger dark:text-danger">{error}</div>
+  if (error)
+    return (
+      <div role="alert" aria-live="assertive" className="text-danger dark:text-danger">
+        {error}
+      </div>
+    )
   if (!tools || tools.length === 0) return <p className="text-text-primary dark:text-text-dark-primary">{t('tools.noTools')}</p>
 
 
   return (
     <>
-      <PageHeader
-        centerTitleOnMobile
+      <PageTitle
+        centerOnMobile
         title={showAll ? t('tools.allTools') : t('tools.favoriteTools')}
-        rightAction={
+        actions={
           !isMobile ? (
             <ToolsToggleButton
               showAll={showAll}
@@ -100,14 +105,15 @@ function ToolsListPage() {
               onChange={handleSearchChange}
             />
             {searchTerm && (
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent text-text-secondary dark:text-text-dark-secondary cursor-pointer text-lg leading-none hover:text-text-primary dark:hover:text-text-dark-primary"
+              <Button
+                variant="ghost"
+                size="xs"
                 onClick={handleClearSearch}
                 aria-label={t('tools.clearSearch')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 !text-lg leading-none"
               >
                 ×
-              </button>
+              </Button>
             )}
           </div>
           <div className="shrink-0 sm:hidden">
@@ -150,14 +156,9 @@ function ToolsListPage() {
         <div className="w-full mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-ui-border-l dark:border-ui-dark-border flex flex-col items-center gap-3">
           {!isMobile && totalItems > pageSize && (
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                className="py-1.5 px-3.5 rounded-full border border-warning/80 dark:border-warning/60 bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning text-sm font-medium cursor-pointer shadow-[0_4px_10px_-6px_rgba(245,158,11,0.4)] dark:shadow-none disabled:opacity-45 disabled:cursor-default disabled:transform-none hover:enabled:bg-warning/20 dark:hover:enabled:bg-warning-dark/60 hover:enabled:shadow-[0_6px_14px_-8px_rgba(245,158,11,0.6)]"
-                onClick={handlePrevPage}
-                disabled={!canGoPrev}
-              >
+              <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={!canGoPrev}>
                 {t('tools.prev')}
-              </button>
+              </Button>
 
               <nav className="flex items-center gap-1" aria-label={t('tools.paginationLabel')}>
                 {pageNumbersToShow.map((item, idx) =>
@@ -170,44 +171,31 @@ function ToolsListPage() {
                       …
                     </span>
                   ) : (
-                    <button
+                    <Button
                       key={item}
-                      type="button"
+                      variant={item === currentPageSafe ? 'primary' : 'secondary'}
+                      size="xs"
                       onClick={() => setCurrentPage(item)}
-                      className={`min-w-[2rem] py-1.5 px-2 rounded-full text-sm font-medium cursor-pointer transition ${
-                        item === currentPageSafe
-                          ? 'border-none bg-odoo-purple text-text-inverse shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none hover:bg-odoo-purple-d'
-                          : 'border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary hover:border-warning-dark dark:hover:border-odoo-purple hover:bg-warning-light/30 dark:hover:bg-ui-dark-card'
-                      }`}
                       aria-label={t('tools.pageNumber', { page: item })}
                       aria-current={item === currentPageSafe ? 'page' : undefined}
+                      className="min-w-[2rem]"
                     >
                       {item}
-                    </button>
+                    </Button>
                   ),
                 )}
               </nav>
 
-              <button
-                type="button"
-                className="py-1.5 px-3.5 rounded-full border-none bg-odoo-purple text-text-inverse text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:enabled:bg-odoo-purple-d hover:enabled:-translate-y-0.5 disabled:opacity-45 disabled:cursor-default disabled:transform-none"
-                onClick={handleNextPage}
-                disabled={!canGoNext}
-              >
+              <Button variant="primary" size="sm" onClick={handleNextPage} disabled={!canGoNext}>
                 {t('tools.next')}
-              </button>
+              </Button>
             </div>
           )}
 
           {isMobile && canLoadMoreMobile && (
-            <button
-              type="button"
-              className="py-2 px-4 rounded-full border-none bg-odoo-purple text-text-inverse text-sm font-medium cursor-pointer shadow-[0_8px_16px_-10px_rgba(15,23,42,0.3)] dark:shadow-none transition hover:bg-odoo-purple-d"
-              onClick={handleLoadMore}
-              aria-controls="tools-results"
-            >
+            <Button variant="primary" size="sm" onClick={handleLoadMore} aria-controls="tools-results">
               {t('tools.loadMore')}
-            </button>
+            </Button>
           )}
 
           {isMobile && (

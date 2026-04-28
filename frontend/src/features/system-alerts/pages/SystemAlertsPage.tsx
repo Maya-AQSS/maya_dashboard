@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
+import { Button, PageTitle } from '@maya/shared-ui-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 
 const SEVERITY_CLASSES = {
@@ -20,10 +21,10 @@ export default function SystemAlertsPage() {
 
   return (
     <div className="max-w-[960px] mx-auto p-4">
-      <h1 className="text-2xl font-semibold">Alertas del sistema</h1>
-      <p className="text-text-muted dark:text-text-dark-muted mb-4">
-        Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio.
-      </p>
+      <PageTitle
+        title="Alertas del sistema"
+        subtitle="Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio."
+      />
 
       <div className="flex gap-3 mb-4">
         <label>
@@ -64,10 +65,10 @@ export default function SystemAlertsPage() {
               </div>
               <div className="flex gap-1.5">
                 {!a.acknowledged_at && (
-                  <button type="button" onClick={() => onAcknowledge(a.id)}>Reconocer</button>
+                  <Button variant="outlineTeal" size="xs" onClick={() => onAcknowledge(a.id)}>Reconocer</Button>
                 )}
                 {!a.resolved_at && (
-                  <button type="button" onClick={() => onResolve(a.id)}>Resolver</button>
+                  <Button variant="primary" size="xs" onClick={() => onResolve(a.id)}>Resolver</Button>
                 )}
               </div>
             </div>

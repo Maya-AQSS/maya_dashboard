@@ -1,5 +1,6 @@
 import { Fragment, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
+import { Button } from '@maya/shared-ui-react'
 import { useLocale } from '../../../shared/i18n'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 
@@ -66,9 +67,117 @@ function pairEntries(entries, selectedDate) {
   return pairs
 }
 
+function startOfDay(date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function startOfWeek(date) {
+  // Semana empieza en domingo (igual que la imagen de referencia).
+  const d = startOfDay(date)
+  d.setDate(d.getDate() - d.getDay())
+  return d
+}
+
+function addDays(date, n) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + n)
+  return d
+}
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }) {
+  const today = startOfDay(new Date())
+  const weekStart = startOfWeek(selectedDate)
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+
+  const monthYearFmt = new Intl.DateTimeFormat(dateLocale, { month: 'long', year: 'numeric' })
+  const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'short' })
+
+  const goPrevWeek = () => onSelect(addDays(selectedDate, -7))
+  const nextDate = addDays(selectedDate, 7)
+  const canGoNext = nextDate <= today
+  const goNextWeek = () => { if (canGoNext) onSelect(nextDate) }
+
+  return (
+    <div className="px-1 pt-1 pb-1">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-display font-semibold text-text-primary dark:text-text-dark-primary capitalize">
+          {monthYearFmt.format(selectedDate)}
+        </h3>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={goPrevWeek}
+            aria-label={t('dashboard.fichaje.prevDay')}
+            className="w-6 h-6 inline-flex items-center justify-center rounded-full text-text-secondary dark:text-text-dark-secondary hover:bg-text-primary/5 dark:hover:bg-text-inverse/8 hover:text-odoo-purple dark:hover:text-odoo-dark-purple transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={goNextWeek}
+            disabled={!canGoNext}
+            aria-label={t('dashboard.fichaje.nextDay')}
+            className="w-6 h-6 inline-flex items-center justify-center rounded-full text-text-secondary dark:text-text-dark-secondary hover:bg-text-primary/5 dark:hover:bg-text-inverse/8 hover:text-odoo-purple dark:hover:text-odoo-dark-purple disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-0.5">
+        {days.map((d) => {
+          const selected = startOfDay(d).getTime() === startOfDay(selectedDate).getTime()
+          const future = d > today
+          return (
+            <button
+              key={d.toISOString()}
+              type="button"
+              onClick={() => { if (!future) onSelect(d) }}
+              disabled={future}
+              aria-pressed={selected}
+              className={[
+                'flex flex-col items-center justify-center py-1 rounded-xl transition-all',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35',
+                selected
+                  ? 'bg-ui-card dark:bg-ui-dark-card shadow-[0_3px_10px_-3px_rgba(0,0,0,0.18)] ring-1 ring-ui-border-l dark:ring-ui-dark-border'
+                  : future
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'hover:bg-ui-card/60 dark:hover:bg-ui-dark-card/40',
+              ].join(' ')}
+            >
+              <span className="text-[9px] uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
+                {weekdayFmt.format(d).replace('.', '')}
+              </span>
+              <span className="text-[12px] font-semibold text-text-primary dark:text-text-dark-primary leading-tight">
+                {d.getDate()}
+              </span>
+              <span
+                className={[
+                  'mt-0.5 w-[3px] h-[3px] rounded-full transition-opacity',
+                  selected ? 'bg-text-primary dark:bg-text-dark-primary opacity-100' : 'opacity-0',
+                ].join(' ')}
+              />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function DailyFichajesWidget() {
   const { user } = useAuth()
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
 
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date()
@@ -82,30 +191,8 @@ function DailyFichajesWidget() {
   const [requestForm, setRequestForm] = useState({ date: '', from: '', to: '' })
   const [pendingRequests, setPendingRequests] = useState({})
 
-  const goToPrevDay = () => {
-    setSelectedDate((d) => {
-      const next = new Date(d)
-      next.setDate(next.getDate() - 1)
-      return next
-    })
-    setEditingRow(null)
-    setPendingRequests({})
-  }
-
-  const goToNextDay = () => {
-    if (isToday(selectedDate)) return
-    setSelectedDate((d) => {
-      const next = new Date(d)
-      next.setDate(next.getDate() + 1)
-      return next
-    })
-    setEditingRow(null)
-    setPendingRequests({})
-  }
-
-  const handleDatePick = (e) => {
-    const [year, month, day] = e.target.value.split('-').map(Number)
-    const picked = new Date(year, month - 1, day)
+  const handleDatePicked = (date) => {
+    const picked = new Date(date)
     picked.setHours(0, 0, 0, 0)
     setSelectedDate(picked)
     setEditingRow(null)
@@ -134,32 +221,12 @@ function DailyFichajesWidget() {
 
   return (
     <div className="h-full flex flex-col gap-2">
-      <div className="flex items-center gap-2 justify-center">
-        <button
-          type="button"
-          onClick={goToPrevDay}
-          aria-label={t('dashboard.fichaje.prevDay')}
-          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary"
-        >
-          ←
-        </button>
-        <input
-          type="date"
-          value={toDateString(selectedDate)}
-          max={toDateString(new Date())}
-          onChange={handleDatePick}
-          className="text-sm border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary rounded px-2 py-1 outline-none focus:border-warning-dark"
-        />
-        <button
-          type="button"
-          onClick={goToNextDay}
-          disabled={isToday(selectedDate)}
-          aria-label={t('dashboard.fichaje.nextDay')}
-          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary disabled:opacity-40 disabled:cursor-default"
-        >
-          →
-        </button>
-      </div>
+      <WeekDatePicker
+        selectedDate={selectedDate}
+        onSelect={handleDatePicked}
+        dateLocale={dateLocale}
+        t={t}
+      />
 
       <div className="flex-1 overflow-auto">
         {loading && (
@@ -168,7 +235,9 @@ function DailyFichajesWidget() {
           </div>
         )}
         {error && !loading && (
-          <p className="text-danger dark:text-danger text-sm text-center py-4">{error}</p>
+          <p role="alert" aria-live="assertive" className="text-danger dark:text-danger text-sm text-center py-4">
+            {error}
+          </p>
         )}
         {!loading && !error && pairs.length === 0 && (
           <p className="text-text-secondary dark:text-text-dark-secondary text-sm text-center py-4">
@@ -246,32 +315,24 @@ function DailyFichajesWidget() {
                       <td className="px-1 py-1.5 text-center">
                         {isEditing ? (
                           <div className="flex flex-col gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleSubmitRequest(i)}
-                              className="py-0.5 px-1.5 rounded-full bg-odoo-purple hover:bg-odoo-purple-d text-text-inverse font-medium transition text-xs whitespace-nowrap"
-                            >
+                            <Button variant="primary" size="xs" onClick={() => handleSubmitRequest(i)}>
                               {t('dashboard.fichaje.submitModification')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingRow(null)}
-                              className="py-0.5 px-1.5 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:bg-ui-body dark:hover:bg-ui-dark-card transition text-xs"
-                            >
+                            </Button>
+                            <Button variant="secondary" size="xs" onClick={() => setEditingRow(null)}>
                               {t('dashboard.cancel')}
-                            </button>
+                            </Button>
                           </div>
                         ) : pending ? (
                           <span className="text-xs text-warning-dark dark:text-warning font-medium">⏳</span>
                         ) : (
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="xs"
                             onClick={() => handleOpenEdit(i, pair)}
                             title={t('dashboard.fichaje.requestModification')}
-                            className="text-text-muted hover:text-violet-600 dark:hover:text-violet-400 transition text-xs p-0.5 rounded"
                           >
                             ✏️
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>

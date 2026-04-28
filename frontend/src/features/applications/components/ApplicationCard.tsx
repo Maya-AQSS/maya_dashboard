@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { ConfirmDialog } from '@maya/shared-ui-react'
 import { useLocale } from '../../../shared/i18n'
-import ConfirmModal from '../../../shared/components/ConfirmModal'
 
 function ApplicationCard({ app, onToggleFavorite }) {
   const { t } = useLocale()
@@ -28,10 +28,13 @@ function ApplicationCard({ app, onToggleFavorite }) {
 
   return (
     <>
-      <ConfirmModal
-        isOpen={showConfirm}
+      <ConfirmDialog
+        open={showConfirm}
         title={modalTitle}
-        message={modalMessage}
+        description={modalMessage}
+        confirmLabel={t('favorites.confirmButton')}
+        cancelLabel={t('favorites.cancelButton')}
+        variant={isFavorite ? 'danger' : 'primary'}
         onConfirm={handleConfirm}
         onCancel={() => setShowConfirm(false)}
       />
