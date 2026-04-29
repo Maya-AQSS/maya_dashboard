@@ -5,6 +5,8 @@ echo "[entrypoint] Clearing bootstrap cache..."
 rm -f /var/www/html/bootstrap/cache/packages.php
 rm -f /var/www/html/bootstrap/cache/services.php
 
+# Sync only maya/* path packages in lock (handles stale lock when new shared package is added)
+composer update "maya/*" --no-install --no-interaction --ignore-platform-reqs --no-scripts 2>/dev/null || true
 echo "[entrypoint] Running composer install..."
 composer install --optimize-autoloader --no-interaction --ignore-platform-reqs
 
