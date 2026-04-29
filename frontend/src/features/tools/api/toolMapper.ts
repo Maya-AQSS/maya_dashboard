@@ -5,35 +5,35 @@
  * @returns {string|null}
  */
 function validateIsoDate(value) {
-  if (!value) return null
-  const date = new Date(value)
-  return isNaN(date.getTime()) ? null : value
+ if (!value) return null
+ const date = new Date(value)
+ return isNaN(date.getTime()) ? null : value
 }
 
 function mapToolFromApi(tool) {
-  const defaultUrl = '#'
+ const defaultUrl ='#'
 
-  return {
-    id: tool.id,
-    name: tool.name,
-    category: tool.category || 'aplicacion',
-    description: tool.description,
-    isFavorite: Boolean(tool.is_favorite),
-    documentationUrl: tool.traefik_url || tool.documentation_url || defaultUrl,
-    lastUsedAt: validateIsoDate(tool.last_used_at || tool.updated_at),
-  }
+ return {
+ id: tool.id,
+ name: tool.name,
+ category: tool.category ||'aplicacion',
+ description: tool.description,
+ isFavorite: Boolean(tool.is_favorite),
+ documentationUrl: tool.traefik_url || tool.documentation_url || defaultUrl,
+ lastUsedAt: validateIsoDate(tool.last_used_at || tool.updated_at),
+ }
 }
 
 function mapToolToApi(tool) {
-  return {
-    id: tool.id,
-    name: tool.name,
-    category: tool.category,
-    description: tool.description,
-    is_favorite: tool.isFavorite,
-    documentation_url: tool.documentationUrl,
-    last_used_at: tool.lastUsedAt,
-  }
+ return {
+ id: tool.id,
+ name: tool.name,
+ category: tool.category,
+ description: tool.description,
+ is_favorite: tool.isFavorite,
+ documentation_url: tool.documentationUrl,
+ last_used_at: tool.lastUsedAt,
+ }
 }
 
 export { mapToolFromApi, mapToolToApi }
