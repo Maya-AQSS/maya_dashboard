@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Alerts\AlertRuleController;
 use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
 use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
+use App\Http\Controllers\Api\V1\Internal\UserContextController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,4 +42,9 @@ Route::middleware('auth.keycloak')->prefix('v1/alert-rules')->group(function () 
     Route::post('/',        [AlertRuleController::class, 'store']);
     Route::put('/{id}',     [AlertRuleController::class, 'update']);
     Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);
+});
+
+// Internal user context endpoint for other microservices.
+Route::middleware('auth.keycloak')->prefix('v1/internal/user-context')->group(function () {
+    Route::get('/me', [UserContextController::class, 'me']);
 });
