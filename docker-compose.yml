@@ -38,6 +38,14 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+      ODOO_FDW_ENABLED: ${ODOO_FDW_ENABLED:-false}
+      ODOO_FDW_SERVER: ${ODOO_FDW_SERVER:-odoo_server}
+      ODOO_FDW_HOST: ${ODOO_FDW_HOST:-}
+      ODOO_FDW_PORT: ${ODOO_FDW_PORT:-5432}
+      ODOO_FDW_DATABASE: ${ODOO_FDW_DATABASE:-odoo_db}
+      ODOO_FDW_USERNAME: ${ODOO_FDW_USERNAME:-}
+      ODOO_FDW_PASSWORD: ${ODOO_FDW_PASSWORD:-}
+      ODOO_FDW_SCHEMA: ${ODOO_FDW_SCHEMA:-public}
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
@@ -83,6 +91,14 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+      ODOO_FDW_ENABLED: ${ODOO_FDW_ENABLED:-false}
+      ODOO_FDW_SERVER: ${ODOO_FDW_SERVER:-odoo_server}
+      ODOO_FDW_HOST: ${ODOO_FDW_HOST:-}
+      ODOO_FDW_PORT: ${ODOO_FDW_PORT:-5432}
+      ODOO_FDW_DATABASE: ${ODOO_FDW_DATABASE:-}
+      ODOO_FDW_USERNAME: ${ODOO_FDW_USERNAME:-}
+      ODOO_FDW_PASSWORD: ${ODOO_FDW_PASSWORD:-}
+      ODOO_FDW_SCHEMA: ${ODOO_FDW_SCHEMA:-public}
     # Skip the backend entrypoint (que hace composer install + migrate + seed)
     # pero si este contenedor no tiene vendor (su propio anonymous volume),
     # hace su composer install. Espera a que el backend complete migrations
@@ -142,6 +158,14 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+      ODOO_FDW_ENABLED: ${ODOO_FDW_ENABLED:-false}
+      ODOO_FDW_SERVER: ${ODOO_FDW_SERVER:-odoo_server}
+      ODOO_FDW_HOST: ${ODOO_FDW_HOST:-}
+      ODOO_FDW_PORT: ${ODOO_FDW_PORT:-5432}
+      ODOO_FDW_DATABASE: ${ODOO_FDW_DATABASE:-}
+      ODOO_FDW_USERNAME: ${ODOO_FDW_USERNAME:-}
+      ODOO_FDW_PASSWORD: ${ODOO_FDW_PASSWORD:-}
+      ODOO_FDW_SCHEMA: ${ODOO_FDW_SCHEMA:-public}
     entrypoint:
       - /bin/sh
       - -c

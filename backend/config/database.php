@@ -148,6 +148,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | FDW - Odoo profile source (optional)
+    |--------------------------------------------------------------------------
+    | This block only provides connection metadata used by migrations/repositories
+    | that opt in to read user profile data from Odoo through postgres_fdw.
+    */
+    'fdw' => [
+        'odoo' => [
+            'enabled' => filter_var(env('ODOO_FDW_ENABLED', false), FILTER_VALIDATE_BOOL),
+            'server' => env('ODOO_FDW_SERVER', 'odoo_server'),
+            'host' => env('ODOO_FDW_HOST', '127.0.0.1'),
+            'port' => env('ODOO_FDW_PORT', '5432'),
+            'database' => env('ODOO_FDW_DATABASE', 'odoo_db'),
+            'username' => env('ODOO_FDW_USERNAME', ''),
+            'password' => env('ODOO_FDW_PASSWORD', ''),
+            'schema' => env('ODOO_FDW_SCHEMA', 'public'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Redis Databases
     |--------------------------------------------------------------------------
     |
