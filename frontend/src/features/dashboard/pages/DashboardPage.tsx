@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
-import { DashboardEditToggleButton } from '@maya/shared-dashboard-react'
+import {
+  DashboardEditToggleButton,
+  DashboardEditToolbar,
+  WidgetGrid,
+} from '@maya/shared-dashboard-react'
 import { WIDGET_REGISTRY } from '../widgets/registry'
-import WidgetGrid from '../components/WidgetGrid'
-import DashboardEditToolbar from '../components/DashboardEditToolbar'
-import { useToast } from '../../../shared/context/ToastContext'
-import { useLocale } from '../../../shared/i18n'
+import { PageTitle, useToast } from '@maya/shared-ui-react'
+import { useLocale } from '@maya/shared-i18n-react'
 
 function DashboardSkeleton() {
   return (
@@ -22,7 +24,7 @@ function DashboardPage() {
   const [editable, setEditable] = useState(false)
   const [draftLayout, setDraftLayout] = useState(null)
   const snapshotRef = useRef(null)
-  const toast = useToast()
+  const { show: showToast } = useToast()
   const { t } = useLocale()
 
   const activeLayout = editable ? (draftLayout ?? layout) : layout
@@ -44,11 +46,11 @@ function DashboardPage() {
       await saveLayout(draftLayout ?? layout)
       setEditable(false)
       setDraftLayout(null)
-      toast.success(t('dashboard.savedSuccess'))
+      showToast({ title: t('dashboard.savedSuccess'), tone: 'success' })
     } catch {
-      toast.error(t('dashboard.savedError'))
+      showToast({ title: t('dashboard.savedError'), tone: 'danger' })
     }
-  }, [saveLayout, draftLayout, layout, toast, t])
+  }, [saveLayout, draftLayout, layout, showToast, t])
 
   const handleCancel = useCallback(() => {
     setDraftLayout(null)
@@ -86,38 +88,52 @@ function DashboardPage() {
       await resetToDefault()
       setEditable(false)
       setDraftLayout(null)
-      toast.info(t('dashboard.resetSuccess'))
+      showToast({ title: t('dashboard.resetSuccess'), tone: 'info' })
     } catch {
-      toast.error(t('dashboard.savedError'))
+      showToast({ title: t('dashboard.savedError'), tone: 'danger' })
     }
-  }, [resetToDefault, toast, t])
+  }, [resetToDefault, showToast, t])
 
   if (loading) {
     return <DashboardSkeleton />
   }
 
   return (
-    <div>
-      {/* Botón de edición inline (antes vivía en el topbar). */}
-      <div className="flex items-center justify-end mb-3">
-        <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
-      </div>
-      {editable && (
-        <DashboardEditToolbar
-          layout={activeLayout}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onAddWidget={handleAddWidget}
-          onReset={handleReset}
-        />
-      )}
+    <>
+      <PageTitle
+        title={t('dashboard.title')}
+        actions={
+          editable ? (
+            <DashboardEditToolbar
+              layout={activeLayout}
+              registry={WIDGET_REGISTRY}
+              t={t}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              onReset={handleReset}
+              onAddWidget={handleAddWidget}
+              labels={{
+                save: t('dashboard.save'),
+                cancel: t('dashboard.cancel'),
+                reset: t('dashboard.resetLayout'),
+                addWidget: t('dashboard.addWidget'),
+              }}
+            />
+          ) : (
+            <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
+          )
+        }
+      />
+
       <WidgetGrid
+        registry={WIDGET_REGISTRY}
         layout={activeLayout}
         onLayoutChange={handleLayoutChange}
         editable={editable}
         onRemoveWidget={handleRemoveWidget}
+        t={t}
       />
-    </div>
+    </>
   )
 }
 

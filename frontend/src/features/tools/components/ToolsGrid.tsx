@@ -1,5 +1,5 @@
 import ToolsCard from './ToolsCard'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 
 function ToolsGrid({ tools, onToggleFavorite }) {
     const { t } = useLocale()

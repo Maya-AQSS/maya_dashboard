@@ -1,4 +1,4 @@
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import ApplicationCard from './ApplicationCard'
 
 function ApplicationsGrid({ apps, onToggleFavorite }) {

@@ -1,13 +1,13 @@
 import { useMemo, useCallback } from 'react'
-import {Button, PageTitle} from '@maya/shared-ui-react'
+import { Button, PageTitle, Pagination } from '@maya/shared-ui-react'
 import useApplicationsData from '../hooks/useApplicationsData'
 import { useToolsListFilters, PAGE_SIZE_OPTIONS } from '../../tools/hooks/useToolsListFilters'
 import { useDebounce } from '../../../shared/hooks/useDebounce'
 import { useIsMobile } from '../../../shared/hooks/useIsMobile'
 import ApplicationsGrid from '../components/ApplicationsGrid'
 import ApplicationsToggleButton from '../components/ApplicationsToggleButton'
-import { useLocale } from '../../../shared/i18n'
-import { paginate, getPageNumbersToDisplay } from '../../tools/lib/toolsListView'
+import { useLocale } from '@maya/shared-i18n-react'
+import { paginate } from '../../tools/lib/toolsListView'
 
 function buildVisibleApps(apps, { showAll, searchTerm }) {
   let result = showAll ? apps : apps.filter((a) => a.isFavorite)
@@ -49,7 +49,7 @@ function ApplicationsListPage() {
     [visibleApps, pageSize, currentPage],
   )
 
-  const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex, canGoPrev, canGoNext } = desktopMeta
+  const { totalItems, totalPages, currentPage: currentPageSafe, startIndex, endIndex } = desktopMeta
 
   const { mobileEndIndex, mobilePageItems } = useMemo(() => {
     const endIdx = Math.min(currentPageSafe * pageSize, totalItems)
@@ -59,22 +59,9 @@ function ApplicationsListPage() {
   const pageItems = isMobile ? mobilePageItems : desktopPageItems
   const canLoadMoreMobile = isMobile && mobileEndIndex < totalItems
 
-  const handlePrevPage = useCallback(() => {
-    if (canGoPrev) setCurrentPage((page) => page - 1)
-  }, [canGoPrev, setCurrentPage])
-
-  const handleNextPage = useCallback(() => {
-    if (canGoNext) setCurrentPage((page) => page + 1)
-  }, [canGoNext, setCurrentPage])
-
   const handleLoadMore = useCallback(() => {
     if (canLoadMoreMobile) setCurrentPage((page) => page + 1)
   }, [canLoadMoreMobile, setCurrentPage])
-
-  const pageNumbersToShow = useMemo(
-    () => getPageNumbersToDisplay(currentPageSafe, totalPages),
-    [currentPageSafe, totalPages],
-  )
 
   if (loading) return <div className="text-text-primary dark:text-text-dark-primary">{t('applications.loading')}</div>
   if (error)
@@ -156,35 +143,15 @@ function ApplicationsListPage() {
       {totalItems > 0 && (
         <div className="w-full mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-ui-border-l dark:border-ui-dark-border flex flex-col items-center gap-3">
           {!isMobile && totalItems > pageSize && (
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-              <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={!canGoPrev}>
-                {t('applications.prev')}
-              </Button>
-
-              <nav className="flex items-center gap-1" aria-label={t('applications.paginationLabel')}>
-                {pageNumbersToShow.map((item, idx) =>
-                  item === 'ellipsis' ? (
-                    <span key={`ellipsis-${idx}`} className="px-1.5 text-text-secondary dark:text-text-dark-secondary text-sm" aria-hidden="true">…</span>
-                  ) : (
-                    <Button
-                      key={item}
-                      variant={item === currentPageSafe ? 'primary' : 'secondary'}
-                      size="xs"
-                      onClick={() => setCurrentPage(item)}
-                      aria-label={t('applications.pageNumber', { page: item })}
-                      aria-current={item === currentPageSafe ? 'page' : undefined}
-                      className="min-w-[2rem]"
-                    >
-                      {item}
-                    </Button>
-                  ),
-                )}
-              </nav>
-
-              <Button variant="primary" size="sm" onClick={handleNextPage} disabled={!canGoNext}>
-                {t('applications.next')}
-              </Button>
-            </div>
+            <Pagination
+              currentPage={currentPageSafe}
+              totalPages={totalPages}
+              onChange={setCurrentPage}
+              ariaLabel={t('applications.paginationLabel')}
+              prevLabel={t('applications.prev')}
+              nextLabel={t('applications.next')}
+              pageAriaLabel={(p) => t('applications.pageNumber', { page: p })}
+            />
           )}
 
           {isMobile && canLoadMoreMobile && (

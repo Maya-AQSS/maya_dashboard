@@ -1,4 +1,5 @@
 export default {
+  title: 'Panell',
   editDashboard: 'Editar tauler',
   exitEdit: "Eixir del mode d'edició",
   editMode: "Mode d'edició",

@@ -6,7 +6,7 @@ import { useDebounce } from '../../../shared/hooks/useDebounce'
 import { useIsMobile } from '../../../shared/hooks/useIsMobile'
 import ToolsGrid from '../components/ToolsGrid'
 import ToolsToggleButton from '../components/ToolsToggleButton'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import { buildVisibleTools, paginate, getPageNumbersToDisplay } from '../lib/toolsListView'
 
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { notifyFavoritesChanged } from '@maya/shared-sidebar-react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
 function resolveFavoritesErrorMessage(err, fallbackKey, t) {

@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { Button } from '@maya/shared-ui-react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 
 function toDateString(date) {

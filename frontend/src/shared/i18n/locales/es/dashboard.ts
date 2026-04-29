@@ -1,4 +1,5 @@
 export default {
+  title: 'Panel',
   editDashboard: 'Editar dashboard',
   exitEdit: 'Salir de edición',
   editMode: 'Modo edición',

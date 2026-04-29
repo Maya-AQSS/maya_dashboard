@@ -5,7 +5,7 @@ import {Button, PageTitle} from '@maya/shared-ui-react'
 import FormField from '../../../shared/components/FormField'
 import FormSection from '../../../shared/components/FormSection'
 import FormActions from '../../../shared/components/FormActions'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
 

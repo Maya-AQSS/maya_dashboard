@@ -21,7 +21,7 @@ vi.mock('../hooks/useToolsData', () => ({
 }))
 
 // Mock de useLocale — devuelve las claves tal cual para simplificar aserciones
-vi.mock('../../../shared/i18n', () => ({
+vi.mock('@maya/shared-i18n-react', () => ({
   useLocale: () => ({
     t: (key) => key,
     locale: 'es',

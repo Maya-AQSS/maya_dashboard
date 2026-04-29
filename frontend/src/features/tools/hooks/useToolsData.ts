@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import { getToolsData } from '../api/toolsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 

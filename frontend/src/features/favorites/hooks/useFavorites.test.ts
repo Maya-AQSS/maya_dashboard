@@ -6,7 +6,7 @@ vi.mock('@maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('../../../shared/i18n', () => ({
+vi.mock('@maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -17,7 +17,7 @@ vi.mock('../api/favoritesApi', () => ({
 }))
 
 import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
 const mockUser = { sub: 'u-123', token: 'tok-abc' }

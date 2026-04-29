@@ -1,4 +1,5 @@
 export default {
+  title: 'Dashboard',
   editDashboard: 'Edit dashboard',
   exitEdit: 'Exit edit mode',
   editMode: 'Edit mode',

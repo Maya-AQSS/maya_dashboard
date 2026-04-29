@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { ConfirmDialog } from '@maya/shared-ui-react'
-import { useLocale } from '../../../shared/i18n'
+import { useLocale } from '@maya/shared-i18n-react'
 
 function ToolsCard({ tool, onToggleFavorite }) {
   const { t } = useLocale()
