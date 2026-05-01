@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
-import { getToolsData } from '../../tools/api/toolsApi'
+import { getApplicationsData } from '../api/applicationsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 
 function resolveErrorMessage(err, fallbackKey, t) {
   const msg = err?.message ?? ''
-  if (msg.startsWith('applications.') || msg.startsWith('tools.') || msg.startsWith('favorites.')) return t(msg)
+  if (msg.startsWith('applications.') || msg.startsWith('favorites.')) return t(msg)
   if (msg) return msg
   return t(fallbackKey)
 }
@@ -37,10 +37,10 @@ function useApplicationsData() {
       setError(null)
 
       try {
-        const appsResponse = await getToolsData(user.sub, token)
+        const appsResponse = await getApplicationsData(user.sub, token)
 
         if (isMounted) {
-          setRawApps(appsResponse.tools || [])
+          setRawApps(appsResponse.applications || [])
         }
       } catch (err) {
         if (isMounted) {

@@ -1,7 +1,6 @@
 export default {
   brand: 'Panell principal',
   language: 'Idioma',
-  tools: 'Eines',
   profile: 'Dades personals',
   profileOf: 'Dades personals de {name}',
   logout: 'Tancar sessió',

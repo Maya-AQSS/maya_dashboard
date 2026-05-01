@@ -5,7 +5,7 @@ import { useLocale } from '@maya/shared-i18n-react'
 function NotFoundPage() {
   const { user } = useAuth()
   const { t } = useLocale()
-  const targetPath = user ? '/tools' : '/login'
+  const targetPath = user ? '/applications' : '/login'
   const actionLabel = user ? t('layout.notFoundBackDashboard') : t('layout.notFoundGoLogin')
 
   return (

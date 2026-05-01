@@ -1,7 +1,6 @@
 import nav from './nav.js'
 import layout from './layout.js'
 import auth from './auth.js'
-import tools from './tools.js'
 import applications from './applications.js'
 import profile from './profile.js'
 import favorites from './favorites.js'
@@ -13,7 +12,6 @@ export default {
   nav,
   layout,
   auth,
-  tools,
   applications,
   profile,
   favorites,

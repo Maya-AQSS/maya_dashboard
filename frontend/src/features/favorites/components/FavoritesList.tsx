@@ -40,7 +40,7 @@ function FavoriteCard({ fav, onRemove }) {
             rel="noopener noreferrer"
             className="mt-auto text-xs text-odoo-purple hover:underline"
           >
-            {t('tools.documentation')}
+            {t('applications.documentation')}
           </a>
         )}
       </article>
@@ -48,7 +48,7 @@ function FavoriteCard({ fav, onRemove }) {
         open={showConfirm}
         title={t('favorites.removeFromFavoritesTitle', { name: fav.name })}
         description={t('favorites.removeFromFavoritesMessage')}
-        confirmLabel={t('tools.confirm')}
+        confirmLabel={t('favorites.confirmButton')}
         cancelLabel={t('profile.cancel')}
         variant="danger"
         onConfirm={handleConfirm}

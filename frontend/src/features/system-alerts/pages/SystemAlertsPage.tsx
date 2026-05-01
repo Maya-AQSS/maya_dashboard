@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
-import { Button, PageTitle } from '@maya/shared-ui-react'
+import { Button, Checkbox, PageTitle, Select } from '@maya/shared-ui-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 
 const SEVERITY_CLASSES = {
   critical: 'border-l-danger',
-  high:     'border-l-orange-500',
+  high:     'border-l-warning-dark',
   medium:   'border-l-warning',
   low:      'border-l-info',
 }
@@ -26,21 +26,24 @@ export default function SystemAlertsPage() {
         subtitle="Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio."
       />
 
-      <div className="flex gap-3 mb-4">
-        <label>
-          Severidad:{' '}
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
+      <div className="flex flex-wrap items-end gap-3 mb-4">
+        <div className="min-w-[180px]">
+          <label className="mb-1 block text-xs font-semibold text-text-secondary dark:text-text-dark-secondary">
+            Severidad
+          </label>
+          <Select fieldSize="md" value={severity} onChange={(e) => setSeverity(e.target.value)}>
             <option value="">Todas</option>
             <option value="critical">Critical</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="low">Low</option>
-          </select>
-        </label>
-        <label>
-          <input type="checkbox" checked={activeOnly} onChange={(e) => setActiveOnly(e.target.checked)} />
-          {' '}Solo activas
-        </label>
+          </Select>
+        </div>
+        <Checkbox
+          checked={activeOnly}
+          onChange={setActiveOnly}
+          label="Solo activas"
+        />
       </div>
 
       {loading && <p>Cargando…</p>}

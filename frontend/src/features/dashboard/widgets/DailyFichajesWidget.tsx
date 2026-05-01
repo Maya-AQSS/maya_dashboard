@@ -155,10 +155,10 @@ function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }) {
                     : 'hover:bg-ui-card/60 dark:hover:bg-ui-dark-card/40',
               ].join(' ')}
             >
-              <span className="text-[9px] uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
+              <span className="text-xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
                 {weekdayFmt.format(d).replace('.', '')}
               </span>
-              <span className="text-[12px] font-semibold text-text-primary dark:text-text-dark-primary leading-tight">
+              <span className="text-xs font-semibold text-text-primary dark:text-text-dark-primary leading-tight">
                 {d.getDate()}
               </span>
               <span

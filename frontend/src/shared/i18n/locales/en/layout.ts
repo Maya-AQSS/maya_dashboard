@@ -9,7 +9,6 @@ export default {
   notFoundTitle: 'Page not found',
   notFoundDescription: 'The route you opened does not exist or is no longer available.',
   notFoundBackDashboard: 'Back to dashboard',
-  notFoundGoTools: 'Back to tools',
   notFoundGoLogin: 'Go to login',
   errorBoundaryTitle: 'Something went wrong in the application',
   errorBoundaryDescription: 'Try reloading the page to continue.',
