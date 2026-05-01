@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Route, Routes, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@maya/shared-layout-react'
 import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
@@ -97,7 +97,6 @@ function AppRoutes() {
       <Routes>
         <Route index element={<DashboardPage />} />
         <Route path="/applications" element={<ApplicationsListPage />} />
-        <Route path="/tools" element={<Navigate to="/applications" replace />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/alerts" element={<SystemAlertsPage />} />
         <Route path="*" element={<NotFoundPage />} />
@@ -125,6 +124,7 @@ function AppWithLayout() {
         navItems={navItems}
         brandName="Maya Dashboard"
         brandVersion="v1.0"
+        brandLogoUrl="/favicon.png"
         userName={displayName}
         userEmail={userEmail}
         userInitials={userInitials}
