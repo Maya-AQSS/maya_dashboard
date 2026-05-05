@@ -5,16 +5,18 @@ namespace App\Http\Controllers\Api\V1\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\FavoriteStoreRequest;
 use App\Http\Resources\UserFavoriteApplicationResource;
-use App\Models\User;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UserFavoriteApplicationController extends Controller
 {
+    use ResolvesKeycloakUser;
+
     public function index(Request $request): AnonymousResourceCollection
     {
-        $user = $this->resolveUser($request);
+        $user = $this->resolveKeycloakUser($request);
         $favorites = $user->favoriteApplications()->get();
 
         return UserFavoriteApplicationResource::collection($favorites);
@@ -22,7 +24,7 @@ class UserFavoriteApplicationController extends Controller
 
     public function store(FavoriteStoreRequest $request): UserFavoriteApplicationResource
     {
-        $user = $this->resolveUser($request);
+        $user = $this->resolveKeycloakUser($request);
         $applicationId = $request->validated('application_id');
 
         $user->favoriteApplications()->syncWithoutDetaching([$applicationId]);
@@ -34,29 +36,11 @@ class UserFavoriteApplicationController extends Controller
 
     public function destroy(Request $request, string $user, string $applicationId): JsonResponse
     {
-        // El parámetro $user de la URL no se usa: el usuario real viene del JWT.
         unset($user);
 
-        $resolved = $this->resolveUser($request);
+        $resolved = $this->resolveKeycloakUser($request);
         $resolved->favoriteApplications()->detach((int) $applicationId);
 
         return response()->json(null, 204);
-    }
-
-    private function resolveUser(Request $request): User
-    {
-        $jwtUser = $request->attributes->get('jwt_user');
-        $keycloakId = $jwtUser['id'] ?? null;
-
-        abort_if($keycloakId === null, 401, 'Unauthenticated');
-
-        return User::firstOrCreate(
-            ['keycloak_id' => $keycloakId],
-            [
-                'name'  => $jwtUser['name'] ?? $jwtUser['username'] ?? 'Unknown',
-                'email' => $jwtUser['email'] ?? "{$keycloakId}@keycloak.local",
-                'password' => '',
-            ],
-        );
     }
 }

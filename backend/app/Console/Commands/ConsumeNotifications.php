@@ -22,7 +22,7 @@ class ConsumeNotifications extends Command
         $consumer->consume($queue, function (array $payload, $message) {
             $recipientId = $this->resolveRecipientId($payload);
             if ($recipientId === null) {
-                $this->warn('Notification skipped: no recipient could be resolved.');
+                $this->warn('Notification skipped: no valid recipient could be resolved from Odoo employees.');
                 return;
             }
 
@@ -47,33 +47,25 @@ class ConsumeNotifications extends Command
     }
 
     /**
-     * Resolve the local users.id for the notification's recipient.
+     * Resolve the Keycloak UUID to use as recipient_id (varchar).
      *
-     * Accepts either an explicit numeric `recipient_id` from the payload, or a
-     * `recipient_keycloak_id` (UUID) under payload or metadata, which is
-     * resolved via User::firstOrCreate so notifications can arrive before the
-     * target user has logged into the dashboard.
+     * Accepts `recipient_keycloak_id` from the payload or metadata.
+     * The UUID is validated against the FDW view (odoo.v_app_users) to ensure
+     * the recipient is an active employee. Notifications for unknown employees
+     * are discarded (ack + log) — no local auto-provisioning.
      */
-    private function resolveRecipientId(array $payload): ?int
+    private function resolveRecipientId(array $payload): ?string
     {
         $keycloakId = $payload['recipient_keycloak_id']
             ?? ($payload['metadata']['recipient_keycloak_id'] ?? null);
 
         if (is_string($keycloakId) && $keycloakId !== '') {
-            $meta = is_array($payload['metadata'] ?? null) ? $payload['metadata'] : [];
-            $user = User::firstOrCreate(
-                ['keycloak_id' => $keycloakId],
-                [
-                    'name'     => $meta['recipient_name']     ?? 'User',
-                    'email'    => $meta['recipient_email']    ?? $keycloakId . '@placeholder.local',
-                    'password' => '',
-                ],
-            );
-            return (int) $user->id;
-        }
-
-        if (isset($payload['recipient_id']) && (int) $payload['recipient_id'] > 0) {
-            return (int) $payload['recipient_id'];
+            $exists = User::query()->where('id', $keycloakId)->exists();
+            if (!$exists) {
+                $this->warn("Notification skipped: recipient {$keycloakId} not found in Odoo employees.");
+                return null;
+            }
+            return $keycloakId;
         }
 
         return null;
