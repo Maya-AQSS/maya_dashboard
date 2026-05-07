@@ -17,6 +17,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${DB_USERNAME:-maya}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
       REDIS_HOST: maya_redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
@@ -70,6 +71,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${DB_USERNAME:-maya}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
       REDIS_HOST: maya_redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
@@ -130,6 +132,7 @@ services:
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${DB_USERNAME:-maya}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
       REDIS_HOST: maya_redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
