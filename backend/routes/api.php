@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\HealthCheckController;
 use App\Http\Controllers\Api\V1\Alerts\AlertController;
 use App\Http\Controllers\Api\V1\Alerts\AlertRuleController;
 use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
@@ -41,4 +42,10 @@ Route::middleware('auth.keycloak')->prefix('v1/alert-rules')->group(function () 
     Route::post('/',        [AlertRuleController::class, 'store']);
     Route::put('/{id}',     [AlertRuleController::class, 'update']);
     Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);
+});
+
+Route::prefix('v1/health')->controller(HealthCheckController::class)->group(function () {
+    Route::get('/',      'index');
+    Route::get('/live',  'live');
+    Route::get('/ready', 'ready');
 });
