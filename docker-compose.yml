@@ -101,9 +101,10 @@ services:
         done
         sed -i 's/protected \$currentJob;/public \$currentJob;/' \
           vendor/vladimir-yuldashev/laravel-queue-rabbitmq/src/Consumer.php 2>/dev/null || true
-        echo "[worker] ready — starting notifications:consume + alerts:consume"
+        echo "[worker] ready — starting notifications:consume + alerts:consume + queue:work"
         php artisan notifications:consume &
         php artisan alerts:consume &
+        php artisan queue:work --connection=database --tries=5 --backoff=30 --queue=default &
         wait
     command: []
     volumes:
