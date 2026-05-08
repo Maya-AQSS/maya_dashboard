@@ -99,6 +99,8 @@ services:
           echo "[worker] waiting for migrations (notifications table)..."
           sleep 3
         done
+        sed -i 's/protected \$currentJob;/public \$currentJob;/' \
+          vendor/vladimir-yuldashev/laravel-queue-rabbitmq/src/Consumer.php 2>/dev/null || true
         echo "[worker] ready — starting notifications:consume + alerts:consume"
         php artisan notifications:consume &
         php artisan alerts:consume &
