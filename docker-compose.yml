@@ -42,7 +42,6 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
-      - /var/www/html/vendor
     ports:
       - "${BACKEND_PORT:-8003}:8000"
     labels:
@@ -85,18 +84,16 @@ services:
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
-    # Skip the backend entrypoint (que hace composer install + migrate + seed)
-    # pero si este contenedor no tiene vendor (su propio anonymous volume),
-    # hace su composer install. Espera a que el backend complete migrations
-    # antes de consumir, para evitar race conditions con las tablas.
+    # Skip the backend entrypoint. Vendor es bind-mount compartido con el backend;
+    # el worker espera a que el backend instale las deps.
     entrypoint:
       - /bin/sh
       - -c
       - |
         cd /var/www/html
         if [ ! -f vendor/autoload.php ]; then
-          echo "[worker] vendor missing, running composer install..."
-          composer install --optimize-autoloader --no-interaction --no-ansi
+          echo "[worker] waiting for vendor (backend composer install)..."
+          while [ ! -f vendor/autoload.php ]; do sleep 3; done
         fi
         until php artisan migrate:status --no-interaction 2>/dev/null | grep -q "create_notifications_table"; do
           echo "[worker] waiting for migrations (notifications table)..."
@@ -110,7 +107,6 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
-      - /var/www/html/vendor
     networks:
       - maya_network
 
@@ -151,8 +147,8 @@ services:
       - |
         cd /var/www/html
         if [ ! -f vendor/autoload.php ]; then
-          echo "[scheduler] vendor missing, running composer install..."
-          composer install --optimize-autoloader --no-interaction --no-ansi
+          echo "[scheduler] waiting for vendor (backend composer install)..."
+          while [ ! -f vendor/autoload.php ]; do sleep 3; done
         fi
         until php artisan migrate:status --no-interaction 2>/dev/null | grep -q "create_alert_rules_table"; do
           echo "[scheduler] waiting for migrations..."
@@ -167,7 +163,6 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
-      - /var/www/html/vendor
     networks:
       - maya_network
 
