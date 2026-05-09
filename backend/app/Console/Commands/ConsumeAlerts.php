@@ -14,14 +14,25 @@ class ConsumeAlerts extends Command
 
     protected $description = 'Consume alerts.ingest and persist each alert in the alerts table';
 
+    private const SLUG_CACHE_REFRESH_EVERY = 100;
+
     public function handle(AmqpConsumer $consumer): int
     {
         $queue = (string) $this->option('queue');
         $this->info("Consuming from queue: {$queue}");
 
-        $consumer->consume($queue, function (array $payload, $message) {
+        // Pre-load valid slugs to avoid one SELECT per message (N+1).
+        // Refreshed every SLUG_CACHE_REFRESH_EVERY messages to pick up rule changes.
+        $validSlugs = $this->loadValidSlugs();
+        $processed  = 0;
+
+        $consumer->consume($queue, function (array $payload, $message) use (&$validSlugs, &$processed) {
+            if (++$processed % self::SLUG_CACHE_REFRESH_EVERY === 0) {
+                $validSlugs = $this->loadValidSlugs();
+            }
+
             $ruleSlug = $payload['rule_id'] ?? null;
-            if ($ruleSlug !== null && !AlertRule::where('slug', $ruleSlug)->exists()) {
+            if ($ruleSlug !== null && !isset($validSlugs[$ruleSlug])) {
                 $ruleSlug = null; // orphan alert — keep but decouple from FK
             }
 
@@ -41,5 +52,11 @@ class ConsumeAlerts extends Command
         });
 
         return self::SUCCESS;
+    }
+
+    /** @return array<string, true> */
+    private function loadValidSlugs(): array
+    {
+        return AlertRule::pluck('slug')->flip()->map(fn () => true)->all();
     }
 }

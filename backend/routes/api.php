@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth.keycloak')
+Route::middleware(['auth.keycloak', 'user.owns.resource'])
     ->prefix('v1/dashboard/user/{user}')
     ->group(function () {
         Route::get('favorites', [UserFavoriteApplicationController::class, 'index']);

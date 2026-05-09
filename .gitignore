@@ -50,3 +50,11 @@ __MACOSX/
 .agent/
 .github/
 !.github/workflows/
+# Claude Code — archivos generados (no commitear)
+.claude/agents/
+.claude/commands/
+.claude/rules/
+.claude/pipeline.yaml
+# Claude Code — si commitear (contexto del proyecto)
+!.claude/CLAUDE.md
+!.claude/memory/

@@ -30,7 +30,7 @@ class AlertController extends Controller
 
     public function acknowledge(Request $request, int $alertId): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
         $alert = Alert::findOrFail($alertId);
 
         if ($alert->acknowledged_at === null) {
@@ -45,7 +45,7 @@ class AlertController extends Controller
 
     public function resolve(Request $request, int $alertId): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
         $alert = Alert::findOrFail($alertId);
 
         $alert->update([

@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\AlertRule;
+use Cron\CronExpression;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maya\Messaging\Publishers\AlertPublisher;
 use Throwable;
@@ -12,10 +14,9 @@ use Throwable;
  * Evaluates every enabled alert_rule against the configured logs connection
  * and publishes an alert on maya.alerts when the rule's query returns rows.
  *
- * Scheduled via routes/console.php (typically every minute). The actual cron
- * filtering per-rule is left to the evaluator to keep Laravel's scheduler
- * simple: each rule carries schedule_cron but here we run them every tick
- * and decide via `last_evaluated_at + schedule_cron` whether to re-run.
+ * Scheduled via routes/console.php (every minute). Each rule's schedule_cron
+ * controls its own evaluation cadence: the rule is skipped if it was evaluated
+ * more recently than the cron expression would require.
  */
 class EvaluateAlertRules extends Command
 {
@@ -26,21 +27,26 @@ class EvaluateAlertRules extends Command
     public function handle(AlertPublisher $publisher): int
     {
         $logsConnection = (string) $this->option('logs-connection');
+        $now            = Carbon::now();
 
         $rules = AlertRule::where('enabled', true)->get();
         $this->info("Evaluating {$rules->count()} enabled rule(s) against connection: {$logsConnection}");
 
         foreach ($rules as $rule) {
+            if ($this->isDue($rule, $now) === false) {
+                $this->line("  ↷ skipping {$rule->slug} (not due yet per schedule_cron)");
+                continue;
+            }
+
             try {
-                $rows = DB::connection($logsConnection)
-                    ->select($rule->query_sql);
+                $rows = DB::connection($logsConnection)->select($rule->query_sql);
             } catch (Throwable $e) {
                 $this->error("Rule {$rule->slug} query failed: {$e->getMessage()}");
                 continue;
             }
 
             if (count($rows) === 0) {
-                $rule->update(['last_evaluated_at' => now()]);
+                $rule->update(['last_evaluated_at' => $now]);
                 continue;
             }
 
@@ -57,10 +63,36 @@ class EvaluateAlertRules extends Command
                 source: 'logs.aggregation',
             );
 
-            $rule->update(['last_evaluated_at' => now()]);
+            $rule->update(['last_evaluated_at' => $now]);
             $this->line("  → alert published: {$rule->slug} ({$rule->severity}, {$context['matched_rows']} rows)");
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Returns true if the rule should run now, based on schedule_cron and last_evaluated_at.
+     * If schedule_cron is not set, the rule always runs.
+     */
+    private function isDue(AlertRule $rule, Carbon $now): bool
+    {
+        if (empty($rule->schedule_cron)) {
+            return true;
+        }
+
+        if ($rule->last_evaluated_at === null) {
+            return true;
+        }
+
+        try {
+            $cron = new CronExpression($rule->schedule_cron);
+            // The previous run time is the last time the cron expression was due before now.
+            $previousRunTime = Carbon::instance($cron->getPreviousRunDate($now->toDateTime()));
+            // If we already evaluated after the previous run time, we're not due yet.
+            return $rule->last_evaluated_at->lt($previousRunTime);
+        } catch (Throwable) {
+            // Malformed cron expression — run always to avoid silent gaps.
+            return true;
+        }
     }
 }

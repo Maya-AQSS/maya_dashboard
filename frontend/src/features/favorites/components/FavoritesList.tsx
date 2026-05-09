@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { ConfirmDialog } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
-import useFavorites from '../hooks/useFavorites'
+import { useFavoritesContext } from '../context/FavoritesContext'
 
 // ─── FavoriteCard ──────────────────────────────────────────────
 function FavoriteCard({ fav, onRemove }) {
@@ -61,7 +61,7 @@ function FavoriteCard({ fav, onRemove }) {
 // ─── FavoritesList ─────────────────────────────────────────────
 function FavoritesList() {
   const { t } = useLocale()
-  const { favorites, loading, error, remove } = useFavorites()
+  const { favorites, loading, error, remove } = useFavoritesContext()
 
   if (loading) return <p className="text-sm text-text-secondary dark:text-text-dark-secondary p-4">{t('favorites.loading')}</p>
   if (error)
