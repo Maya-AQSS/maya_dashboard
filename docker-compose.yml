@@ -43,7 +43,7 @@ services:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health/live || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
