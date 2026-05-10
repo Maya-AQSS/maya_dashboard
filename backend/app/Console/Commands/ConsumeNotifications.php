@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\DataTransferObjects\IncomingNotificationPayload;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -20,7 +21,9 @@ class ConsumeNotifications extends Command
         $this->info("Consuming from queue: {$queue}");
 
         $consumer->consume($queue, function (array $payload, $message) {
-            $recipientId = $this->resolveRecipientId($payload);
+            $dto = IncomingNotificationPayload::fromArray($payload);
+
+            $recipientId = $this->resolveRecipientId($dto->recipientKeycloakId);
             if ($recipientId === null) {
                 $this->warn('Notification skipped: no valid recipient could be resolved from Odoo employees.');
                 return;
@@ -29,15 +32,15 @@ class ConsumeNotifications extends Command
             Notification::updateOrCreate(
                 ['message_id' => $message->get('message_id')],
                 [
-                    'app'          => $payload['app'],
-                    'type'         => $payload['type'],
+                    'app'          => $dto->app,
+                    'type'         => $dto->type,
                     'recipient_id' => $recipientId,
-                    'title'        => $payload['title'],
-                    'body'         => $payload['body'],
-                    'channels'     => $payload['channels'] ?? ['app'],
-                    'metadata'     => $payload['metadata'] ?? null,
-                    'created_at'   => isset($payload['created_at'])
-                        ? Carbon::parse($payload['created_at'])
+                    'title'        => $dto->title,
+                    'body'         => $dto->body,
+                    'channels'     => $dto->channels,
+                    'metadata'     => $dto->metadata,
+                    'created_at'   => $dto->createdAt !== null
+                        ? Carbon::parse($dto->createdAt)
                         : now(),
                 ],
             );
@@ -47,27 +50,20 @@ class ConsumeNotifications extends Command
     }
 
     /**
-     * Resolve the Keycloak UUID to use as recipient_id (varchar).
-     *
-     * Accepts `recipient_keycloak_id` from the payload or metadata.
-     * The UUID is validated against the FDW view (odoo.v_app_users) to ensure
-     * the recipient is an active employee. Notifications for unknown employees
-     * are discarded (ack + log) — no local auto-provisioning.
+     * Validates the Keycloak UUID against the FDW view (odoo.v_app_users).
+     * Notifications for unknown employees are discarded — no local auto-provisioning.
      */
-    private function resolveRecipientId(array $payload): ?string
+    private function resolveRecipientId(string $keycloakId): ?string
     {
-        $keycloakId = $payload['recipient_keycloak_id']
-            ?? ($payload['metadata']['recipient_keycloak_id'] ?? null);
-
-        if (is_string($keycloakId) && $keycloakId !== '') {
-            $exists = User::query()->where('id', $keycloakId)->exists();
-            if (!$exists) {
-                $this->warn("Notification skipped: recipient {$keycloakId} not found in Odoo employees.");
-                return null;
-            }
-            return $keycloakId;
+        if ($keycloakId === '') {
+            return null;
         }
 
-        return null;
+        if (!User::query()->where('id', $keycloakId)->exists()) {
+            $this->warn("Notification skipped: recipient {$keycloakId} not found in Odoo employees.");
+            return null;
+        }
+
+        return $keycloakId;
     }
 }

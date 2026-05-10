@@ -65,7 +65,9 @@ const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | un
 function isAllowedReturnUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    return parsed.hostname.endsWith('.localhost') || parsed.hostname === 'localhost'
+    const isAllowedScheme = parsed.protocol === 'http:' || parsed.protocol === 'https:'
+    const isAllowedHost = parsed.hostname.endsWith('.localhost') || parsed.hostname === 'localhost'
+    return isAllowedScheme && isAllowedHost
   } catch {
     return false
   }
@@ -79,7 +81,7 @@ function ReturnToHandler() {
     const returnTo = params.get('return_to')
     if (!returnTo || !isAllowedReturnUrl(returnTo)) return
     const redirectUrl = new URL(returnTo)
-    redirectUrl.searchParams.set('session_token', token)
+    redirectUrl.hash = `session_token=${encodeURIComponent(token)}`
     window.location.href = redirectUrl.toString()
   }, [isLoading, isAuthenticated, token])
   return null

@@ -26,7 +26,7 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-maya-dashboard-backend}
       JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
       JWT_ISSUER: ${JWT_ISSUER:-http://keycloak.localhost/realms/maya}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend}
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
       RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
@@ -42,6 +42,12 @@ services:
     volumes:
       - ./backend:/var/www/html
       - ../maya_infra/packages:/var/maya_infra/packages
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     ports:
       - "${BACKEND_PORT:-8003}:8000"
     labels:
@@ -60,7 +66,8 @@ services:
     container_name: maya_dashboard_worker
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
@@ -98,7 +105,7 @@ services:
     networks:
       - maya_network
 
-  # ─── Scheduler: runs `php artisan schedule:run` every minute ────
+  # ─── Scheduler ───────────────────────────────────────────────────
   scheduler:
     build:
       context: ./backend
@@ -106,7 +113,8 @@ services:
     container_name: maya_dashboard_scheduler
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
@@ -142,11 +150,8 @@ services:
           echo "[scheduler] waiting for migrations..."
           sleep 3
         done
-        echo "[scheduler] ready — ticking schedule:run every 60s"
-        while true; do
-          php artisan schedule:run --no-interaction || true
-          sleep 60
-        done
+        echo "[scheduler] ready — starting schedule:work"
+        exec php artisan schedule:work --no-interaction
     command: []
     volumes:
       - ./backend:/var/www/html
@@ -167,7 +172,8 @@ services:
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     volumes:
       - ./frontend:/app
       - ../maya_infra/packages:/maya_infra/packages
