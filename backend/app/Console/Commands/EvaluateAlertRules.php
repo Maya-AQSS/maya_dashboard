@@ -32,6 +32,8 @@ class EvaluateAlertRules extends Command
         $rules = AlertRule::where('enabled', true)->cursor();
         $this->info("Evaluating enabled rule(s) against connection: {$logsConnection}");
 
+        $evaluatedIds = [];
+
         foreach ($rules as $rule) {
             if ($this->isDue($rule, $now) === false) {
                 $this->line("  ↷ skipping {$rule->slug} (not due yet per schedule_cron)");
@@ -39,15 +41,19 @@ class EvaluateAlertRules extends Command
             }
 
             try {
-                DB::connection($logsConnection)->statement("SET LOCAL statement_timeout = '5s'");
-                $rows = DB::connection($logsConnection)->select($rule->query_sql);
+                // Wrap in a transaction so SET LOCAL applies to both statements.
+                $rows = DB::connection($logsConnection)->transaction(function () use ($logsConnection, $rule) {
+                    DB::connection($logsConnection)->statement("SET LOCAL statement_timeout = '5s'");
+                    return DB::connection($logsConnection)->select($rule->query_sql);
+                });
             } catch (Throwable $e) {
                 $this->error("Rule {$rule->slug} query failed: {$e->getMessage()}");
                 continue;
             }
 
+            $evaluatedIds[] = $rule->id;
+
             if (count($rows) === 0) {
-                $rule->update(['last_evaluated_at' => $now]);
                 continue;
             }
 
@@ -64,8 +70,11 @@ class EvaluateAlertRules extends Command
                 source: 'logs.aggregation',
             );
 
-            $rule->update(['last_evaluated_at' => $now]);
             $this->line("  → alert published: {$rule->slug} ({$rule->severity}, {$context['matched_rows']} rows)");
+        }
+
+        if ($evaluatedIds !== []) {
+            AlertRule::whereIn('id', $evaluatedIds)->update(['last_evaluated_at' => $now]);
         }
 
         return self::SUCCESS;
