@@ -16,7 +16,7 @@ services:
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
-      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
       REDIS_HOST: maya_redis
@@ -77,7 +77,7 @@ services:
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
-      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
       REDIS_HOST: maya_redis
@@ -126,7 +126,7 @@ services:
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
-      DB_USERNAME: ${DB_USERNAME:-maya}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
       REDIS_HOST: maya_redis

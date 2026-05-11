@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationIngestionService
 {
+    /** In-memory cache of known user IDs for the lifetime of this consumer process. */
+    private array $knownUserIds = [];
+
     public function ingest(array $payload, string $messageId): bool
     {
         $dto = IncomingNotificationPayload::fromArray($payload);
@@ -44,10 +47,16 @@ class NotificationIngestionService
             return null;
         }
 
+        if (isset($this->knownUserIds[$keycloakId])) {
+            return $keycloakId;
+        }
+
         if (!User::query()->where('id', $keycloakId)->exists()) {
             Log::warning('Notification skipped: recipient not found in users.', ['keycloak_id' => $keycloakId]);
             return null;
         }
+
+        $this->knownUserIds[$keycloakId] = true;
 
         return $keycloakId;
     }
