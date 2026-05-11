@@ -28,7 +28,7 @@ class AlertIngestionService
         $validSlugs = Cache::remember(
             self::SLUG_CACHE_KEY,
             self::SLUG_CACHE_TTL,
-            fn () => AlertRule::pluck('slug')->flip()->map(fn () => true)->all(),
+            fn () => AlertRule::pluck('slug')->flip()->all(),
         );
 
         $ruleSlug = ($dto->ruleSlug !== null && isset($validSlugs[$dto->ruleSlug]))
