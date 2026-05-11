@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Validator;
 
 class AlertIngestionService
 {
-    private const SLUG_CACHE_KEY = 'alert_rules.valid_slugs';
     private const SLUG_CACHE_TTL = 300;
 
     public function ingest(array $payload, string $messageId): void
@@ -26,7 +25,7 @@ class AlertIngestionService
         $dto = IncomingAlertPayload::fromArray($payload);
 
         $validSlugs = Cache::remember(
-            self::SLUG_CACHE_KEY,
+            AlertRule::VALID_SLUGS_CACHE_KEY,
             self::SLUG_CACHE_TTL,
             fn () => AlertRule::pluck('slug')->flip()->all(),
         );

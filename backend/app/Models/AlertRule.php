@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Cache;
 
 class AlertRule extends Model
 {
+    public const VALID_SLUGS_CACHE_KEY = 'alert_rules.valid_slugs';
+
     protected $guarded = [];
 
     protected static function booted(): void
     {
-        $invalidate = fn () => Cache::forget('alert_rules.valid_slugs');
+        $invalidate = fn () => Cache::forget(self::VALID_SLUGS_CACHE_KEY);
         static::created($invalidate);
         static::updated($invalidate);
         static::deleted($invalidate);
