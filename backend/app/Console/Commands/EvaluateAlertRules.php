@@ -29,8 +29,8 @@ class EvaluateAlertRules extends Command
         $logsConnection = (string) $this->option('logs-connection');
         $now            = Carbon::now();
 
-        $rules = AlertRule::where('enabled', true)->get();
-        $this->info("Evaluating {$rules->count()} enabled rule(s) against connection: {$logsConnection}");
+        $rules = AlertRule::where('enabled', true)->cursor();
+        $this->info("Evaluating enabled rule(s) against connection: {$logsConnection}");
 
         foreach ($rules as $rule) {
             if ($this->isDue($rule, $now) === false) {
@@ -39,6 +39,7 @@ class EvaluateAlertRules extends Command
             }
 
             try {
+                DB::connection($logsConnection)->statement("SET LOCAL statement_timeout = '5s'");
                 $rows = DB::connection($logsConnection)->select($rule->query_sql);
             } catch (Throwable $e) {
                 $this->error("Rule {$rule->slug} query failed: {$e->getMessage()}");
@@ -56,7 +57,7 @@ class EvaluateAlertRules extends Command
             );
 
             $publisher->publish(
-                ruleId: $rule->slug,
+                ruleSlug: $rule->slug,
                 severity: $rule->severity,
                 title: $rule->name,
                 context: $context,
