@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@maya/shared-auth-react'
+import { useAuth, type AuthUser } from '@maya/shared-auth-react'
 import {
   Button,
   FieldLabel,
@@ -12,6 +12,22 @@ import {
 import { useLocale } from '@maya/shared-i18n-react'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
+
+interface ProfileUser extends AuthUser {
+  id?: string
+  surname?: string
+  username?: string
+  phone?: string
+  role?: string
+  dni?: string
+  street?: string
+  addressNumber?: string
+  addressFloor?: string
+  addressDoor?: string
+  postalCode?: string
+  city?: string
+  bio?: string
+}
 
 type ProfileFormData = {
   name: string
@@ -124,7 +140,8 @@ const emptyForm: ProfileFormData = {
 }
 
 function ProfilePage() {
-  const { user } = useAuth() as { user: any }
+  const { user: authUser } = useAuth()
+  const user = authUser as ProfileUser | null
   const { t } = useLocale()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
