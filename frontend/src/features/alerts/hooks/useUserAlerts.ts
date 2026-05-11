@@ -22,7 +22,9 @@ function loadDismissed(): Set<string> {
       return new Set()
     }
     return new Set(entry.ids)
-  } catch {
+  } catch (err) {
+    console.error('[maya-alerts] Failed to parse dismissed alerts from localStorage — resetting', err)
+    localStorage.removeItem(DISMISSED_KEY)
     return new Set()
   }
 }
