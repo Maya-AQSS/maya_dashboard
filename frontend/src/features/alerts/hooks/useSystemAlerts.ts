@@ -41,10 +41,10 @@ async function fetchSystemAlerts(token: string): Promise<AlertItem[]> {
 }
 
 export function useSystemAlerts() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
 
   const { data: alerts = [], isPending: loading } = useQuery({
-    queryKey: ['system-alerts', token],
+    queryKey: ['system-alerts', user?.sub],
     queryFn: () => fetchSystemAlerts(token!),
     enabled: !!token,
     staleTime: 60_000,
