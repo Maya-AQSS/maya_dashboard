@@ -98,6 +98,8 @@ services:
       WORKER_WAIT_MIGRATION: create_notifications_table
       WORKER_PATCH_CONSUMER: "1"
       WORKER_CONSUMERS: "notifications:consume alerts:consume"
+      LOG_STACK: "daily,rabbit"
+      LOG_RABBIT_LEVEL: warning
     entrypoint: ["/maya_infra/scripts/worker-entrypoint.sh"]
     command: []
     volumes:
@@ -136,6 +138,8 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       MAYA_MESSAGING_APP: maya_dashboard
+      LOG_STACK: "daily,rabbit"
+      LOG_RABBIT_LEVEL: warning
       LOG_MGMT_DB_HOST: maya_infra_postgres
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
