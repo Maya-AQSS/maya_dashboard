@@ -24,7 +24,7 @@ function useApplicationsData() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!user?.sub) {
+    if (!user?.sub || !token) {
       setRawApps([])
       setLoading(false)
       return
@@ -58,7 +58,7 @@ function useApplicationsData() {
     return () => {
       isMounted = false
     }
-  }, [user?.sub])
+  }, [user?.sub, token])
 
   const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.id)), [favorites])
 
