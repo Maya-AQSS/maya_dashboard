@@ -3,6 +3,8 @@ import {
   Button,
   ConfirmDialog,
   DataTable,
+  FAVORITE_STAR_FILLED_CHAR,
+  FAVORITE_STAR_OUTLINE_CHAR,
   FilterField,
   PageTitle,
   Pagination,
@@ -130,14 +132,14 @@ function ApplicationsListPage() {
             type="button"
             className={`w-10 h-10 flex items-center justify-center rounded-lg text-xl cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ui-dark-card ${
               app.isFavorite
-                ? 'bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning shadow-sm focus-visible:ring-warning'
+                ? 'bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning shadow-sm hover:bg-danger-light/40 dark:hover:bg-danger-dark/25 hover:ring-2 hover:ring-inset hover:ring-danger/30 hover:text-danger-dark dark:hover:text-danger hover:shadow-md focus-visible:ring-danger/50'
                 : 'border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:text-warning-dark dark:hover:text-warning hover:border-warning/60 hover:bg-warning-light/50 dark:hover:bg-warning-dark/20 focus-visible:ring-ui-border'
             }`}
             onClick={(e) => handleFavoriteClick(app, e)}
             aria-label={app.isFavorite ? t('applications.removeFromFavorites') : t('applications.addToFavorites')}
             aria-pressed={app.isFavorite}
           >
-            {app.isFavorite ? '★' : '☆'}
+            {app.isFavorite ? FAVORITE_STAR_FILLED_CHAR : FAVORITE_STAR_OUTLINE_CHAR}
           </button>
         ),
         align: 'center',
@@ -202,14 +204,14 @@ function ApplicationsListPage() {
                 type="button"
                 className={`shrink-0 w-12 h-12 flex items-center justify-center rounded-xl text-2xl cursor-pointer transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ui-dark-card ${
                   app.isFavorite
-                    ? 'bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning shadow-sm focus-visible:ring-warning'
+                    ? 'bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning shadow-sm hover:bg-danger-light/40 dark:hover:bg-danger-dark/25 hover:ring-2 hover:ring-inset hover:ring-danger/30 hover:text-danger-dark dark:hover:text-danger hover:shadow-md focus-visible:ring-danger/50'
                     : 'border-2 border-ui-border dark:border-ui-dark-border text-text-muted dark:text-text-dark-muted hover:text-warning-dark dark:hover:text-warning hover:border-warning/60 hover:bg-warning-light/50 dark:hover:bg-warning-dark/20 focus-visible:ring-ui-border'
                 }`}
                 onClick={(e) => handleFavoriteClick(app, e)}
                 aria-label={app.isFavorite ? t('applications.removeFromFavorites') : t('applications.addToFavorites')}
                 aria-pressed={app.isFavorite}
               >
-                {app.isFavorite ? '★' : '☆'}
+                {app.isFavorite ? FAVORITE_STAR_FILLED_CHAR : FAVORITE_STAR_OUTLINE_CHAR}
               </button>
             </div>
           )}

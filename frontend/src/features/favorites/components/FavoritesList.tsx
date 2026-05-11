@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { ConfirmDialog } from '@maya/shared-ui-react'
+import { ConfirmDialog, FAVORITE_STAR_FILLED_CHAR } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useFavoritesContext } from '../context/FavoritesContext'
 
@@ -27,7 +27,7 @@ function FavoriteCard({ fav, onRemove }) {
             onClick={handleStarClick}
             className="py-1 px-2 rounded-full bg-warning-light dark:bg-warning-dark/40 border border-odoo-purple/20 dark:border-ui-dark-border text-odoo-purple text-xs font-semibold uppercase tracking-wide cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-warning dark:focus-visible:ring-offset-ui-dark-card"
           >
-            ★
+            {FAVORITE_STAR_FILLED_CHAR}
           </button>
         </div>
         {fav.description && (
