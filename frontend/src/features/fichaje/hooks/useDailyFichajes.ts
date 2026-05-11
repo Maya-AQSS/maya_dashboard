@@ -40,7 +40,7 @@ function buildMockHistory() {
   return history
 }
 
-const MOCK_HISTORY = buildMockHistory()
+const MOCK_HISTORY = import.meta.env.DEV ? buildMockHistory() : {}
 
 function useDailyFichajes(_userId, date) {
   const key = toDateString(date)
