@@ -15,6 +15,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
+        'http://maya_audit.localhost',
         'http://maya_authorization.localhost',
         'http://maya_dashboard.localhost',
         'http://maya_dms.localhost',
@@ -26,7 +27,7 @@ return [
     ],
 
     'allowed_origins_patterns' => [
-        '#^https?://maya_(authorization|dashboard|dms|logs)\.localhost(:\d+)?$#',
+        '#^https?://maya_(audit|authorization|dashboard|dms|logs)\.localhost(:\d+)?$#',
     ],
 
     'allowed_headers' => ['*'],
