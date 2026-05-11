@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import useDashboardLayout from './useDashboardLayout'
-
-vi.mock('@maya/shared-auth-react', () => ({
-  useAuth: vi.fn(),
-}))
-
-vi.mock('@maya/shared-i18n-react', () => ({
-  useLocale: vi.fn(),
-}))
+import { createMockAuthContext, createMockLocale } from '../../../__tests__/helpers/mockAuthSetup'
 
 vi.mock('../api/dashboardLayoutApi', () => ({
   getDashboardLayout: vi.fn(),
@@ -19,11 +12,9 @@ import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { getDashboardLayout, updateDashboardLayout } from '../api/dashboardLayoutApi'
 
-const mockUser = { sub: 'u-123', token: 'tok-abc' }
-
 beforeEach(() => {
-  useAuth.mockReturnValue({ user: mockUser })
-  useLocale.mockReturnValue({ t: (key) => key })
+  useAuth.mockReturnValue(createMockAuthContext())
+  useLocale.mockReturnValue(createMockLocale())
   getDashboardLayout.mockResolvedValue({ layout: [], updated_at: '2024-01-01T00:00:00Z' })
   updateDashboardLayout.mockResolvedValue({ layout: [], updated_at: '2024-01-01T00:00:00Z' })
 })

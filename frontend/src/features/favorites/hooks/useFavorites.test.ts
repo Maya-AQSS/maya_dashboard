@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import useFavorites from './useFavorites'
-
-vi.mock('@maya/shared-auth-react', () => ({
-  useAuth: vi.fn(),
-}))
-
-vi.mock('@maya/shared-i18n-react', () => ({
-  useLocale: vi.fn(),
-}))
+import { createMockAuthContext, createMockLocale } from '../../../__tests__/helpers/mockAuthSetup'
 
 vi.mock('../api/favoritesApi', () => ({
   getFavorites: vi.fn(),
@@ -20,11 +13,9 @@ import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
-const mockUser = { sub: 'u-123', token: 'tok-abc' }
-
 beforeEach(() => {
-  useAuth.mockReturnValue({ user: mockUser })
-  useLocale.mockReturnValue({ t: (key) => key })
+  useAuth.mockReturnValue(createMockAuthContext())
+  useLocale.mockReturnValue(createMockLocale())
   getFavorites.mockResolvedValue([])
   addFavorite.mockResolvedValue({ id: 1, name: 'App' })
   removeFavorite.mockResolvedValue(undefined)
