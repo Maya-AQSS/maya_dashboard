@@ -27,7 +27,7 @@ services:
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-maya-dashboard-backend}
       JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
       JWT_ISSUER: ${JWT_ISSUER:-http://keycloak.localhost/realms/maya}
-      JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend,maya-audit,maya-authorization,maya-dms,maya-logs}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend}
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
       RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
