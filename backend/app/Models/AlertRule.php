@@ -4,10 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class AlertRule extends Model
 {
     protected $guarded = [];
+
+    protected static function booted(): void
+    {
+        $invalidate = fn () => Cache::forget('alert_rules.valid_slugs');
+        static::created($invalidate);
+        static::updated($invalidate);
+        static::deleted($invalidate);
+    }
 
     protected function casts(): array
     {

@@ -8,29 +8,30 @@ use App\DataTransferObjects\IncomingAlertPayload;
 use App\Models\Alert;
 use App\Models\AlertRule;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 
 class AlertIngestionService
 {
-    private const SLUG_CACHE_REFRESH_EVERY = 100;
-
-    /** @var array<string, true> */
-    private array $validSlugs;
-    private int $processed = 0;
-
-    public function __construct()
-    {
-        $this->validSlugs = $this->loadValidSlugs();
-    }
+    private const SLUG_CACHE_KEY = 'alert_rules.valid_slugs';
+    private const SLUG_CACHE_TTL = 300;
 
     public function ingest(array $payload, string $messageId): void
     {
-        if (++$this->processed % self::SLUG_CACHE_REFRESH_EVERY === 0) {
-            $this->validSlugs = $this->loadValidSlugs();
-        }
+        Validator::make(
+            ['message_id' => $messageId],
+            ['message_id' => 'required|uuid'],
+        )->validate();
 
         $dto = IncomingAlertPayload::fromArray($payload);
 
-        $ruleSlug = ($dto->ruleSlug !== null && isset($this->validSlugs[$dto->ruleSlug]))
+        $validSlugs = Cache::remember(
+            self::SLUG_CACHE_KEY,
+            self::SLUG_CACHE_TTL,
+            fn () => AlertRule::pluck('slug')->flip()->map(fn () => true)->all(),
+        );
+
+        $ruleSlug = ($dto->ruleSlug !== null && isset($validSlugs[$dto->ruleSlug]))
             ? $dto->ruleSlug
             : null; // orphan alert — persisted but FK decoupled
 
@@ -47,11 +48,5 @@ class AlertIngestionService
                     : now(),
             ],
         );
-    }
-
-    /** @return array<string, true> */
-    private function loadValidSlugs(): array
-    {
-        return AlertRule::pluck('slug')->flip()->map(fn () => true)->all();
     }
 }
