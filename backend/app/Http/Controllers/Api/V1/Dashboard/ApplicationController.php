@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
-use App\Models\UserFavoriteApplication;
 use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -18,16 +17,16 @@ class ApplicationController extends Controller
     {
         $user = $this->resolveKeycloakUser($request);
 
-        $applications = Application::where('is_active', true)
-            ->selectRaw(
-                'applications.*, EXISTS (
-                    SELECT 1 FROM user_favorite_applications
-                    WHERE user_favorite_applications.user_id = ?
-                    AND user_favorite_applications.application_id = applications.id
-                ) as is_favorite',
-                [$user->id],
+        $applications = Application::where('applications.is_active', true)
+            ->leftJoin(
+                'user_favorite_applications',
+                fn ($join) => $join
+                    ->on('user_favorite_applications.application_id', '=', 'applications.id')
+                    ->where('user_favorite_applications.user_id', '=', $user->id),
             )
-            ->orderBy('name')
+            ->select('applications.*')
+            ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite')
+            ->orderBy('applications.name')
             ->get();
 
         return ApplicationResource::collection($applications);
