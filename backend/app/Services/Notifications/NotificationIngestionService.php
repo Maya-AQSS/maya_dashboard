@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Services\Notifications;
+
+use App\DataTransferObjects\IncomingNotificationPayload;
+use App\Models\Notification;
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+
+class NotificationIngestionService
+{
+    public function ingest(array $payload, string $messageId): bool
+    {
+        $dto = IncomingNotificationPayload::fromArray($payload);
+
+        $recipientId = $this->resolveRecipientId($dto->recipientKeycloakId);
+        if ($recipientId === null) {
+            return false;
+        }
+
+        Notification::updateOrCreate(
+            ['message_id' => $messageId],
+            [
+                'app'          => $dto->app,
+                'type'         => $dto->type,
+                'recipient_id' => $recipientId,
+                'title'        => $dto->title,
+                'body'         => $dto->body,
+                'channels'     => $dto->channels,
+                'metadata'     => $dto->metadata,
+                'created_at'   => $dto->createdAt !== null
+                    ? Carbon::parse($dto->createdAt)
+                    : now(),
+            ],
+        );
+
+        return true;
+    }
+
+    private function resolveRecipientId(string $keycloakId): ?string
+    {
+        if ($keycloakId === '') {
+            return null;
+        }
+
+        if (!User::query()->where('id', $keycloakId)->exists()) {
+            Log::warning('Notification skipped: recipient not found in users.', ['keycloak_id' => $keycloakId]);
+            return null;
+        }
+
+        return $keycloakId;
+    }
+}
