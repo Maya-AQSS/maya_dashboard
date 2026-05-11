@@ -38,7 +38,10 @@ Route::middleware('auth.keycloak')->prefix('v1/alerts')->group(function () {
 });
 
 Route::middleware('auth.keycloak')->prefix('v1/alert-rules')->group(function () {
-    Route::get('/',         [AlertRuleController::class, 'index']);
+    Route::get('/', [AlertRuleController::class, 'index']);
+});
+
+Route::middleware(['auth.keycloak', 'require.admin.role'])->prefix('v1/alert-rules')->group(function () {
     Route::post('/',        [AlertRuleController::class, 'store']);
     Route::put('/{id}',     [AlertRuleController::class, 'update']);
     Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);

@@ -14,7 +14,7 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
 
         $query = Notification::forRecipient($userId)->orderByDesc('created_at');
 
@@ -32,7 +32,7 @@ class NotificationController extends Controller
 
     public function markRead(Request $request, int $notificationId): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
 
         $notification = Notification::forRecipient($userId)->findOrFail($notificationId);
         if ($notification->read_at === null) {
@@ -44,7 +44,7 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
 
         $count = Notification::forRecipient($userId)
             ->unread()
@@ -55,7 +55,7 @@ class NotificationController extends Controller
 
     public function unreadCount(Request $request): JsonResponse
     {
-        $userId = (int) $this->resolveKeycloakUser($request)->id;
+        $userId = $this->resolveKeycloakUser($request)->id;
 
         return response()->json([
             'unread' => Notification::forRecipient($userId)->unread()->count(),

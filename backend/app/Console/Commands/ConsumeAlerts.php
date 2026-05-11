@@ -18,7 +18,11 @@ class ConsumeAlerts extends Command
         $this->info("Consuming from queue: {$queue}");
 
         $consumer->consume($queue, function (array $payload, $message) use ($service) {
-            $service->ingest($payload, (string) $message->get('message_id'));
+            try {
+                $service->ingest($payload, (string) $message->get('message_id'));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         });
 
         return self::SUCCESS;

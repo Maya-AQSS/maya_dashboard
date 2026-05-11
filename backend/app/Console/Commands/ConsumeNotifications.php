@@ -18,7 +18,11 @@ class ConsumeNotifications extends Command
         $this->info("Consuming from queue: {$queue}");
 
         $consumer->consume($queue, function (array $payload, $message) use ($ingestion) {
-            $ingestion->ingest($payload, (string) $message->get('message_id'));
+            try {
+                $ingestion->ingest($payload, (string) $message->get('message_id'));
+            } catch (\Throwable $e) {
+                report($e);
+            }
         });
 
         return self::SUCCESS;
