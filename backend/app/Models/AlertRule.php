@@ -10,7 +10,10 @@ class AlertRule extends Model
 {
     public const VALID_SLUGS_CACHE_KEY = 'alert_rules.valid_slugs';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'slug', 'name', 'description', 'query_sql', 'severity',
+        'schedule_cron', 'enabled', 'context_template', 'last_evaluated_at',
+    ];
 
     protected static function booted(): void
     {
