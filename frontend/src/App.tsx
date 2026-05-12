@@ -8,6 +8,7 @@ import { useAuth, useOidcSession } from '@maya/shared-auth-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
+import { UserProfileProvider } from './features/user-profile'
 
 function ErrorFallback() {
   const { t } = useTranslation('common')
@@ -131,9 +132,11 @@ function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <ErrorBoundary fallback={<ErrorFallback />}>
-        <FavoritesProvider>
-          {children}
-        </FavoritesProvider>
+        <UserProfileProvider>
+          <FavoritesProvider>
+            {children}
+          </FavoritesProvider>
+        </UserProfileProvider>
       </ErrorBoundary>
     </ToastProvider>
   )

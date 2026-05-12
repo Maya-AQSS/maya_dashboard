@@ -10,6 +10,7 @@ import {
   TextInput,
 } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
+import { updateMyLocale } from '../../../api/auth'
 import { updateProfile } from '../api/profileApi'
 import { validateProfileForm } from '../lib/profileValidation'
 
@@ -385,11 +386,29 @@ function ProfilePage() {
 }
 
 /**
- * Tarjeta de preferencias en el perfil.
- * Sustituye al `LocaleSelector` global del antiguo topbar.
+ * Tarjeta de preferencias en el perfil. Único punto de cambio de idioma
+ * en el ecosistema (no hay selector en el sidebar).
  */
 function PreferencesCard() {
   const { t, locale, setLocale, localeOptions } = useLocale()
+  const [savingLocale, setSavingLocale] = useState(false)
+
+  // Cambio de idioma: primero llama al endpoint (MOCK hoy) para que cuando
+  // exista la escritura real a Odoo la UI esté ya lista. Tras 200 OK aplica
+  // el cambio local (i18next + localStorage + maya_user_profile.locale).
+  const handleLocaleChange = async (next: string) => {
+    if (next === locale || savingLocale) return
+    setSavingLocale(true)
+    try {
+      await updateMyLocale(next)
+      setLocale(next)
+    } catch (error) {
+      console.error('[profile] updateMyLocale failed', error)
+    } finally {
+      setSavingLocale(false)
+    }
+  }
+
   return (
     <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
       <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
@@ -403,7 +422,8 @@ function PreferencesCard() {
           id="profile-locale-select"
           fieldSize="md"
           value={locale}
-          onChange={(e) => setLocale(e.target.value)}
+          disabled={savingLocale}
+          onChange={(e) => void handleLocaleChange(e.target.value)}
           className="max-w-[260px]"
         >
           {localeOptions.map((opt: { code: string; label: string }) => (

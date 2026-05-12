@@ -20,7 +20,7 @@ export default {
   fichaje: {
     notClockedIn: 'No has fichado hoy.',
     clockInButton: 'Fichar',
-    clockedInAt: 'Fichado a las {time}',
+    clockedInAt: 'Fichado a las {{time}}',
     dailyTitle: 'Fichajes del día',
     prevDay: 'Día anterior',
     nextDay: 'Día siguiente',

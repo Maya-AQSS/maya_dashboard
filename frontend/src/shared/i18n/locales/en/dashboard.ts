@@ -20,7 +20,7 @@ export default {
   fichaje: {
     notClockedIn: 'You have not clocked in today.',
     clockInButton: 'Clock in',
-    clockedInAt: 'Clocked in at {time}',
+    clockedInAt: 'Clocked in at {{time}}',
     dailyTitle: 'Daily clock-ins',
     prevDay: 'Previous day',
     nextDay: 'Next day',

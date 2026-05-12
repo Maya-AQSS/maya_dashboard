@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
+use Maya\Profile\Routing\MeRoutes;
 
 Route::middleware(['auth.keycloak', 'user.owns.resource'])
     ->prefix('v1/dashboard/user/{user}')
@@ -21,6 +22,11 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::get('dashboard-layout', [UserDashboardLayoutController::class, 'show']);
         Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update']);
     });
+
+// Perfil del usuario autenticado — endpoints en maya/shared-profile-laravel.
+Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
+    MeRoutes::register();
+});
 
 // Notifications (per authenticated user)
 Route::middleware('auth.keycloak')->prefix('v1/notifications')->group(function () {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f5b075071d5428eb251cf00da51c4164",
+    "content-hash": "913485999b9d52507f66975364f129cf",
     "packages": [
         {
             "name": "brick/math",
@@ -2235,6 +2235,43 @@
                 "MIT"
             ],
             "description": "Shared RabbitMQ messaging layer for MAyA Laravel microservices: log publisher, notification publisher, alert publisher, and Monolog rabbit handler.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "maya/shared-profile-laravel",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../../maya_infra/packages/maya-shared-profile-laravel",
+                "reference": "9baf3de7c35fe14cb27b3958778f3e55281e481b"
+            },
+            "require": {
+                "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/http": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/routing": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/validation": "^11.0 || ^12.0 || ^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Maya\\Profile\\Providers\\SharedProfileServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Maya\\Profile\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Shared user profile endpoints (GET /me, PUT /me/locale) for Maya Laravel microservices. Provides Controller, FormRequest, Service, Repository contracts, DTO and Resource. Apps extend behaviour via UserProfileResolverInterface and LocaleWriterInterface.",
             "transport-options": {
                 "relative": true
             }
@@ -9741,6 +9778,7 @@
         "maya/shared-auth-laravel": 20,
         "maya/shared-http-laravel": 20,
         "maya/shared-messaging-laravel": 20,
+        "maya/shared-profile-laravel": 20,
         "vladimir-yuldashev/laravel-queue-rabbitmq": 20
     },
     "prefer-stable": true,
