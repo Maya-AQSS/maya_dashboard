@@ -20,7 +20,7 @@ class Notification extends Model
         ];
     }
 
-    public function scopeForRecipient($query, int $recipientId)
+    public function scopeForRecipient($query, string $recipientId)
     {
         return $query->where('recipient_id', $recipientId);
     }
