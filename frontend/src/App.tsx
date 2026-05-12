@@ -3,7 +3,8 @@ import { Route, Routes, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@maya/shared-layout-react'
 import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
-import { useAuth, useOidcSession } from '@maya/shared-auth-react'
+import { useKeycloakLocaleSync } from '@maya/shared-i18n-react'
+import { useOidcSession } from '@maya/shared-auth-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
@@ -33,28 +34,6 @@ function ErrorFallback() {
       </div>
     </div>
   )
-}
-
-/**
- * Pequeñas sincronizaciones que antes vivían en LocaleProvider:
- *  1. Si Keycloak trae `user.locale`, alinearlo con i18next al montar.
- *  2. Mantener `<html lang>` actualizado al cambio de idioma.
- * El resto (cookies, cross-tab) ya lo gestiona `createI18n` shared.
- */
-function LocaleSyncEffects() {
-  const { i18n } = useTranslation()
-  const { user } = useAuth()
-  useEffect(() => {
-    const kc = (user?.locale as string | undefined) ?? null
-    if (kc && kc !== i18n.resolvedLanguage) {
-      void i18n.changeLanguage(kc)
-    }
-  }, [user?.locale, i18n])
-  useEffect(() => {
-    const lang = i18n.resolvedLanguage ?? i18n.language ?? 'es'
-    document.documentElement.lang = lang === 'va' ? 'ca' : lang
-  }, [i18n.resolvedLanguage, i18n.language])
-  return null
 }
 
 const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | undefined)
@@ -112,6 +91,7 @@ function AppWithLayout() {
   const navItems = useNavItems()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
+  useKeycloakLocaleSync()
 
   const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
   const userEmail = (user?.email as string | undefined) ?? undefined
@@ -143,15 +123,15 @@ function AppWithLayout() {
   )
 }
 
-// Locale sync (Keycloak + html lang) ahora lo cubre <LocaleSyncEffects/>; el resto
-// del setup i18n vive en `src/i18n/index.ts` y `@maya/shared-i18n-react`.
+// Locale sync (Keycloak → i18n + cookie + `<html lang>`) lo cubre
+// `useKeycloakLocaleSync()` invocado desde `AppWithLayout`; el resto del
+// setup i18n vive en `src/i18n/index.ts` y `@maya/shared-i18n-react`.
 // ToastProvider envuelve AppWithLayout para que `useToast` esté disponible.
 function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <ErrorBoundary fallback={<ErrorFallback />}>
         <FavoritesProvider>
-          <LocaleSyncEffects />
           {children}
         </FavoritesProvider>
       </ErrorBoundary>

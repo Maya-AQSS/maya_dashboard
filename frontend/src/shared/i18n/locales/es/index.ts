@@ -6,6 +6,7 @@ import profile from './profile.js'
 import favorites from './favorites.js'
 import dashboardLayout from './dashboardLayout.js'
 import dashboard from './dashboard.js'
+import userMenu from './userMenu.js'
 
 export default {
   meta: { localeName: 'Español' },
@@ -17,4 +18,5 @@ export default {
   favorites,
   dashboardLayout,
   dashboard,
+  userMenu,
 }
