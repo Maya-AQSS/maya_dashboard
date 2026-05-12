@@ -2,59 +2,46 @@
 
 namespace App\Http\Controllers\Api\V1\Alerts;
 
-use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use App\Http\Controllers\Controller;
-use App\Models\Alert;
+use App\Services\Contracts\AlertServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 
 class AlertController extends Controller
 {
     use ResolvesKeycloakUser;
 
+    public function __construct(
+        private readonly AlertServiceInterface $alerts,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $query = Alert::query()->with('rule')->orderByDesc('created_at');
-
-        if ($request->boolean('active_only', true)) {
-            $query->active();
-        }
-        if ($sev = $request->string('severity')->toString()) {
-            $query->where('severity', $sev);
-        }
-
         $perPage = min((int) $request->integer('per_page', 25), 100);
+        $severity = $request->string('severity')->toString() ?: null;
 
-        return response()->json($query->paginate($perPage));
+        // El frontend (`useSystemAlerts`) lee `page?.data` del LengthAwarePaginator.
+        return response()->json(
+            $this->alerts->paginate(
+                $request->boolean('active_only', true),
+                $severity,
+                $perPage > 0 ? $perPage : 25,
+            ),
+        );
     }
 
     public function acknowledge(Request $request, int $alertId): JsonResponse
     {
-        $userId = $this->resolveKeycloakUser($request)->id;
-        $alert = Alert::findOrFail($alertId);
+        $userId = (string) $this->resolveKeycloakUser($request)->id;
 
-        if ($alert->acknowledged_at === null) {
-            $alert->update([
-                'acknowledged_at' => now(),
-                'acknowledged_by' => $userId,
-            ]);
-        }
-
-        return response()->json($alert->refresh());
+        return response()->json($this->alerts->acknowledge($alertId, $userId));
     }
 
     public function resolve(Request $request, int $alertId): JsonResponse
     {
-        $userId = $this->resolveKeycloakUser($request)->id;
-        $alert = Alert::findOrFail($alertId);
+        $userId = (string) $this->resolveKeycloakUser($request)->id;
 
-        $alert->update([
-            'resolved_at' => now(),
-            'resolved_by' => $userId,
-            'acknowledged_at' => $alert->acknowledged_at ?? now(),
-            'acknowledged_by' => $alert->acknowledged_by ?? $userId,
-        ]);
-
-        return response()->json($alert->refresh());
+        return response()->json($this->alerts->resolve($alertId, $userId));
     }
 }
