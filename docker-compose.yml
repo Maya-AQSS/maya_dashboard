@@ -11,7 +11,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
-      APP_URL: ${APP_URL:-http://maya_dashboard_api.localhost}
+      APP_URL: ${APP_URL:-http://maya-dashboard-api.localhost}
       DB_CONNECTION: pgsql
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
@@ -53,7 +53,7 @@ services:
       - "${BACKEND_PORT:-8003}:8000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maya-dashboard-api.rule=Host(`maya_dashboard_api.localhost`)"
+      - "traefik.http.routers.maya-dashboard-api.rule=Host(`maya-dashboard-api.localhost`)"
       - "traefik.http.routers.maya-dashboard-api.entrypoints=web"
       - "traefik.http.services.maya-dashboard-api.loadbalancer.server.port=8000"
     networks:
@@ -174,7 +174,7 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://maya_dashboard_api.localhost}
+      VITE_API_URL: ${VITE_API_URL:-http://maya-dashboard-api.localhost}
       VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://keycloak.localhost}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
@@ -190,7 +190,7 @@ services:
       - "${FRONTEND_PORT:-5175}:5173"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maya-dashboard-front.rule=Host(`maya_dashboard.localhost`)"
+      - "traefik.http.routers.maya-dashboard-front.rule=Host(`maya-dashboard.localhost`)"
       - "traefik.http.routers.maya-dashboard-front.entrypoints=web"
       - "traefik.http.services.maya-dashboard-front.loadbalancer.server.port=5173"
     networks:

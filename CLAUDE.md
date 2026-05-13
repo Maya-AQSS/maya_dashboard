@@ -17,8 +17,8 @@ apps server-rendered (patrón `?return_to=<url>` + `?session_token=<jwt>`).
 - Servicios: `backend` (API HTTP), `worker` (consumers AMQP), `scheduler` (`schedule:run` cada 60s para `alerts:evaluate`), `frontend`
 
 ## Accesos locales (vía Traefik)
-- Frontend:  http://maya_dashboard.localhost
-- Backend:   http://maya_dashboard_api.localhost/api/v1
+- Frontend:  http://maya-dashboard.localhost
+- Backend:   http://maya-dashboard-api.localhost/api/v1
 - Keycloak:  http://keycloak.localhost
 - Traefik:   http://localhost:8888/dashboard/
 

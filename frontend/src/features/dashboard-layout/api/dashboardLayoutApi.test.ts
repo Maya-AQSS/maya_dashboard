@@ -4,7 +4,7 @@ import { getDashboardLayout, updateDashboardLayout } from './dashboardLayoutApi'
 describe('dashboardLayoutApi', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
-    vi.stubEnv('VITE_API_URL', 'http://maya_dashboard_api.localhost')
+    vi.stubEnv('VITE_API_URL', 'http://maya-dashboard-api.localhost')
   })
 
   afterEach(() => {
@@ -21,7 +21,7 @@ describe('dashboardLayoutApi', () => {
       const result = await getDashboardLayout('u-123', 'tok-abc')
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
+        'http://maya-dashboard-api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -88,7 +88,7 @@ describe('dashboardLayoutApi', () => {
       const result = await updateDashboardLayout('u-123', layout, 'tok-abc')
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
+        'http://maya-dashboard-api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
         expect.objectContaining({
           method: 'PUT',
           headers: expect.objectContaining({
