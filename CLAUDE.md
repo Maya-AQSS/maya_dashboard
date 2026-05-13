@@ -17,9 +17,9 @@ apps server-rendered (patrón `?return_to=<url>` + `?session_token=<jwt>`).
 - Servicios: `backend` (API HTTP), `worker` (consumers AMQP), `scheduler` (`schedule:run` cada 60s para `alerts:evaluate`), `frontend`
 
 ## Accesos locales (vía Traefik)
-- Frontend:  http://dashboard.maya.test
-- Backend:   http://dashboard-api.maya.test/api/v1
-- Keycloak:  http://keycloak.maya.test
+- Frontend:  https://dashboard.maya.test
+- Backend:   https://dashboard-api.maya.test/api/v1
+- Keycloak:  https://keycloak.maya.test
 - Traefik:   http://localhost:8888/dashboard/
 
 ## Patrón SSO relay

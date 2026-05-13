@@ -11,7 +11,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
-      APP_URL: ${APP_URL:-http://dashboard-api.maya.test}
+      APP_URL: ${APP_URL:-https://dashboard-api.maya.test}
       DB_CONNECTION: pgsql
       DB_HOST: maya_infra_postgres
       DB_PORT: 5432
@@ -26,7 +26,7 @@ services:
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-maya}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-maya-dashboard-backend}
       JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
-      JWT_ISSUER: ${JWT_ISSUER:-http://keycloak.maya.test/realms/maya}
+      JWT_ISSUER: ${JWT_ISSUER:-https://keycloak.maya.test/realms/maya}
       JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend,maya-audit,maya-dms,maya-logs}
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
       RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
@@ -54,7 +54,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maya-dashboard-api.rule=Host(`dashboard-api.maya.test`)"
-      - "traefik.http.routers.maya-dashboard-api.entrypoints=web"
+      - "traefik.http.routers.maya-dashboard-api.entrypoints=websecure"
+      - "traefik.http.routers.maya-dashboard-api.tls=true"
       - "traefik.http.services.maya-dashboard-api.loadbalancer.server.port=8000"
     networks:
       - maya_network
@@ -174,8 +175,8 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://dashboard-api.maya.test}
-      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://keycloak.maya.test}
+      VITE_API_URL: ${VITE_API_URL:-https://dashboard-api.maya.test}
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-https://keycloak.maya.test}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
     depends_on:
@@ -191,7 +192,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.maya-dashboard-front.rule=Host(`dashboard.maya.test`)"
-      - "traefik.http.routers.maya-dashboard-front.entrypoints=web"
+      - "traefik.http.routers.maya-dashboard-front.entrypoints=websecure"
+      - "traefik.http.routers.maya-dashboard-front.tls=true"
       - "traefik.http.services.maya-dashboard-front.loadbalancer.server.port=5173"
     networks:
       - maya_network

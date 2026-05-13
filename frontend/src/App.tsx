@@ -38,7 +38,7 @@ function ErrorFallback() {
 }
 
 const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | undefined)
-  ?? 'http://dashboard-api.maya.test'
+  ?? 'https://dashboard-api.maya.test'
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,
 // the dashboard authenticates with Keycloak and redirects back with ?session_token=<jwt>.

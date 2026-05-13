@@ -4,7 +4,7 @@ import { getFavorites, addFavorite, removeFavorite } from './favoritesApi'
 describe('favoritesApi', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
-    vi.stubEnv('VITE_API_URL', 'http://dashboard-api.maya.test')
+    vi.stubEnv('VITE_API_URL', 'https://dashboard-api.maya.test')
   })
 
   afterEach(() => {
@@ -21,7 +21,7 @@ describe('favoritesApi', () => {
       const result = await getFavorites('u-123', 'tok-abc')
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications',
+        'https://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -95,7 +95,7 @@ describe('favoritesApi', () => {
       const result = await addFavorite('u-123', 42, 'tok-abc')
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications',
+        'https://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
@@ -160,7 +160,7 @@ describe('favoritesApi', () => {
       await removeFavorite('u-123', 42, 'tok-abc')
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications/42',
+        'https://dashboard-api.maya.test/api/v1/dashboard/user/u-123/favorite-applications/42',
         expect.objectContaining({
           method: 'DELETE',
           headers: expect.objectContaining({
