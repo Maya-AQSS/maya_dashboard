@@ -1,5 +1,7 @@
-import { useState, type ChangeEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth, type AuthUser } from '@maya/shared-auth-react'
 import {
   Button,
@@ -12,7 +14,11 @@ import {
 import { useLocale } from '@maya/shared-i18n-react'
 import { updateMyLocale } from '../../../api/auth'
 import { updateProfile } from '../api/profileApi'
-import { validateProfileForm } from '../lib/profileValidation'
+import {
+  createProfileFormSchema,
+  emptyProfileForm,
+  type ProfileFormInput,
+} from '../lib/profileSchema'
 
 interface ProfileUser extends AuthUser {
   id?: string
@@ -30,30 +36,12 @@ interface ProfileUser extends AuthUser {
   bio?: string
 }
 
-type ProfileFormData = {
-  name: string
-  surname: string
-  username: string
-  email: string
-  phone: string
-  role: string
-  dni: string
-  street: string
-  addressNumber: string
-  addressFloor: string
-  addressDoor: string
-  postalCode: string
-  city: string
-  bio: string
-}
-
 type ProfileFieldProps = {
-  name: keyof ProfileFormData
+  name: keyof ProfileFormInput
   label: string
   type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'textarea'
-  value: string
-  onChange: (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-  error?: string
+  register: UseFormRegister<ProfileFormInput>
+  errors: FieldErrors<ProfileFormInput>
   placeholder?: string
   inputMode?: 'numeric'
   pattern?: string
@@ -65,9 +53,8 @@ function ProfileField({
   name,
   label,
   type = 'text',
-  value,
-  onChange,
-  error,
+  register,
+  errors,
   placeholder,
   inputMode,
   pattern,
@@ -76,31 +63,23 @@ function ProfileField({
 }: ProfileFieldProps) {
   const id = `profile-${name}`
   const displayLabel = optionalLabel ? `${label} ${optionalLabel}` : label
+  const error = errors[name]?.message as string | undefined
+
   return (
     <div className="flex flex-col gap-1">
       <FieldLabel htmlFor={id}>{displayLabel}</FieldLabel>
       {type === 'textarea' ? (
-        <TextArea
-          id={id}
-          name={name}
-          fieldSize="comfortable"
-          value={value}
-          onChange={onChange as (e: ChangeEvent<HTMLTextAreaElement>) => void}
-          rows={rows ?? 3}
-          error={!!error}
-        />
+        <TextArea id={id} fieldSize="comfortable" rows={rows ?? 3} {...register(name)} />
       ) : (
         <TextInput
           id={id}
-          name={name}
           type={type}
           fieldSize="comfortable"
-          value={value}
-          onChange={onChange as (e: ChangeEvent<HTMLInputElement>) => void}
           placeholder={placeholder}
           inputMode={inputMode}
           pattern={pattern}
           error={!!error}
+          {...register(name)}
         />
       )}
       {error && (
@@ -123,40 +102,33 @@ function ProfileSection({ title, children }: { title: string; children: React.Re
   )
 }
 
-const emptyForm: ProfileFormData = {
-  name: '',
-  surname: '',
-  username: '',
-  email: '',
-  phone: '',
-  role: '',
-  dni: '',
-  street: '',
-  addressNumber: '',
-  addressFloor: '',
-  addressDoor: '',
-  postalCode: '',
-  city: '',
-  bio: '',
-}
-
 function ProfilePage() {
   const { user: authUser } = useAuth()
   const user = authUser as ProfileUser | null
   const { t } = useLocale()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState<ProfileFormData>(emptyForm)
+
+  const schema = useMemo(() => createProfileFormSchema(t), [t])
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormInput>({
+    defaultValues: emptyProfileForm,
+    mode: 'onChange',
+    resolver: zodResolver(schema),
+  })
 
   if (!user) {
     return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
   }
 
   const handleEdit = () => {
-    setFormData({
+    reset({
       name: user.name ?? '',
       surname: user.surname ?? '',
       username: user.username ?? '',
@@ -172,55 +144,19 @@ function ProfilePage() {
       city: user.city ?? '',
       bio: user.bio ?? '',
     })
-    setErrors({})
     setSaveError(null)
     setIsEditing(true)
   }
 
   const handleCancel = () => {
-    setErrors({})
     setSaveError(null)
     setIsEditing(false)
   }
 
-  const handleChange = (field: keyof ProfileFormData) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: event.target.value }))
-    }
-
-  const handleSave = async () => {
-    const { valid, errors: validationErrors } = validateProfileForm(formData, t)
-
-    if (!valid) {
-      setErrors(validationErrors)
-      setSaveError(null)
-      return
-    }
-
-    setErrors({})
+  const onSubmit = handleSubmit(async (values) => {
     setSaveError(null)
-    setSaving(true)
-
     try {
-      const payload = {
-        id: user.id,
-        name: formData.name.trim(),
-        surname: formData.surname.trim(),
-        username: formData.username.trim(),
-        email: formData.email.trim(),
-        phone: (formData.phone ?? '').trim(),
-        role: formData.role.trim(),
-        dni: (formData.dni ?? '').trim(),
-        street: (formData.street ?? '').trim(),
-        addressNumber: (formData.addressNumber ?? '').trim(),
-        addressFloor: (formData.addressFloor ?? '').trim(),
-        addressDoor: (formData.addressDoor ?? '').trim(),
-        postalCode: (formData.postalCode ?? '').trim(),
-        city: (formData.city ?? '').trim(),
-        bio: (formData.bio ?? '').trim(),
-      }
-
-      const updatedUser = await updateProfile(payload)
+      const updatedUser = await updateProfile({ id: user.id, ...values })
 
       if (!updatedUser) {
         setSaveError(t('profile.saveError'))
@@ -231,10 +167,10 @@ function ProfilePage() {
     } catch (error) {
       const msg = (error as { message?: string })?.message ?? ''
       setSaveError(msg.startsWith('profile.') ? t(msg) : msg || t('profile.saveError'))
-    } finally {
-      setSaving(false)
     }
-  }
+  })
+
+  const saving = isSubmitting
 
   return (
     <>
@@ -340,45 +276,52 @@ function ProfilePage() {
               {saveError}
             </p>
           )}
-          <div className="flex flex-col gap-4 mb-5">
-            <ProfileSection title={t('profile.basicData')}>
-              <div className="flex flex-col gap-4">
-                <ProfileField name="name" label={t('auth.name')} value={formData.name} onChange={handleChange('name')} error={errors.name} />
-                <ProfileField name="surname" label={t('auth.surname')} value={formData.surname} onChange={handleChange('surname')} error={errors.surname} />
-                <ProfileField name="dni" label={t('profile.dni')} value={formData.dni} onChange={handleChange('dni')} error={errors.dni} placeholder={t('profile.placeholderDni')} />
-                <ProfileField name="email" label={t('auth.email')} type="email" value={formData.email} onChange={handleChange('email')} error={errors.email} />
-                <ProfileField name="phone" label={t('profile.phone')} type="tel" value={formData.phone} onChange={handleChange('phone')} error={errors.phone} />
-              </div>
-            </ProfileSection>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void onSubmit()
+            }}
+          >
+            <div className="flex flex-col gap-4 mb-5">
+              <ProfileSection title={t('profile.basicData')}>
+                <div className="flex flex-col gap-4">
+                  <ProfileField name="name" label={t('auth.name')} register={register} errors={errors} />
+                  <ProfileField name="surname" label={t('auth.surname')} register={register} errors={errors} />
+                  <ProfileField name="dni" label={t('profile.dni')} register={register} errors={errors} placeholder={t('profile.placeholderDni')} />
+                  <ProfileField name="email" label={t('auth.email')} type="email" register={register} errors={errors} />
+                  <ProfileField name="phone" label={t('profile.phone')} type="tel" register={register} errors={errors} />
+                </div>
+              </ProfileSection>
 
-            <ProfileSection title={t('profile.address')}>
-              <div className="flex flex-col gap-4">
-                <ProfileField name="street" label={t('profile.street')} value={formData.street} onChange={handleChange('street')} error={errors.street} />
-                <ProfileField name="addressNumber" label={t('profile.addressNumber')} value={formData.addressNumber} onChange={handleChange('addressNumber')} error={errors.addressNumber} inputMode="numeric" pattern="[0-9]*" />
-                <ProfileField name="addressFloor" label={t('profile.addressFloor')} value={formData.addressFloor} onChange={handleChange('addressFloor')} error={errors.addressFloor} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
-                <ProfileField name="addressDoor" label={t('profile.addressDoor')} value={formData.addressDoor} onChange={handleChange('addressDoor')} error={errors.addressDoor} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
-                <ProfileField name="postalCode" label={t('profile.postalCode')} value={formData.postalCode} onChange={handleChange('postalCode')} error={errors.postalCode} placeholder={t('profile.placeholderPostalCode')} />
-                <ProfileField name="city" label={t('profile.city')} value={formData.city} onChange={handleChange('city')} error={errors.city} />
-              </div>
-            </ProfileSection>
+              <ProfileSection title={t('profile.address')}>
+                <div className="flex flex-col gap-4">
+                  <ProfileField name="street" label={t('profile.street')} register={register} errors={errors} />
+                  <ProfileField name="addressNumber" label={t('profile.addressNumber')} register={register} errors={errors} inputMode="numeric" pattern="[0-9]*" />
+                  <ProfileField name="addressFloor" label={t('profile.addressFloor')} register={register} errors={errors} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
+                  <ProfileField name="addressDoor" label={t('profile.addressDoor')} register={register} errors={errors} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
+                  <ProfileField name="postalCode" label={t('profile.postalCode')} register={register} errors={errors} placeholder={t('profile.placeholderPostalCode')} />
+                  <ProfileField name="city" label={t('profile.city')} register={register} errors={errors} />
+                </div>
+              </ProfileSection>
 
-            <ProfileSection title={t('profile.account')}>
-              <div className="flex flex-col gap-4">
-                <ProfileField name="username" label={t('profile.username')} value={formData.username} onChange={handleChange('username')} error={errors.username} />
-                <ProfileField name="role" label={t('profile.role')} value={formData.role} onChange={handleChange('role')} error={errors.role} />
-                <ProfileField name="bio" label={t('profile.bio')} type="textarea" value={formData.bio} onChange={handleChange('bio')} error={errors.bio} rows={3} />
-              </div>
-            </ProfileSection>
-          </div>
+              <ProfileSection title={t('profile.account')}>
+                <div className="flex flex-col gap-4">
+                  <ProfileField name="username" label={t('profile.username')} register={register} errors={errors} />
+                  <ProfileField name="role" label={t('profile.role')} register={register} errors={errors} />
+                  <ProfileField name="bio" label={t('profile.bio')} type="textarea" register={register} errors={errors} rows={3} />
+                </div>
+              </ProfileSection>
+            </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="secondary" size="sm" onClick={handleCancel} disabled={saving} className="w-full sm:w-auto">
-              {t('profile.cancel')}
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={saving} loading={saving} className="w-full sm:w-auto">
-              {saving ? t('profile.saving') : t('profile.save')}
-            </Button>
-          </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCancel} disabled={saving} className="w-full sm:w-auto">
+                {t('profile.cancel')}
+              </Button>
+              <Button type="submit" variant="primary" size="sm" disabled={saving} loading={saving} className="w-full sm:w-auto">
+                {saving ? t('profile.saving') : t('profile.save')}
+              </Button>
+            </div>
+          </form>
         </section>
       )}
     </>
