@@ -2,10 +2,11 @@
 
 namespace App\Services\Dashboard;
 
+use App\DataTransferObjects\ApplicationDto;
+use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 final class ApplicationService implements ApplicationServiceInterface
 {
@@ -13,8 +14,14 @@ final class ApplicationService implements ApplicationServiceInterface
         private readonly ApplicationRepositoryInterface $applications,
     ) {}
 
-    public function listForUser(User $user): Collection
+    /**
+     * @return list<ApplicationDto>
+     */
+    public function listForUser(User $user): array
     {
-        return $this->applications->listActiveWithFavoriteFlag((string) $user->id);
+        return $this->applications->listActiveWithFavoriteFlag((string) $user->id)
+            ->map(fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app))
+            ->values()
+            ->all();
     }
 }

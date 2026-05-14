@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1\Notifications;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Notifications\ListNotificationsRequest;
+use App\Http\Resources\NotificationResource;
 use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,23 +18,27 @@ class NotificationController extends Controller
         private readonly NotificationServiceInterface $notifications,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(ListNotificationsRequest $request): JsonResponse
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        $perPage = min((int) $request->integer('per_page', 25), 100);
-        $type    = $request->string('type')->toString() ?: null;
+        $perPage = (int) ($request->validated('per_page') ?? 25);
+        $type    = $request->validated('type') ?: null;
 
-        // Se preserva la forma LengthAwarePaginator (`{data, current_page, …}`)
-        // consumida por `useNotifications` en el sidebar compartido.
-        return response()->json(
-            $this->notifications->paginate(
-                $recipientId,
-                $request->boolean('unread_only'),
-                $type,
-                $perPage > 0 ? $perPage : 25,
-            ),
+        $page = $this->notifications->paginate(
+            $recipientId,
+            (bool) ($request->validated('unread_only') ?? false),
+            $type,
+            $perPage > 0 ? $perPage : 25,
         );
+
+        // Preserva la shape LengthAwarePaginator consumida por `useNotifications`
+        // en el sidebar compartido: PaginatedDto::jsonSerialize() emite las mismas
+        // claves planas (`current_page`, `data`, `per_page`, `total`, …).
+        return response()->json([
+            ...$page->jsonSerialize(),
+            'data' => NotificationResource::collection($page->items)->resolve($request),
+        ]);
     }
 
     public function markRead(Request $request, int $notificationId): JsonResponse
@@ -40,7 +46,7 @@ class NotificationController extends Controller
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
         return response()->json(
-            $this->notifications->markRead($recipientId, $notificationId),
+            (new NotificationResource($this->notifications->markRead($recipientId, $notificationId)))->resolve($request),
         );
     }
 

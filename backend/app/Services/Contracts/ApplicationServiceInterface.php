@@ -2,13 +2,13 @@
 
 namespace App\Services\Contracts;
 
+use App\DataTransferObjects\ApplicationDto;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 
 interface ApplicationServiceInterface
 {
     /**
-     * @return Collection<int, \App\Models\Application>
+     * @return list<ApplicationDto>
      */
-    public function listForUser(User $user): Collection;
+    public function listForUser(User $user): array;
 }

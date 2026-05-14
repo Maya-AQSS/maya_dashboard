@@ -16,17 +16,21 @@ use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\NotificationRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
+use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
+use App\Services\Contracts\AlertIngestionServiceInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use App\Services\Contracts\AlertServiceInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
+use App\Services\Contracts\NotificationIngestionServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use App\Services\Dashboard\ApplicationService;
 use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
+use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,12 +50,14 @@ class AppServiceProvider extends ServiceProvider
         // Notifications.
         $this->app->singleton(NotificationRepositoryInterface::class, NotificationRepository::class);
         $this->app->singleton(NotificationServiceInterface::class, NotificationService::class);
+        $this->app->singleton(NotificationIngestionServiceInterface::class, NotificationIngestionService::class);
 
         // Alerts.
         $this->app->singleton(AlertRepositoryInterface::class, AlertRepository::class);
         $this->app->singleton(AlertRuleRepositoryInterface::class, AlertRuleRepository::class);
         $this->app->singleton(AlertServiceInterface::class, AlertService::class);
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
+        $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
     }
 
     public function boot(): void

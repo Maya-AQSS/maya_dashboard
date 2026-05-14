@@ -2,8 +2,8 @@
 
 namespace App\Services\Dashboard;
 
+use App\DataTransferObjects\UserDashboardLayoutDto;
 use App\Models\User;
-use App\Models\UserDashboardLayout;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
 
@@ -13,13 +13,13 @@ final class UserDashboardLayoutService implements UserDashboardLayoutServiceInte
         private readonly UserDashboardLayoutRepositoryInterface $layouts,
     ) {}
 
-    public function getOrMake(User $user): UserDashboardLayout
+    public function getOrMake(User $user): UserDashboardLayoutDto
     {
-        return $this->layouts->getOrMake($user);
+        return UserDashboardLayoutDto::fromModel($this->layouts->getOrMake($user));
     }
 
-    public function save(User $user, array $layout): UserDashboardLayout
+    public function save(User $user, array $layout): UserDashboardLayoutDto
     {
-        return $this->layouts->upsert($user, $layout);
+        return UserDashboardLayoutDto::fromModel($this->layouts->upsert($user, $layout));
     }
 }

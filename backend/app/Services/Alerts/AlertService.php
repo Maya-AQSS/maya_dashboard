@@ -2,10 +2,11 @@
 
 namespace App\Services\Alerts;
 
+use App\DataTransferObjects\AlertDto;
+use App\DataTransferObjects\Pagination\PaginatedDto;
 use App\Models\Alert;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Services\Contracts\AlertServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class AlertService implements AlertServiceInterface
 {
@@ -13,24 +14,32 @@ final class AlertService implements AlertServiceInterface
         private readonly AlertRepositoryInterface $alerts,
     ) {}
 
-    public function paginate(bool $activeOnly, ?string $severity, int $perPage): LengthAwarePaginator
+    /**
+     * @return PaginatedDto<AlertDto>
+     */
+    public function paginate(bool $activeOnly, ?string $severity, int $perPage): PaginatedDto
     {
-        return $this->alerts->paginate($activeOnly, $severity, $perPage);
-    }
+        $paginator = $this->alerts->paginate($activeOnly, $severity, $perPage);
 
-    public function acknowledge(int $alertId, string $userId): Alert
-    {
-        return $this->alerts->acknowledge(
-            $this->alerts->findOrFail($alertId),
-            $userId,
+        return PaginatedDto::fromPaginator(
+            $paginator,
+            fn (Alert $alert): AlertDto => AlertDto::fromModel($alert),
         );
     }
 
-    public function resolve(int $alertId, string $userId): Alert
+    public function acknowledge(int $alertId, string $userId): AlertDto
     {
-        return $this->alerts->resolve(
+        return AlertDto::fromModel($this->alerts->acknowledge(
             $this->alerts->findOrFail($alertId),
             $userId,
-        );
+        ));
+    }
+
+    public function resolve(int $alertId, string $userId): AlertDto
+    {
+        return AlertDto::fromModel($this->alerts->resolve(
+            $this->alerts->findOrFail($alertId),
+            $userId,
+        ));
     }
 }

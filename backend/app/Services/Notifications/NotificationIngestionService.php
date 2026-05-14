@@ -4,10 +4,11 @@ namespace App\Services\Notifications;
 
 use App\DataTransferObjects\IncomingNotificationPayload;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
+use App\Services\Contracts\NotificationIngestionServiceInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class NotificationIngestionService
+class NotificationIngestionService implements NotificationIngestionServiceInterface
 {
     /** In-memory cache of known user IDs for the lifetime of this consumer process. */
     private array $knownUserIds = [];

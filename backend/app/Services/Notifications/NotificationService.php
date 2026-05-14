@@ -2,10 +2,11 @@
 
 namespace App\Services\Notifications;
 
+use App\DataTransferObjects\NotificationDto;
+use App\DataTransferObjects\Pagination\PaginatedDto;
 use App\Models\Notification;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class NotificationService implements NotificationServiceInterface
 {
@@ -13,20 +14,28 @@ final class NotificationService implements NotificationServiceInterface
         private readonly NotificationRepositoryInterface $notifications,
     ) {}
 
+    /**
+     * @return PaginatedDto<NotificationDto>
+     */
     public function paginate(
         string $recipientId,
         bool $unreadOnly,
         ?string $type,
         int $perPage,
-    ): LengthAwarePaginator {
-        return $this->notifications->paginateForRecipient($recipientId, $unreadOnly, $type, $perPage);
+    ): PaginatedDto {
+        $paginator = $this->notifications->paginateForRecipient($recipientId, $unreadOnly, $type, $perPage);
+
+        return PaginatedDto::fromPaginator(
+            $paginator,
+            fn (Notification $n): NotificationDto => NotificationDto::fromModel($n),
+        );
     }
 
-    public function markRead(string $recipientId, int $notificationId): Notification
+    public function markRead(string $recipientId, int $notificationId): NotificationDto
     {
-        return $this->notifications->markRead(
+        return NotificationDto::fromModel($this->notifications->markRead(
             $this->notifications->findForRecipientOrFail($recipientId, $notificationId),
-        );
+        ));
     }
 
     public function markAllRead(string $recipientId): int

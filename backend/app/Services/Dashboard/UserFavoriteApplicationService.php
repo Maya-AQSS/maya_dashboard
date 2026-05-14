@@ -2,11 +2,11 @@
 
 namespace App\Services\Dashboard;
 
+use App\DataTransferObjects\UserFavoriteApplicationDto;
 use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 final class UserFavoriteApplicationService implements UserFavoriteApplicationServiceInterface
 {
@@ -14,14 +14,20 @@ final class UserFavoriteApplicationService implements UserFavoriteApplicationSer
         private readonly UserFavoriteApplicationRepositoryInterface $favorites,
     ) {}
 
-    public function list(User $user): Collection
+    /**
+     * @return list<UserFavoriteApplicationDto>
+     */
+    public function list(User $user): array
     {
-        return $this->favorites->listForUser($user);
+        return $this->favorites->listForUser($user)
+            ->map(fn (Application $app): UserFavoriteApplicationDto => UserFavoriteApplicationDto::fromModel($app))
+            ->values()
+            ->all();
     }
 
-    public function add(User $user, int $applicationId): Application
+    public function add(User $user, int $applicationId): UserFavoriteApplicationDto
     {
-        return $this->favorites->attach($user, $applicationId);
+        return UserFavoriteApplicationDto::fromModel($this->favorites->attach($user, $applicationId));
     }
 
     public function remove(User $user, int $applicationId): void

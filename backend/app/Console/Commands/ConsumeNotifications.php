@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Notifications\NotificationIngestionService;
+use App\Services\Contracts\NotificationIngestionServiceInterface;
 use Illuminate\Console\Command;
 use Maya\Messaging\Support\AmqpConsumer;
 
@@ -12,7 +12,7 @@ class ConsumeNotifications extends Command
 
     protected $description = 'Consume notifications.ingest and persist each notification in the notifications table';
 
-    public function handle(AmqpConsumer $consumer, NotificationIngestionService $ingestion): int
+    public function handle(AmqpConsumer $consumer, NotificationIngestionServiceInterface $ingestion): int
     {
         $queue = (string) $this->option('queue');
         $this->info("Consuming from queue: {$queue}");

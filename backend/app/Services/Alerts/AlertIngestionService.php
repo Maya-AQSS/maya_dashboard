@@ -8,11 +8,12 @@ use App\DataTransferObjects\IncomingAlertPayload;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
+use App\Services\Contracts\AlertIngestionServiceInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
-class AlertIngestionService
+class AlertIngestionService implements AlertIngestionServiceInterface
 {
     private const SLUG_CACHE_TTL = 300;
 

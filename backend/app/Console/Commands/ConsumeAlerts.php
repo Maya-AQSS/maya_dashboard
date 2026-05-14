@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Alerts\AlertIngestionService;
+use App\Services\Contracts\AlertIngestionServiceInterface;
 use Illuminate\Console\Command;
 use Maya\Messaging\Support\AmqpConsumer;
 
@@ -12,7 +12,7 @@ class ConsumeAlerts extends Command
 
     protected $description = 'Consume alerts.ingest and persist each alert in the alerts table';
 
-    public function handle(AmqpConsumer $consumer, AlertIngestionService $service): int
+    public function handle(AmqpConsumer $consumer, AlertIngestionServiceInterface $service): int
     {
         $queue = (string) $this->option('queue');
         $this->info("Consuming from queue: {$queue}");

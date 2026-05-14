@@ -2,22 +2,22 @@
 
 namespace App\Services\Contracts;
 
-use App\Models\Notification;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\DataTransferObjects\NotificationDto;
+use App\DataTransferObjects\Pagination\PaginatedDto;
 
 interface NotificationServiceInterface
 {
     /**
-     * @return LengthAwarePaginator<Notification>
+     * @return PaginatedDto<NotificationDto>
      */
     public function paginate(
         string $recipientId,
         bool $unreadOnly,
         ?string $type,
         int $perPage,
-    ): LengthAwarePaginator;
+    ): PaginatedDto;
 
-    public function markRead(string $recipientId, int $notificationId): Notification;
+    public function markRead(string $recipientId, int $notificationId): NotificationDto;
 
     public function markAllRead(string $recipientId): int;
 
