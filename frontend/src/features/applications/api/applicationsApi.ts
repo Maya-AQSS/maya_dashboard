@@ -1,15 +1,17 @@
-import { apiFetch, mapApiError } from '../../../api/fetchClient'
+import { apiGetJson, mapApiError } from '../../../api/http'
 import { mapApplicationFromApi } from './applicationMapper'
 
-async function getApplicationsData(userId: string, token: string | null) {
+interface ApplicationsPayload {
+  data?: unknown[]
+}
+
+async function getApplicationsData(userId: string, _token?: string | null) {
   if (!userId) throw new Error('applications.errorLoad')
 
   try {
-    const response = await apiFetch(
+    const payload = await apiGetJson<ApplicationsPayload>(
       `/dashboard/user/${encodeURIComponent(userId)}/applications`,
-      { token },
     )
-    const payload = await response.json()
     const apps = Array.isArray(payload?.data) ? payload.data : []
     return { applications: apps.map(mapApplicationFromApi) }
   } catch (err) {

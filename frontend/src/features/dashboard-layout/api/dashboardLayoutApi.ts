@@ -1,28 +1,29 @@
-import { apiFetch, mapApiError } from '../../../api/fetchClient'
+import { apiFetchJson, apiGetJson, mapApiError } from '../../../api/http'
 
-async function getDashboardLayout(userId: string, token: string | null) {
-  if (!userId || !token) throw new Error('dashboardLayout.errorLoad')
+async function getDashboardLayout(userId: string, _token?: string | null) {
+  if (!userId) throw new Error('dashboardLayout.errorLoad')
 
   try {
-    const response = await apiFetch(
+    return await apiGetJson<unknown>(
       `/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`,
-      { token },
     )
-    return response.json()
   } catch (err) {
     throw mapApiError(err, 'dashboardLayout')
   }
 }
 
-async function updateDashboardLayout(userId: string, layout: unknown, token: string | null) {
-  if (!userId || !token) throw new Error('dashboardLayout.errorSave')
+async function updateDashboardLayout(
+  userId: string,
+  layout: unknown,
+  _token?: string | null,
+) {
+  if (!userId) throw new Error('dashboardLayout.errorSave')
 
   try {
-    const response = await apiFetch(
+    return await apiFetchJson<unknown>(
       `/dashboard/user/${encodeURIComponent(userId)}/dashboard-layout`,
-      { method: 'PUT', token, body: { layout } },
+      { method: 'PUT', body: { layout } },
     )
-    return response.json()
   } catch (err) {
     throw mapApiError(err, 'dashboardLayout', 'errorSave')
   }

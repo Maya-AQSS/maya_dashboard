@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@maya/shared-auth-react'
-import { apiFetch } from '../../../api/fetchClient'
+import { apiGetJson } from '../../../api/http'
 
 type AlertColor = 'red' | 'amber' | 'blue' | 'green'
 
@@ -27,9 +27,8 @@ function severityToColor(sev: string): AlertColor {
   return 'blue'
 }
 
-async function fetchSystemAlerts(token: string): Promise<AlertItem[]> {
-  const resp = await apiFetch('/alerts?per_page=20', { token })
-  const payload = await resp.json() as { data?: BackendAlert[] }
+async function fetchSystemAlerts(): Promise<AlertItem[]> {
+  const payload = await apiGetJson<{ data?: BackendAlert[] }>('/alerts?per_page=20')
   const list = Array.isArray(payload?.data) ? payload.data : []
   return list.map((a) => ({
     id: `srv:${a.id}`,
@@ -45,7 +44,7 @@ export function useSystemAlerts() {
 
   const { data: alerts = [], isPending: loading } = useQuery({
     queryKey: ['system-alerts', user?.sub],
-    queryFn: () => fetchSystemAlerts(token!),
+    queryFn: () => fetchSystemAlerts(),
     enabled: !!token,
     staleTime: 60_000,
     retry: 1,

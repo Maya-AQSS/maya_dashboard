@@ -1,48 +1,57 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { acknowledgeAlert, listSystemAlerts, resolveAlert } from '../api/systemAlertsApi'
 
 const POLL_MS = 60_000
 
-export function useSystemAlerts({ token, activeOnly = true, severity } = {}) {
-  const [alerts, setAlerts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+interface UseSystemAlertsOptions {
+  token?: string
+  activeOnly?: boolean
+  severity?: string
+}
 
-  const refresh = useCallback(async () => {
-    if (!token) return
-    try {
-      const page = await listSystemAlerts({ token, activeOnly, severity })
-      setAlerts(page?.data ?? [])
-      setError(null)
-    } catch (e) {
-      setError(e.message || 'alerts.errorLoad')
-    } finally {
-      setLoading(false)
-    }
-  }, [token, activeOnly, severity])
+interface SystemAlertsPage {
+  data?: unknown[]
+}
 
-  useEffect(() => {
-    refresh()
-    if (!token) return
-    const interval = setInterval(refresh, POLL_MS)
-    return () => clearInterval(interval)
-  }, [refresh, token])
+export function useSystemAlerts({
+  token,
+  activeOnly = true,
+  severity,
+}: UseSystemAlertsOptions = {}) {
+  const queryClient = useQueryClient()
+  const queryKey = ['system-alerts', { activeOnly, severity }] as const
 
-  const onAcknowledge = useCallback(
-    async (id) => {
-      await acknowledgeAlert({ token, id })
-      await refresh()
-    },
-    [token, refresh],
+  const query = useQuery<SystemAlertsPage, Error>({
+    queryKey,
+    queryFn: () => listSystemAlerts({ token, activeOnly, severity }),
+    enabled: !!token,
+    refetchInterval: POLL_MS,
+    refetchIntervalInBackground: false,
+    retry: 1,
+  })
+
+  const refresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey }),
+    [queryClient, queryKey],
   )
 
-  const onResolve = useCallback(
-    async (id) => {
-      await resolveAlert({ token, id })
-      await refresh()
-    },
-    [token, refresh],
-  )
+  const acknowledgeMutation = useMutation({
+    mutationFn: (id: string | number) => acknowledgeAlert({ token, id }),
+    onSuccess: () => refresh(),
+  })
 
-  return { alerts, loading, error, refresh, onAcknowledge, onResolve }
+  const resolveMutation = useMutation({
+    mutationFn: (id: string | number) => resolveAlert({ token, id }),
+    onSuccess: () => refresh(),
+  })
+
+  return {
+    alerts: query.data?.data ?? [],
+    loading: query.isPending && !!token,
+    error: query.error ? query.error.message || 'alerts.errorLoad' : null,
+    refresh,
+    onAcknowledge: acknowledgeMutation.mutateAsync,
+    onResolve: resolveMutation.mutateAsync,
+  }
 }
