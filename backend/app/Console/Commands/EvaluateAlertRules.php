@@ -57,10 +57,16 @@ class EvaluateAlertRules extends Command
                 continue;
             }
 
-            $context = array_merge(
-                (array) ($rule->context_template ?? []),
-                ['matched_rows' => count($rows), 'sample' => array_slice($rows, 0, 5)],
+            $template = (array) ($rule->context_template ?? []);
+            $context  = array_merge(
+                $template,
+                [
+                    'matched_rows' => count($rows),
+                    'sample'       => $this->buildSafeSample($rows, $template),
+                ],
             );
+            // sample_columns is metadata for redaction, not part of the alert payload.
+            unset($context['sample_columns']);
 
             $publisher->publish(
                 ruleSlug: $rule->slug,
@@ -78,6 +84,37 @@ class EvaluateAlertRules extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Restrict the sample published to the AMQP bus to the column allowlist
+     * declared in the rule's context_template.sample_columns. If no allowlist
+     * is provided, only the row count is published — never raw row values.
+     *
+     * @param  list<object>           $rows      Raw rows returned by DB::select() (stdClass objects).
+     * @param  array<string, mixed>   $template  The rule's context_template, may contain `sample_columns`.
+     * @return list<array<string, mixed>>
+     */
+    private function buildSafeSample(array $rows, array $template): array
+    {
+        $allowed = $template['sample_columns'] ?? null;
+        if (! is_array($allowed) || $allowed === []) {
+            return [];
+        }
+        $allowed = array_values(array_filter(array_map('strval', $allowed)));
+
+        $sample = [];
+        foreach (array_slice($rows, 0, 5) as $row) {
+            $assoc    = (array) $row;
+            $filtered = [];
+            foreach ($allowed as $column) {
+                if (array_key_exists($column, $assoc)) {
+                    $filtered[$column] = $assoc[$column];
+                }
+            }
+            $sample[] = $filtered;
+        }
+        return $sample;
     }
 
     /**

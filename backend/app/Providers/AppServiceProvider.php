@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\AlertRule;
+use App\Observers\AlertRuleObserver;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
@@ -54,6 +56,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        AlertRule::observe(AlertRuleObserver::class);
     }
 }
