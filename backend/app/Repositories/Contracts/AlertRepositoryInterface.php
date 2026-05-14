@@ -17,4 +17,12 @@ interface AlertRepositoryInterface
     public function acknowledge(Alert $alert, string $userId): Alert;
 
     public function resolve(Alert $alert, string $userId): Alert;
+
+    /**
+     * Idempotent ingest by AMQP message id. Returns the persisted (or
+     * existing) row.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function upsertByMessageId(string $messageId, array $attributes): Alert;
 }

@@ -4,6 +4,8 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
+use DateTimeInterface;
+use Generator;
 use Illuminate\Database\Eloquent\Collection;
 
 final class AlertRuleRepository implements AlertRuleRepositoryInterface
@@ -33,5 +35,29 @@ final class AlertRuleRepository implements AlertRuleRepositoryInterface
     public function delete(AlertRule $rule): void
     {
         $rule->delete();
+    }
+
+    /**
+     * @return Generator<AlertRule>
+     */
+    public function cursorActive(): Generator
+    {
+        yield from AlertRule::query()->where('enabled', true)->cursor();
+    }
+
+    public function markEvaluated(array $ruleIds, DateTimeInterface $at): int
+    {
+        if ($ruleIds === []) {
+            return 0;
+        }
+
+        return AlertRule::query()->whereIn('id', $ruleIds)->update([
+            'last_evaluated_at' => $at,
+        ]);
+    }
+
+    public function validSlugLookup(): array
+    {
+        return AlertRule::query()->pluck('slug')->flip()->all();
     }
 }

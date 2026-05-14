@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AlertRule;
+use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use Cron\CronExpression;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -24,12 +25,12 @@ class EvaluateAlertRules extends Command
 
     protected $description = 'Run each enabled alert rule and publish matching alerts to maya.alerts';
 
-    public function handle(AlertPublisher $publisher): int
+    public function handle(AlertPublisher $publisher, AlertRuleRepositoryInterface $ruleRepo): int
     {
         $logsConnection = (string) $this->option('logs-connection');
         $now            = Carbon::now();
 
-        $rules = AlertRule::where('enabled', true)->cursor();
+        $rules = $ruleRepo->cursorActive();
         $this->info("Evaluating enabled rule(s) against connection: {$logsConnection}");
 
         $evaluatedIds = [];
@@ -80,7 +81,7 @@ class EvaluateAlertRules extends Command
         }
 
         if ($evaluatedIds !== []) {
-            AlertRule::whereIn('id', $evaluatedIds)->update(['last_evaluated_at' => $now]);
+            $ruleRepo->markEvaluated($evaluatedIds, $now);
         }
 
         return self::SUCCESS;

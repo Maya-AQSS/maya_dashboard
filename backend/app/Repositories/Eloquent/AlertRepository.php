@@ -51,4 +51,9 @@ final class AlertRepository implements AlertRepositoryInterface
 
         return $alert->refresh();
     }
+
+    public function upsertByMessageId(string $messageId, array $attributes): Alert
+    {
+        return Alert::updateOrCreate(['message_id' => $messageId], $attributes);
+    }
 }

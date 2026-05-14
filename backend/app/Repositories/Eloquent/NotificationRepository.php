@@ -3,6 +3,7 @@
 namespace App\Repositories\Eloquent;
 
 use App\Models\Notification;
+use App\Models\User;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -51,5 +52,15 @@ final class NotificationRepository implements NotificationRepositoryInterface
     public function unreadCountForRecipient(string $recipientId): int
     {
         return Notification::forRecipient($recipientId)->unread()->count();
+    }
+
+    public function upsertByMessageId(string $messageId, array $attributes): Notification
+    {
+        return Notification::updateOrCreate(['message_id' => $messageId], $attributes);
+    }
+
+    public function userExists(string $keycloakId): bool
+    {
+        return User::query()->where('id', $keycloakId)->exists();
     }
 }

@@ -35,4 +35,17 @@ interface NotificationRepositoryInterface
     public function markAllReadForRecipient(string $recipientId): int;
 
     public function unreadCountForRecipient(string $recipientId): int;
+
+    /**
+     * Idempotent ingest by AMQP message id. Returns the persisted (or
+     * existing) notification row.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function upsertByMessageId(string $messageId, array $attributes): Notification;
+
+    /**
+     * @return bool true if the user exists in the federated users table.
+     */
+    public function userExists(string $keycloakId): bool;
 }
