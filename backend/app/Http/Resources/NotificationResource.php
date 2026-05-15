@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\DataTransferObjects\NotificationDto;
-use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,9 +18,8 @@ class NotificationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $dto = $this->resource instanceof Notification
-            ? NotificationDto::fromModel($this->resource)
-            : $this->resource;
+        /** @var NotificationDto $dto */
+        $dto = $this->resource;
 
         return [
             'id'           => $dto->id,

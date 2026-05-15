@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\DataTransferObjects\ApplicationDto;
-use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,9 +18,8 @@ class ApplicationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $dto = $this->resource instanceof Application
-            ? ApplicationDto::fromModel($this->resource)
-            : $this->resource;
+        /** @var ApplicationDto $dto */
+        $dto = $this->resource;
 
         return [
             'id'          => $dto->id,

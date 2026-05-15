@@ -6,6 +6,7 @@ namespace App\Observers;
 
 use App\Models\AlertRule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maya\Messaging\Publishers\AuditPublisher;
 
 /**
@@ -39,7 +40,8 @@ class AlertRuleObserver
 
     public function created(AlertRule $rule): void
     {
-        $this->publish('created', $rule, previous: null, new: $this->snapshot($rule));
+        $snapshot = $this->snapshot($rule);
+        DB::afterCommit(fn () => $this->publish('created', $rule, previous: null, new: $snapshot));
     }
 
     public function updated(AlertRule $rule): void
@@ -58,12 +60,13 @@ class AlertRuleObserver
             return;
         }
 
-        $this->publish('updated', $rule, previous: $previous, new: $new);
+        DB::afterCommit(fn () => $this->publish('updated', $rule, previous: $previous, new: $new));
     }
 
     public function deleted(AlertRule $rule): void
     {
-        $this->publish('deleted', $rule, previous: $this->snapshot($rule), new: null);
+        $snapshot = $this->snapshot($rule);
+        DB::afterCommit(fn () => $this->publish('deleted', $rule, previous: $snapshot, new: null));
     }
 
     /**

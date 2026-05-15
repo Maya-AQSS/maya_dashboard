@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\DataTransferObjects\AlertDto;
-use App\Models\Alert;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,9 +18,8 @@ class AlertResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $dto = $this->resource instanceof Alert
-            ? AlertDto::fromModel($this->resource)
-            : $this->resource;
+        /** @var AlertDto $dto */
+        $dto = $this->resource;
 
         return [
             'id'              => $dto->id,
