@@ -58,3 +58,4 @@ __MACOSX/
 # Claude Code — si commitear (contexto del proyecto)
 !.claude/CLAUDE.md
 !.claude/memory/
+.maya-local.env
