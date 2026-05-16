@@ -39,7 +39,7 @@ async function fetchSystemAlerts(): Promise<AlertItem[]> {
   }))
 }
 
-export function useSystemAlerts() {
+export function useActiveSystemAlerts() {
   const { token, user } = useAuth()
 
   const { data: alerts = [], isPending: loading } = useQuery({

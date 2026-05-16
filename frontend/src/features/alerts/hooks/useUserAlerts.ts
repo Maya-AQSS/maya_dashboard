@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSystemAlerts } from './useSystemAlerts'
+import { useActiveSystemAlerts } from './useActiveSystemAlerts'
 import { useFichajeAlerts } from './useFichajeAlerts'
 
-export type { AlertItem } from './useSystemAlerts'
+export type { AlertItem } from './useActiveSystemAlerts'
 
 const DISMISSED_KEY = 'maya:dismissed-alerts'
 const DISMISSED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -35,7 +35,7 @@ function saveDismissed(ids: Set<string>): void {
 }
 
 export function useUserAlerts() {
-  const { alerts: systemAlerts, loading } = useSystemAlerts()
+  const { alerts: systemAlerts, loading } = useActiveSystemAlerts()
   const { alerts: fichajeAlerts, clockIn } = useFichajeAlerts()
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed)
 
