@@ -24,7 +24,8 @@ export function useSystemAlerts({
 
   const query = useQuery<SystemAlertsPage, Error>({
     queryKey,
-    queryFn: () => listSystemAlerts({ token, activeOnly, severity }),
+    queryFn: () =>
+      listSystemAlerts({ token, activeOnly, severity }) as Promise<SystemAlertsPage>,
     enabled: !!token,
     refetchInterval: POLL_MS,
     refetchIntervalInBackground: false,

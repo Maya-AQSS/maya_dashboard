@@ -1,15 +1,9 @@
 import { useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
-import { Button, Checkbox, PageTitle, Select } from '@maya/shared-ui-react'
+import { Checkbox, PageTitle, Select } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
-
-const SEVERITY_CLASSES = {
-  critical: 'border-l-danger',
-  high:     'border-l-warning-dark',
-  medium:   'border-l-warning',
-  low:      'border-l-info',
-}
+import { AlertRow, type SystemAlert } from '../components/AlertRow'
 
 export default function SystemAlertsPage() {
   const { token } = useAuth()
@@ -18,7 +12,9 @@ export default function SystemAlertsPage() {
   const [activeOnly, setActiveOnly] = useState(true)
 
   const { alerts, loading, error, onAcknowledge, onResolve } = useSystemAlerts({
-    token, activeOnly, severity: severity || undefined,
+    token: token ?? undefined,
+    activeOnly,
+    severity: severity || undefined,
   })
 
   return (
@@ -58,37 +54,13 @@ export default function SystemAlertsPage() {
       )}
 
       <ul className="list-none p-0 grid gap-2">
-        {alerts.map((a) => (
-          <li
-            key={a.id}
-            className={`border border-ui-border dark:border-ui-dark-border border-l-4 ${SEVERITY_CLASSES[a.severity] ?? 'border-l-ui-border'} rounded-lg p-3 bg-ui-card dark:bg-ui-dark-card`}
-          >
-            <div className="flex justify-between gap-4">
-              <div>
-                <strong>{a.title}</strong>
-                <div className="text-sm text-text-muted dark:text-text-dark-muted">
-                  {a.rule_slug || t('dashboard.systemAlerts.adHoc')} · {a.source} · {new Date(a.created_at).toLocaleString()}
-                </div>
-              </div>
-              <div className="flex gap-1.5">
-                {!a.acknowledged_at && (
-                  <Button variant="outlineTeal" size="xs" onClick={() => onAcknowledge(a.id)}>
-                    {t('dashboard.systemAlerts.acknowledge')}
-                  </Button>
-                )}
-                {!a.resolved_at && (
-                  <Button variant="primary" size="xs" onClick={() => onResolve(a.id)}>
-                    {t('dashboard.systemAlerts.resolve')}
-                  </Button>
-                )}
-              </div>
-            </div>
-            {a.context && Object.keys(a.context).length > 0 && (
-              <pre className="mt-2 p-2 bg-ui-body dark:bg-ui-dark-bg rounded-md text-sm overflow-auto">
-                {JSON.stringify(a.context, null, 2)}
-              </pre>
-            )}
-          </li>
+        {(alerts as SystemAlert[]).map((alert) => (
+          <AlertRow
+            key={alert.id}
+            alert={alert}
+            onAcknowledge={onAcknowledge}
+            onResolve={onResolve}
+          />
         ))}
       </ul>
     </div>
