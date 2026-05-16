@@ -3,21 +3,19 @@ import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks
 import {
   DashboardEditToggleButton,
   DashboardEditToolbar,
+  DashboardSkeleton,
   WidgetGrid,
+  type SkeletonBlock,
 } from '@maya/shared-dashboard-react'
 import { WIDGET_REGISTRY } from '../widgets/registry'
 import { PageTitle, useToast } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 
-function DashboardSkeleton() {
-  return (
-    <div className="p-4 sm:p-6 grid grid-cols-12 gap-4 animate-pulse">
-      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-      <div className="col-span-12 h-32 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-    </div>
-  )
-}
+const SKELETON_BLOCKS: SkeletonBlock[] = [
+  { colSpanClasses: 'col-span-12 sm:col-span-6', heightClass: 'h-48' },
+  { colSpanClasses: 'col-span-12 sm:col-span-6', heightClass: 'h-48' },
+  { colSpanClasses: 'col-span-12', heightClass: 'h-32' },
+]
 
 function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
@@ -95,7 +93,7 @@ function DashboardPage() {
   }, [resetToDefault, showToast, t])
 
   if (loading) {
-    return <DashboardSkeleton />
+    return <DashboardSkeleton blocks={SKELETON_BLOCKS} />
   }
 
   return (

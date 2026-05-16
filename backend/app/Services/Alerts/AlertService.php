@@ -3,7 +3,7 @@
 namespace App\Services\Alerts;
 
 use App\DataTransferObjects\AlertDto;
-use App\DataTransferObjects\Pagination\PaginatedDto;
+use Maya\Http\Pagination\PaginatedDto;
 use App\Models\Alert;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Services\Contracts\AlertServiceInterface;
