@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class UserFavoriteApplicationService implements UserFavoriteApplicationServiceInterface
 {
@@ -15,14 +16,17 @@ final class UserFavoriteApplicationService implements UserFavoriteApplicationSer
     ) {}
 
     /**
-     * @return list<UserFavoriteApplicationDto>
+     * @return LengthAwarePaginator<UserFavoriteApplicationDto>
      */
-    public function list(User $user): array
+    public function list(User $user, int $perPage = 100): LengthAwarePaginator
     {
-        return $this->favorites->listForUser($user)
-            ->map(fn (Application $app): UserFavoriteApplicationDto => UserFavoriteApplicationDto::fromModel($app))
-            ->values()
-            ->all();
+        $paginator = $this->favorites->paginateForUser($user, $perPage);
+
+        $paginator->getCollection()->transform(
+            fn (Application $app): UserFavoriteApplicationDto => UserFavoriteApplicationDto::fromModel($app),
+        );
+
+        return $paginator;
     }
 
     public function add(User $user, int $applicationId): UserFavoriteApplicationDto

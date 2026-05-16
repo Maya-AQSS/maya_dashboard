@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ApplicationService implements ApplicationServiceInterface
 {
@@ -15,13 +16,16 @@ final class ApplicationService implements ApplicationServiceInterface
     ) {}
 
     /**
-     * @return list<ApplicationDto>
+     * @return LengthAwarePaginator<ApplicationDto>
      */
-    public function listForUser(User $user): array
+    public function listForUser(User $user, int $perPage = 100): LengthAwarePaginator
     {
-        return $this->applications->listActiveWithFavoriteFlag((string) $user->id)
-            ->map(fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app))
-            ->values()
-            ->all();
+        $paginator = $this->applications->paginateActiveWithFavoriteFlag((string) $user->id, $perPage);
+
+        $paginator->getCollection()->transform(
+            fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app),
+        );
+
+        return $paginator;
     }
 }

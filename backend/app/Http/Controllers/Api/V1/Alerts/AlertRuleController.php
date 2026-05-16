@@ -9,6 +9,7 @@ use App\Http\Resources\AlertRuleResource;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AlertRuleController extends Controller
 {
@@ -16,11 +17,12 @@ class AlertRuleController extends Controller
         private readonly AlertRuleServiceInterface $rules,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return response()->json(
-            AlertRuleResource::collection($this->rules->list())->resolve($request),
-        );
+        $perPage = (int) $request->query('per_page', 100);
+        $perPage = max(1, min($perPage, 200));
+
+        return AlertRuleResource::collection($this->rules->list($perPage));
     }
 
     public function store(StoreAlertRuleRequest $request): JsonResponse

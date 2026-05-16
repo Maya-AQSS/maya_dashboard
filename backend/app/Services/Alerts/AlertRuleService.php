@@ -6,6 +6,7 @@ use App\DataTransferObjects\AlertRuleDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class AlertRuleService implements AlertRuleServiceInterface
 {
@@ -14,14 +15,17 @@ final class AlertRuleService implements AlertRuleServiceInterface
     ) {}
 
     /**
-     * @return list<AlertRuleDto>
+     * @return LengthAwarePaginator<AlertRuleDto>
      */
-    public function list(): array
+    public function list(int $perPage = 100): LengthAwarePaginator
     {
-        return $this->rules->listOrderedBySlug()
-            ->map(fn (AlertRule $r): AlertRuleDto => AlertRuleDto::fromModel($r))
-            ->values()
-            ->all();
+        $paginator = $this->rules->paginateOrderedBySlug($perPage);
+
+        $paginator->getCollection()->transform(
+            fn (AlertRule $r): AlertRuleDto => AlertRuleDto::fromModel($r),
+        );
+
+        return $paginator;
     }
 
     public function create(array $attributes): AlertRuleDto

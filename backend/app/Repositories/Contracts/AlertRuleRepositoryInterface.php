@@ -4,6 +4,7 @@ namespace App\Repositories\Contracts;
 
 use App\Models\AlertRule;
 use Generator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface AlertRuleRepositoryInterface
@@ -12,6 +13,11 @@ interface AlertRuleRepositoryInterface
      * @return Collection<int, AlertRule>
      */
     public function listOrderedBySlug(): Collection;
+
+    /**
+     * @return LengthAwarePaginator<AlertRule>
+     */
+    public function paginateOrderedBySlug(int $perPage = 100): LengthAwarePaginator;
 
     public function findOrFail(int $ruleId): AlertRule;
 

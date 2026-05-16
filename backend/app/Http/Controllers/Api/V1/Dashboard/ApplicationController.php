@@ -20,9 +20,11 @@ class ApplicationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $user = $this->resolveKeycloakUser($request);
+        $perPage = (int) $request->query('per_page', 100);
+        $perPage = max(1, min($perPage, 200));
 
         return ApplicationResource::collection(
-            $this->applications->listForUser($user),
+            $this->applications->listForUser($user, $perPage),
         );
     }
 }

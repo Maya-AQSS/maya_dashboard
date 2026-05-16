@@ -4,11 +4,12 @@ namespace App\Services\Contracts;
 
 use App\DataTransferObjects\ApplicationDto;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ApplicationServiceInterface
 {
     /**
-     * @return list<ApplicationDto>
+     * @return LengthAwarePaginator<ApplicationDto>
      */
-    public function listForUser(User $user): array;
+    public function listForUser(User $user, int $perPage = 100): LengthAwarePaginator;
 }

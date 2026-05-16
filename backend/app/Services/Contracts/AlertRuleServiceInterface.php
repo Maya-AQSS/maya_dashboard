@@ -3,13 +3,14 @@
 namespace App\Services\Contracts;
 
 use App\DataTransferObjects\AlertRuleDto;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface AlertRuleServiceInterface
 {
     /**
-     * @return list<AlertRuleDto>
+     * @return LengthAwarePaginator<AlertRuleDto>
      */
-    public function list(): array;
+    public function list(int $perPage = 100): LengthAwarePaginator;
 
     /**
      * @param  array<string, mixed>  $attributes

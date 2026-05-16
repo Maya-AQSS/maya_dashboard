@@ -4,11 +4,22 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Application;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 final class ApplicationRepository implements ApplicationRepositoryInterface
 {
     public function listActiveWithFavoriteFlag(string $userId): Collection
+    {
+        return $this->activeWithFavoriteFlagQuery($userId)->get();
+    }
+
+    public function paginateActiveWithFavoriteFlag(string $userId, int $perPage = 100): LengthAwarePaginator
+    {
+        return $this->activeWithFavoriteFlagQuery($userId)->paginate($perPage);
+    }
+
+    private function activeWithFavoriteFlagQuery(string $userId)
     {
         return Application::query()
             ->where('applications.is_active', true)
@@ -20,7 +31,6 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
             )
             ->select('applications.*')
             ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite')
-            ->orderBy('applications.name')
-            ->get();
+            ->orderBy('applications.name');
     }
 }

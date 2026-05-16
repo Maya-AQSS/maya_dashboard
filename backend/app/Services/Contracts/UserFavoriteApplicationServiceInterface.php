@@ -4,13 +4,14 @@ namespace App\Services\Contracts;
 
 use App\DataTransferObjects\UserFavoriteApplicationDto;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface UserFavoriteApplicationServiceInterface
 {
     /**
-     * @return list<UserFavoriteApplicationDto>
+     * @return LengthAwarePaginator<UserFavoriteApplicationDto>
      */
-    public function list(User $user): array;
+    public function list(User $user, int $perPage = 100): LengthAwarePaginator;
 
     public function add(User $user, int $applicationId): UserFavoriteApplicationDto;
 
