@@ -11,24 +11,39 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * Restricts the alert_rules.query_sql field to a narrow safelist:
  *
  *   - Must be a SELECT statement (single statement, no stacked queries).
- *   - Banned tokens (case-insensitive, word-boundary): write/DDL verbs
- *     (INSERT/UPDATE/DELETE/DROP/TRUNCATE/CREATE/ALTER/GRANT/REVOKE/COPY),
- *     execution helpers (EXECUTE/CALL/PERFORM), filesystem/network
- *     functions (pg_read_file / pg_read_binary_file / pg_ls_dir / dblink),
- *     timing primitives (pg_sleep), locking (LOCK).
+ *   - Banned tokens (case-insensitive, word-boundary):
+ *     - Write/DDL verbs: INSERT/UPDATE/DELETE/DROP/TRUNCATE/CREATE/ALTER/GRANT/REVOKE/COPY.
+ *     - Execution helpers: EXECUTE/CALL/PERFORM, LOCK.
+ *     - Filesystem / network functions: pg_read_file, pg_read_binary_file,
+ *       pg_ls_dir, dblink, lo_export, lo_import.
+ *     - Session / configuration manipulation: set_config, current_setting
+ *       (low risk but can leak settings — defense in depth).
+ *     - DoS via session control: pg_cancel_backend, pg_terminate_backend.
+ *     - Timing primitives: pg_sleep.
  *
  * The pgsql_logs DB role is also locked down (see
  * database/sql/log_mgmt_readonly_role.sql) — this rule is the API-boundary
- * defense layer that complements it. Both must remain in place.
+ * defense layer that complements it. Both must remain in place. The list
+ * was hardened on 2026-05-16 after deep-audit G-SEC-1 flagged the gaps.
  */
 class SafeAlertQuery implements ValidationRule
 {
     /** @var list<string> */
     private const BANNED_TOKENS = [
+        // Write / DDL
         'INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE', 'CREATE', 'ALTER',
-        'GRANT', 'REVOKE', 'COPY', 'EXECUTE', 'CALL', 'PERFORM', 'LOCK',
+        'GRANT', 'REVOKE', 'COPY',
+        // Execution / locking
+        'EXECUTE', 'CALL', 'PERFORM', 'LOCK',
+        // Filesystem / network
         'pg_read_file', 'pg_read_binary_file', 'pg_ls_dir',
-        'dblink', 'pg_sleep',
+        'dblink', 'lo_export', 'lo_import',
+        // Session / config manipulation
+        'set_config', 'current_setting',
+        // DoS via session control
+        'pg_cancel_backend', 'pg_terminate_backend',
+        // Timing
+        'pg_sleep',
     ];
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
