@@ -1,16 +1,15 @@
 /**
  * Valida que un string sea una fecha ISO válida.
  * Retorna el string original si es válido, null en caso contrario.
- * @param {string|null|undefined} value
- * @returns {string|null}
  */
-function validateIsoDate(value) {
+function validateIsoDate(value: string | null | undefined): string | null {
   if (!value) return null
   const date = new Date(value)
   return isNaN(date.getTime()) ? null : value
 }
 
-function mapApplicationFromApi(app) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapApplicationFromApi(app: any) {
   const defaultUrl = '#'
 
   return {
@@ -24,7 +23,8 @@ function mapApplicationFromApi(app) {
   }
 }
 
-function mapApplicationToApi(app) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapApplicationToApi(app: any) {
   return {
     id: app.id,
     name: app.name,
