@@ -1,15 +1,32 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, type MouseEvent } from 'react'
 import { ConfirmDialog, FAVORITE_STAR_FILLED_CHAR } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useFavoritesContext } from '../context/FavoritesContext'
 
+interface Favorite {
+  id: string | number
+  name?: string
+  description?: string | null
+  documentationUrl?: string | null
+  [key: string]: unknown
+}
+
+interface FavoriteCardProps {
+  fav: Favorite
+  onRemove: (id: string | number) => void
+}
+
 // ─── FavoriteCard ──────────────────────────────────────────────
-function FavoriteCard({ fav, onRemove }) {
+function FavoriteCard({ fav, onRemove }: FavoriteCardProps) {
   const { t } = useLocale()
   const [showConfirm, setShowConfirm] = useState(false)
-  const starButtonRef = useRef(null)
+  const starButtonRef = useRef<HTMLButtonElement>(null)
 
-  const handleStarClick = (event) => { event.preventDefault(); event.stopPropagation(); setShowConfirm(true) }
+  const handleStarClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    setShowConfirm(true)
+  }
   const handleConfirm = () => { onRemove(fav.id); setShowConfirm(false) }
   const handleCancel = () => { setShowConfirm(false) }
 

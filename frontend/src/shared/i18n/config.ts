@@ -18,12 +18,12 @@ export const messages = {
 export const supportedLocaleCodes = Object.keys(messages)
 
 /** Locale BCP 47 para formatear fechas con toLocaleString (código i18n → tag Intl). */
-export const dateLocaleMap = {
+export const dateLocaleMap: Record<string, string> = {
   va: 'ca-ES',
   es: 'es-ES',
   en: 'en-GB',
 }
 
-export function getDateLocale(localeCode) {
+export function getDateLocale(localeCode: string): string {
   return dateLocaleMap[localeCode] ?? 'en-GB'
 }

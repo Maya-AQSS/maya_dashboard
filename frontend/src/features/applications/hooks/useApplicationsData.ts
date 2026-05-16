@@ -33,7 +33,7 @@ function useApplicationsData() {
   )
 
   const toggleFavorite = useCallback(
-    (id) => {
+    (id: string | number) => {
       if (favoriteIds.has(id)) {
         remove(id)
       } else {

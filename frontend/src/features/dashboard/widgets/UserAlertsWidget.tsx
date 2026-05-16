@@ -36,7 +36,7 @@ function UserAlertsWidget() {
     )
   }
 
-  const handleAction = (alert) => {
+  const handleAction = (alert: import('../../alerts/hooks/useActiveSystemAlerts').AlertItem) => {
     if (alert.actionKind === 'clockIn') {
       clockIn()
       return

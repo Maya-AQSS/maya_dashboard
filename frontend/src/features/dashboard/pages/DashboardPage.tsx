@@ -1,5 +1,16 @@
 import { useState, useRef, useCallback } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
+
+type LayoutItem = {
+  i: string
+  x: number
+  y: number
+  w: number
+  h: number
+  minW?: number
+  minH?: number
+}
+type Layout = LayoutItem[]
 import {
   DashboardEditToggleButton,
   DashboardEditToolbar,
@@ -20,8 +31,8 @@ const SKELETON_BLOCKS: SkeletonBlock[] = [
 function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
   const [editable, setEditable] = useState(false)
-  const [draftLayout, setDraftLayout] = useState(null)
-  const snapshotRef = useRef(null)
+  const [draftLayout, setDraftLayout] = useState<Layout | null>(null)
+  const snapshotRef = useRef<Layout | null>(null)
   const { show: showToast } = useToast()
   const { t } = useLocale()
 
@@ -33,8 +44,8 @@ function DashboardPage() {
         setDraftLayout(null)
         return false
       }
-      snapshotRef.current = layout
-      setDraftLayout(layout)
+      snapshotRef.current = layout as Layout
+      setDraftLayout(layout as Layout)
       return true
     })
   }, [layout])
@@ -55,19 +66,19 @@ function DashboardPage() {
     setEditable(false)
   }, [])
 
-  const handleLayoutChange = useCallback((newLayout) => {
+  const handleLayoutChange = useCallback((newLayout: Layout) => {
     if (!editable) return
     setDraftLayout(newLayout)
   }, [editable])
 
-  const handleRemoveWidget = useCallback((widgetId) => {
-    setDraftLayout((prev) => (prev ?? layout).filter((item) => item.i !== widgetId))
+  const handleRemoveWidget = useCallback((widgetId: string) => {
+    setDraftLayout((prev) => ((prev ?? (layout as Layout)).filter((item) => item.i !== widgetId)))
   }, [layout])
 
-  const handleAddWidget = useCallback((widgetId) => {
-    const def = WIDGET_REGISTRY[widgetId]
+  const handleAddWidget = useCallback((widgetId: string) => {
+    const def = WIDGET_REGISTRY[widgetId as keyof typeof WIDGET_REGISTRY]
     if (!def) return
-    const current = draftLayout ?? layout
+    const current = (draftLayout ?? layout) as Layout
     const maxY = current.reduce((m, item) => Math.max(m, item.y + item.h), 0)
     setDraftLayout([...current, {
       i: widgetId,
@@ -82,7 +93,7 @@ function DashboardPage() {
 
   const handleReset = useCallback(async () => {
     try {
-      setDraftLayout(DEFAULT_LAYOUT)
+      setDraftLayout(DEFAULT_LAYOUT as Layout)
       await resetToDefault()
       setEditable(false)
       setDraftLayout(null)

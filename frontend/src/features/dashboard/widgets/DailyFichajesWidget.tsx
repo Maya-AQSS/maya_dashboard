@@ -4,30 +4,41 @@ import { Button } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 
-function toDateString(date) {
+interface FichajeEntry {
+  type: 'in' | 'out'
+  timestamp: Date | string
+}
+
+interface FichajePair {
+  entrada: FichajeEntry
+  salida: FichajeEntry | null
+  autoClose: boolean
+}
+
+function toDateString(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
-function isToday(date) {
+function isToday(date: Date): boolean {
   return toDateString(date) === toDateString(new Date())
 }
 
-function formatTime(timestamp) {
+function formatTime(timestamp: unknown): string {
   if (!(timestamp instanceof Date)) return '—'
   return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function toTimeValue(timestamp) {
+function toTimeValue(timestamp: unknown): string {
   if (!(timestamp instanceof Date)) return ''
   const h = String(timestamp.getHours()).padStart(2, '0')
   const m = String(timestamp.getMinutes()).padStart(2, '0')
   return `${h}:${m}`
 }
 
-function formatHours(ms) {
+function formatHours(ms: number | null | undefined): string {
   if (ms == null) return '—'
   const totalMinutes = Math.round(ms / 60000)
   const h = Math.floor(totalMinutes / 60)
@@ -35,10 +46,12 @@ function formatHours(ms) {
   return `${h}h ${m.toString().padStart(2, '0')}m`
 }
 
-function pairEntries(entries, selectedDate) {
-  const sorted = [...entries].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-  const pairs = []
-  let currentIn = null
+function pairEntries(entries: FichajeEntry[], selectedDate: Date): FichajePair[] {
+  const sorted = [...entries].sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  )
+  const pairs: FichajePair[] = []
+  let currentIn: FichajeEntry | null = null
 
   for (const entry of sorted) {
     if (entry.type === 'in') {
@@ -67,30 +80,33 @@ function pairEntries(entries, selectedDate) {
   return pairs
 }
 
-function startOfDay(date) {
+function startOfDay(date: Date): Date {
   const d = new Date(date)
   d.setHours(0, 0, 0, 0)
   return d
 }
 
-function startOfWeek(date) {
+function startOfWeek(date: Date): Date {
   // Semana empieza en domingo (igual que la imagen de referencia).
   const d = startOfDay(date)
   d.setDate(d.getDate() - d.getDay())
   return d
 }
 
-function addDays(date, n) {
+function addDays(date: Date, n: number): Date {
   const d = new Date(date)
   d.setDate(d.getDate() + n)
   return d
 }
 
-function capitalize(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+interface WeekDatePickerProps {
+  selectedDate: Date
+  onSelect: (date: Date) => void
+  dateLocale: string
+  t: (key: string) => string
 }
 
-function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }) {
+function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }: WeekDatePickerProps) {
   const today = startOfDay(new Date())
   const weekStart = startOfWeek(selectedDate)
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
@@ -187,11 +203,11 @@ function DailyFichajesWidget() {
 
   const { entries, loading, error } = useDailyFichajes(user?.sub, selectedDate)
 
-  const [editingRow, setEditingRow] = useState(null)
+  const [editingRow, setEditingRow] = useState<number | null>(null)
   const [requestForm, setRequestForm] = useState({ date: '', from: '', to: '' })
-  const [pendingRequests, setPendingRequests] = useState({})
+  const [pendingRequests, setPendingRequests] = useState<Record<number, typeof requestForm>>({})
 
-  const handleDatePicked = (date) => {
+  const handleDatePicked = (date: Date): void => {
     const picked = new Date(date)
     picked.setHours(0, 0, 0, 0)
     setSelectedDate(picked)
@@ -199,7 +215,7 @@ function DailyFichajesWidget() {
     setPendingRequests({})
   }
 
-  const handleOpenEdit = (index, pair) => {
+  const handleOpenEdit = (index: number, pair: FichajePair): void => {
     setEditingRow(index)
     setRequestForm({
       date: toDateString(selectedDate),
@@ -208,15 +224,15 @@ function DailyFichajesWidget() {
     })
   }
 
-  const handleSubmitRequest = (index) => {
+  const handleSubmitRequest = (index: number): void => {
     setPendingRequests((prev) => ({ ...prev, [index]: { ...requestForm } }))
     setEditingRow(null)
   }
 
-  const pairs = pairEntries(entries, selectedDate)
+  const pairs = pairEntries((entries as FichajeEntry[]) ?? [], selectedDate)
   const totalMs = pairs.reduce((sum, p) => {
     if (!p.salida) return sum
-    return sum + (new Date(p.salida.timestamp) - new Date(p.entrada.timestamp))
+    return sum + (new Date(p.salida.timestamp).getTime() - new Date(p.entrada.timestamp).getTime())
   }, 0)
 
   return (
@@ -263,7 +279,7 @@ function DailyFichajesWidget() {
             <tbody className="divide-y divide-gray-100 dark:divide-ui-dark-border">
               {pairs.map((pair, i) => {
                 const ms = pair.salida
-                  ? new Date(pair.salida.timestamp) - new Date(pair.entrada.timestamp)
+                  ? new Date(pair.salida.timestamp).getTime() - new Date(pair.entrada.timestamp).getTime()
                   : null
                 const pending = pendingRequests[i]
                 const isEditing = editingRow === i

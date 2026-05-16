@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
 import {
-  Button,
   ConfirmDialog,
   DataTable,
   FAVORITE_STAR_FILLED_CHAR,
