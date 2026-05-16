@@ -22,7 +22,7 @@ class UserDashboardLayoutResource extends JsonResource
         $dto = $this->resource;
 
         return [
-            'layout'     => $dto->layout,
+            'layout' => $dto->layout,
             'updated_at' => $dto->updatedAt,
         ];
     }

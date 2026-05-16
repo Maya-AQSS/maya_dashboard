@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Console\Commands;
@@ -29,7 +30,7 @@ class EvaluateAlertRules extends Command
     public function handle(AlertPublisher $publisher, AlertRuleRepositoryInterface $ruleRepo): int
     {
         $logsConnection = (string) $this->option('logs-connection');
-        $now            = now();
+        $now = now();
 
         $rules = $ruleRepo->cursorActive();
         $this->info("Evaluating enabled rule(s) against connection: {$logsConnection}");
@@ -39,6 +40,7 @@ class EvaluateAlertRules extends Command
         foreach ($rules as $rule) {
             if ($this->isDue($rule, $now) === false) {
                 $this->line("  ↷ skipping {$rule->slug} (not due yet per schedule_cron)");
+
                 continue;
             }
 
@@ -46,10 +48,12 @@ class EvaluateAlertRules extends Command
                 // Wrap in a transaction so SET LOCAL applies to both statements.
                 $rows = DB::connection($logsConnection)->transaction(function () use ($logsConnection, $rule) {
                     DB::connection($logsConnection)->statement("SET LOCAL statement_timeout = '5s'");
+
                     return DB::connection($logsConnection)->select($rule->query_sql);
                 });
             } catch (Throwable $e) {
                 $this->error("Rule {$rule->slug} query failed: {$e->getMessage()}");
+
                 continue;
             }
 
@@ -60,11 +64,11 @@ class EvaluateAlertRules extends Command
             }
 
             $template = (array) ($rule->context_template ?? []);
-            $context  = array_merge(
+            $context = array_merge(
                 $template,
                 [
                     'matched_rows' => count($rows),
-                    'sample'       => $this->buildSafeSample($rows, $template),
+                    'sample' => $this->buildSafeSample($rows, $template),
                 ],
             );
             // sample_columns is metadata for redaction, not part of the alert payload.
@@ -93,8 +97,8 @@ class EvaluateAlertRules extends Command
      * declared in the rule's context_template.sample_columns. If no allowlist
      * is provided, only the row count is published — never raw row values.
      *
-     * @param  list<object>           $rows      Raw rows returned by DB::select() (stdClass objects).
-     * @param  array<string, mixed>   $template  The rule's context_template, may contain `sample_columns`.
+     * @param  list<object>  $rows  Raw rows returned by DB::select() (stdClass objects).
+     * @param  array<string, mixed>  $template  The rule's context_template, may contain `sample_columns`.
      * @return list<array<string, mixed>>
      */
     private function buildSafeSample(array $rows, array $template): array
@@ -107,7 +111,7 @@ class EvaluateAlertRules extends Command
 
         $sample = [];
         foreach (array_slice($rows, 0, 5) as $row) {
-            $assoc    = (array) $row;
+            $assoc = (array) $row;
             $filtered = [];
             foreach ($allowed as $column) {
                 if (array_key_exists($column, $assoc)) {
@@ -116,6 +120,7 @@ class EvaluateAlertRules extends Command
             }
             $sample[] = $filtered;
         }
+
         return $sample;
     }
 
@@ -137,6 +142,7 @@ class EvaluateAlertRules extends Command
             $cron = new CronExpression($rule->schedule_cron);
             // The previous run time is the last time the cron expression was due before now.
             $previousRunTime = Carbon::instance($cron->getPreviousRunDate($now->toDateTime()));
+
             // If we already evaluated after the previous run time, we're not due yet.
             return $rule->last_evaluated_at->lt($previousRunTime);
         } catch (Throwable) {

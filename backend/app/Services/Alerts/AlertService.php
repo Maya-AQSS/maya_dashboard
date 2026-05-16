@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Alerts;
 
 use App\DTOs\AlertDto;
-use Maya\Http\Pagination\PaginatedDto;
 use App\Models\Alert;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Services\Contracts\AlertServiceInterface;
+use Maya\Http\Pagination\PaginatedDto;
 
 final class AlertService implements AlertServiceInterface
 {

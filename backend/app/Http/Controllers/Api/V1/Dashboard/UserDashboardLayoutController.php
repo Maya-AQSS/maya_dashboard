@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Dashboard;
@@ -43,7 +44,7 @@ class UserDashboardLayoutController extends Controller
     private function present(UserDashboardLayoutDto $dto): JsonResponse
     {
         return response()->json([
-            'layout'     => $dto->layout,
+            'layout' => $dto->layout,
             'updated_at' => $dto->updatedAt,
         ]);
     }

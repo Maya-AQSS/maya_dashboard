@@ -42,11 +42,11 @@ class AlertIngestionService implements AlertIngestionServiceInterface
             : null; // orphan alert — persisted but FK decoupled
 
         $this->alertRepo->upsertByMessageId($messageId, [
-            'rule_slug'  => $ruleSlug,
-            'severity'   => $dto->severity,
-            'title'      => $dto->title,
-            'source'     => $dto->source,
-            'context'    => $dto->context,
+            'rule_slug' => $ruleSlug,
+            'severity' => $dto->severity,
+            'title' => $dto->title,
+            'source' => $dto->source,
+            'context' => $dto->context,
             'created_at' => $dto->createdAt !== null
                 ? Carbon::parse($dto->createdAt)
                 : now(),

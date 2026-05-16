@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Alerts;
@@ -21,9 +22,9 @@ class AlertController extends Controller
 
     public function index(ListAlertsRequest $request): JsonResponse
     {
-        $perPage  = (int) ($request->validated('per_page') ?? 25);
+        $perPage = (int) ($request->validated('per_page') ?? 25);
         $severity = $request->validated('severity') ?: null;
-        $active   = (bool) ($request->validated('active_only') ?? true);
+        $active = (bool) ($request->validated('active_only') ?? true);
 
         // El frontend (`useSystemAlerts`) lee `page.data` del LengthAwarePaginator;
         // PaginatedDto::jsonSerialize() emite la misma shape plana.

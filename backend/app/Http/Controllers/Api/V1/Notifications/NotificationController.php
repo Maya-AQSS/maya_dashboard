@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Notifications;
@@ -24,7 +25,7 @@ class NotificationController extends Controller
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
         $perPage = (int) ($request->validated('per_page') ?? 25);
-        $type    = $request->validated('type') ?: null;
+        $type = $request->validated('type') ?: null;
 
         $page = $this->notifications->paginate(
             $recipientId,

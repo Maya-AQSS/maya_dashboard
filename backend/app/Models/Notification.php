@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -17,10 +18,10 @@ class Notification extends Model
     protected function casts(): array
     {
         return [
-            'channels'   => 'array',
-            'metadata'   => 'array',
+            'channels' => 'array',
+            'metadata' => 'array',
             'created_at' => 'datetime',
-            'read_at'    => 'datetime',
+            'read_at' => 'datetime',
         ];
     }
 

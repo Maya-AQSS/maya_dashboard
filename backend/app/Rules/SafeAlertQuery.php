@@ -50,6 +50,7 @@ class SafeAlertQuery implements ValidationRule
     {
         if (! is_string($value)) {
             $fail('El campo :attribute debe ser una cadena SQL.');
+
             return;
         }
 
@@ -57,6 +58,7 @@ class SafeAlertQuery implements ValidationRule
 
         if ($sql === '') {
             $fail('El campo :attribute no puede estar vacío.');
+
             return;
         }
 
@@ -65,11 +67,13 @@ class SafeAlertQuery implements ValidationRule
         $sql = rtrim($sql, ';');
         if (str_contains($sql, ';')) {
             $fail('La consulta no puede contener varios statements (no se permite ";").');
+
             return;
         }
 
         if (stripos($sql, 'SELECT') !== 0) {
             $fail('La consulta debe empezar por SELECT.');
+
             return;
         }
 
@@ -79,8 +83,9 @@ class SafeAlertQuery implements ValidationRule
         $stripped = (string) preg_replace('/--[^\n]*/', ' ', $stripped);
 
         foreach (self::BANNED_TOKENS as $token) {
-            if (preg_match('/\b' . preg_quote($token, '/') . '\b/i', $stripped) === 1) {
+            if (preg_match('/\b'.preg_quote($token, '/').'\b/i', $stripped) === 1) {
                 $fail("La consulta contiene un token no permitido: {$token}.");
+
                 return;
             }
         }

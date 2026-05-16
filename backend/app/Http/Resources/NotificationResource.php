@@ -22,17 +22,17 @@ class NotificationResource extends JsonResource
         $dto = $this->resource;
 
         return [
-            'id'           => $dto->id,
-            'message_id'   => $dto->messageId,
-            'app'          => $dto->app,
-            'type'         => $dto->type,
+            'id' => $dto->id,
+            'message_id' => $dto->messageId,
+            'app' => $dto->app,
+            'type' => $dto->type,
             'recipient_id' => $dto->recipientId,
-            'title'        => $dto->title,
-            'body'         => $dto->body,
-            'channels'     => $dto->channels,
-            'metadata'     => $dto->metadata,
-            'read_at'      => $dto->readAt,
-            'created_at'   => $dto->createdAt,
+            'title' => $dto->title,
+            'body' => $dto->body,
+            'channels' => $dto->channels,
+            'metadata' => $dto->metadata,
+            'read_at' => $dto->readAt,
+            'created_at' => $dto->createdAt,
         ];
     }
 }

@@ -20,15 +20,15 @@ class StoreAlertRuleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'slug'             => ['required', 'string', 'max:128', 'unique:alert_rules,slug', 'regex:/^[a-z0-9][a-z0-9\-]*$/'],
-            'name'             => ['required', 'string', 'max:200'],
-            'description'      => ['nullable', 'string'],
-            'query_sql'        => ['required', 'string', new SafeAlertQuery()],
-            'severity'         => ['required', 'in:critical,high,medium,low'],
-            'schedule_cron'    => ['string', 'max:64'],
-            'enabled'          => ['boolean'],
+            'slug' => ['required', 'string', 'max:128', 'unique:alert_rules,slug', 'regex:/^[a-z0-9][a-z0-9\-]*$/'],
+            'name' => ['required', 'string', 'max:200'],
+            'description' => ['nullable', 'string'],
+            'query_sql' => ['required', 'string', new SafeAlertQuery],
+            'severity' => ['required', 'in:critical,high,medium,low'],
+            'schedule_cron' => ['string', 'max:64'],
+            'enabled' => ['boolean'],
             'context_template' => ['array'],
-            'context_template.sample_columns'   => ['sometimes', 'array'],
+            'context_template.sample_columns' => ['sometimes', 'array'],
             'context_template.sample_columns.*' => ['string', 'max:128'],
         ];
     }

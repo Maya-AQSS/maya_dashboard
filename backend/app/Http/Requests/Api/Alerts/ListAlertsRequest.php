@@ -19,8 +19,8 @@ class ListAlertsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'per_page'    => ['nullable', 'integer', 'min:1', 'max:100'],
-            'severity'    => ['nullable', 'string', 'in:critical,high,medium,low'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'severity' => ['nullable', 'string', 'in:critical,high,medium,low'],
             'active_only' => ['nullable', 'boolean'],
         ];
     }

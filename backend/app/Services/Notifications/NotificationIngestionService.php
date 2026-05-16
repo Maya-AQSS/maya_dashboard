@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Notifications;
@@ -28,14 +29,14 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
         }
 
         $this->repo->upsertByMessageId($messageId, [
-            'app'          => $dto->app,
-            'type'         => $dto->type,
+            'app' => $dto->app,
+            'type' => $dto->type,
             'recipient_id' => $recipientId,
-            'title'        => $dto->title,
-            'body'         => $dto->body,
-            'channels'     => $dto->channels,
-            'metadata'     => $dto->metadata,
-            'created_at'   => $dto->createdAt !== null
+            'title' => $dto->title,
+            'body' => $dto->body,
+            'channels' => $dto->channels,
+            'metadata' => $dto->metadata,
+            'created_at' => $dto->createdAt !== null
                 ? Carbon::parse($dto->createdAt)
                 : now(),
         ]);
@@ -55,6 +56,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
 
         if (! $this->repo->userExists($keycloakId)) {
             Log::warning('Notification skipped: recipient not found in users.', ['keycloak_id' => $keycloakId]);
+
             return null;
         }
 

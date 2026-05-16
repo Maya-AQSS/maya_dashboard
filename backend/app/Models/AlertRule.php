@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -30,8 +31,8 @@ class AlertRule extends Model
     protected function casts(): array
     {
         return [
-            'enabled'           => 'boolean',
-            'context_template'  => 'array',
+            'enabled' => 'boolean',
+            'context_template' => 'array',
             'last_evaluated_at' => 'datetime',
         ];
     }

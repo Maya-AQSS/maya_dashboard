@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
@@ -44,8 +45,8 @@ final class AlertRepository implements AlertRepositoryInterface
     public function resolve(Alert $alert, string $userId): Alert
     {
         $alert->update([
-            'resolved_at'     => now(),
-            'resolved_by'     => $userId,
+            'resolved_at' => now(),
+            'resolved_by' => $userId,
             'acknowledged_at' => $alert->acknowledged_at ?? now(),
             'acknowledged_by' => $alert->acknowledged_by ?? $userId,
         ]);

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
@@ -19,7 +20,7 @@ final class UserDashboardLayoutRepository implements UserDashboardLayoutReposito
         return $user->dashboardLayout()->updateOrCreate(
             ['user_id' => $user->id],
             [
-                'layout'     => $layout,
+                'layout' => $layout,
                 'updated_at' => now(),
             ],
         );

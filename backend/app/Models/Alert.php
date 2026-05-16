@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -18,10 +19,10 @@ class Alert extends Model
     protected function casts(): array
     {
         return [
-            'context'         => 'array',
-            'created_at'      => 'datetime',
+            'context' => 'array',
+            'created_at' => 'datetime',
             'acknowledged_at' => 'datetime',
-            'resolved_at'     => 'datetime',
+            'resolved_at' => 'datetime',
         ];
     }
 

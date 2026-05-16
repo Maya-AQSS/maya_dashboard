@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Notifications;
 
 use App\DTOs\NotificationDto;
-use Maya\Http\Pagination\PaginatedDto;
 use App\Models\Notification;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationServiceInterface;
+use Maya\Http\Pagination\PaginatedDto;
 
 final class NotificationService implements NotificationServiceInterface
 {

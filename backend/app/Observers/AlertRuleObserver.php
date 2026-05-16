@@ -20,7 +20,8 @@ use Maya\Messaging\Publishers\AuditPublisher;
 class AlertRuleObserver
 {
     private const APPLICATION_SLUG = 'maya_dashboard';
-    private const ENTITY_TYPE      = 'alert_rule';
+
+    private const ENTITY_TYPE = 'alert_rule';
 
     /**
      * Fields whose mutation is forensically interesting. Skips noise such as
@@ -47,13 +48,13 @@ class AlertRuleObserver
     public function updated(AlertRule $rule): void
     {
         $previous = [];
-        $new      = [];
+        $new = [];
         foreach ($rule->getChanges() as $field => $value) {
             if (! in_array($field, self::TRACKED_FIELDS, true)) {
                 continue;
             }
             $previous[$field] = $rule->getOriginal($field);
-            $new[$field]      = $value;
+            $new[$field] = $value;
         }
 
         if ($new === []) {
@@ -76,7 +77,7 @@ class AlertRuleObserver
     private function publish(string $action, AlertRule $rule, ?array $previous, ?array $new): void
     {
         $jwtUser = $this->request->attributes->get('jwt_user');
-        $userId  = is_array($jwtUser) ? (string) ($jwtUser['id'] ?? 'system') : 'system';
+        $userId = is_array($jwtUser) ? (string) ($jwtUser['id'] ?? 'system') : 'system';
 
         $this->publisher->publish(
             applicationSlug: self::APPLICATION_SLUG,
@@ -97,13 +98,13 @@ class AlertRuleObserver
     private function snapshot(AlertRule $rule): array
     {
         return [
-            'slug'             => $rule->slug,
-            'name'             => $rule->name,
-            'description'      => $rule->description,
-            'query_sql'        => $rule->query_sql,
-            'severity'         => $rule->severity,
-            'schedule_cron'    => $rule->schedule_cron,
-            'enabled'          => (bool) $rule->enabled,
+            'slug' => $rule->slug,
+            'name' => $rule->name,
+            'description' => $rule->description,
+            'query_sql' => $rule->query_sql,
+            'severity' => $rule->severity,
+            'schedule_cron' => $rule->schedule_cron,
+            'enabled' => (bool) $rule->enabled,
             'context_template' => $rule->context_template,
         ];
     }

@@ -17,7 +17,8 @@ use Maya\Messaging\Publishers\AuditPublisher;
 final class AlertObserver
 {
     private const APPLICATION_SLUG = 'maya_dashboard';
-    private const ENTITY_TYPE      = 'alert';
+
+    private const ENTITY_TYPE = 'alert';
 
     public function __construct(private readonly AuditPublisher $publisher) {}
 
@@ -45,12 +46,12 @@ final class AlertObserver
     {
         $this->publisher->publish(
             applicationSlug: self::APPLICATION_SLUG,
-            entityType:      self::ENTITY_TYPE,
-            entityId:        (string) $alert->getKey(),
-            action:          $action,
-            userId:          (string) (Auth::id() ?? 'system'),
-            previousValue:   $previous,
-            newValue:        $new,
+            entityType: self::ENTITY_TYPE,
+            entityId: (string) $alert->getKey(),
+            action: $action,
+            userId: (string) (Auth::id() ?? 'system'),
+            previousValue: $previous,
+            newValue: $new,
         );
     }
 }

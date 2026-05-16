@@ -22,12 +22,12 @@ class ApplicationResource extends JsonResource
         $dto = $this->resource;
 
         return [
-            'id'          => $dto->id,
-            'name'        => $dto->name,
-            'slug'        => $dto->slug,
+            'id' => $dto->id,
+            'name' => $dto->name,
+            'slug' => $dto->slug,
             'description' => $dto->description,
             'traefik_url' => $dto->traefikUrl,
-            'is_active'   => $dto->isActive,
+            'is_active' => $dto->isActive,
             'is_favorite' => $dto->isFavorite,
         ];
     }

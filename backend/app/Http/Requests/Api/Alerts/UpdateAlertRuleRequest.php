@@ -20,14 +20,14 @@ class UpdateAlertRuleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'             => ['sometimes', 'string', 'max:200'],
-            'description'      => ['sometimes', 'nullable', 'string'],
-            'query_sql'        => ['sometimes', 'string', new SafeAlertQuery()],
-            'severity'         => ['sometimes', 'in:critical,high,medium,low'],
-            'schedule_cron'    => ['sometimes', 'string', 'max:64'],
-            'enabled'          => ['sometimes', 'boolean'],
+            'name' => ['sometimes', 'string', 'max:200'],
+            'description' => ['sometimes', 'nullable', 'string'],
+            'query_sql' => ['sometimes', 'string', new SafeAlertQuery],
+            'severity' => ['sometimes', 'in:critical,high,medium,low'],
+            'schedule_cron' => ['sometimes', 'string', 'max:64'],
+            'enabled' => ['sometimes', 'boolean'],
             'context_template' => ['sometimes', 'array'],
-            'context_template.sample_columns'   => ['sometimes', 'array'],
+            'context_template.sample_columns' => ['sometimes', 'array'],
             'context_template.sample_columns.*' => ['string', 'max:128'],
         ];
     }

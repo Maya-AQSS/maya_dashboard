@@ -22,9 +22,9 @@ class UserFavoriteApplicationResource extends JsonResource
         $dto = $this->resource;
 
         return [
-            'id'          => $dto->id,
-            'name'        => $dto->name,
-            'slug'        => $dto->slug,
+            'id' => $dto->id,
+            'name' => $dto->name,
+            'slug' => $dto->slug,
             'traefik_url' => $dto->traefikUrl,
         ];
     }
