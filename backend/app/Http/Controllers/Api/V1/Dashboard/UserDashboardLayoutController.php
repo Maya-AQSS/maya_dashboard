@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Dashboard;
 
-use App\DataTransferObjects\UserDashboardLayoutDto;
+use App\DTOs\UserDashboardLayoutDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DashboardLayoutUpdateRequest;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;

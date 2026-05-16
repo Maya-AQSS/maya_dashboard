@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\DataTransferObjects\UserFavoriteApplicationDto;
+use App\DTOs\UserFavoriteApplicationDto;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 

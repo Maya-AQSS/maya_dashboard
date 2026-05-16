@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\DataTransferObjects\AlertRuleDto;
+use App\DTOs\AlertRuleDto;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface AlertRuleServiceInterface

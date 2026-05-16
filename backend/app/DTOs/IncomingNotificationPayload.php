@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DataTransferObjects;
+namespace App\DTOs;
 
 readonly class IncomingNotificationPayload
 {

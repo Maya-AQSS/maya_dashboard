@@ -2,7 +2,7 @@
 
 namespace App\Services\Notifications;
 
-use App\DataTransferObjects\IncomingNotificationPayload;
+use App\DTOs\IncomingNotificationPayload;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use Illuminate\Support\Carbon;

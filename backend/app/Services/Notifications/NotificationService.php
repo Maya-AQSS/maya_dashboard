@@ -2,7 +2,7 @@
 
 namespace App\Services\Notifications;
 
-use App\DataTransferObjects\NotificationDto;
+use App\DTOs\NotificationDto;
 use Maya\Http\Pagination\PaginatedDto;
 use App\Models\Notification;
 use App\Repositories\Contracts\NotificationRepositoryInterface;

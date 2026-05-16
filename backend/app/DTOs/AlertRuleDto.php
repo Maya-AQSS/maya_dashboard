@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DataTransferObjects;
+namespace App\DTOs;
 
 use App\Models\AlertRule;
 

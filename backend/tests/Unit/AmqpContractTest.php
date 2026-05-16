@@ -10,8 +10,8 @@
  * class level, without requiring an AMQP broker or database.
  */
 
-use App\DataTransferObjects\IncomingAlertPayload;
-use App\DataTransferObjects\IncomingNotificationPayload;
+use App\DTOs\IncomingAlertPayload;
+use App\DTOs\IncomingNotificationPayload;
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 

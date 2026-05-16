@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\DataTransferObjects\UserDashboardLayoutDto;
+use App\DTOs\UserDashboardLayoutDto;
 use App\Models\User;
 
 interface UserDashboardLayoutServiceInterface

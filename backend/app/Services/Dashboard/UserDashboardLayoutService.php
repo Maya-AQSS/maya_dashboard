@@ -2,7 +2,7 @@
 
 namespace App\Services\Dashboard;
 
-use App\DataTransferObjects\UserDashboardLayoutDto;
+use App\DTOs\UserDashboardLayoutDto;
 use App\Models\User;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;

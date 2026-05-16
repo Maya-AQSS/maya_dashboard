@@ -2,7 +2,7 @@
 
 namespace App\Services\Dashboard;
 
-use App\DataTransferObjects\ApplicationDto;
+use App\DTOs\ApplicationDto;
 use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;

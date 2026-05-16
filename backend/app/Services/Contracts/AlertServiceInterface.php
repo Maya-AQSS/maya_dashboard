@@ -2,7 +2,7 @@
 
 namespace App\Services\Contracts;
 
-use App\DataTransferObjects\AlertDto;
+use App\DTOs\AlertDto;
 use Maya\Http\Pagination\PaginatedDto;
 
 interface AlertServiceInterface

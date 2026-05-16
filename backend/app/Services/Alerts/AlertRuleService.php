@@ -2,7 +2,7 @@
 
 namespace App\Services\Alerts;
 
-use App\DataTransferObjects\AlertRuleDto;
+use App\DTOs\AlertRuleDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;

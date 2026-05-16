@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Alerts;
 
-use App\DataTransferObjects\IncomingAlertPayload;
+use App\DTOs\IncomingAlertPayload;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
