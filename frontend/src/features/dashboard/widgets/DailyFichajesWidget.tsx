@@ -3,27 +3,17 @@ import { useAuth } from '@maya/shared-auth-react'
 import { Button } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
-
-interface FichajeEntry {
-  type: 'in' | 'out'
-  timestamp: Date | string
-}
-
-interface FichajePair {
-  entrada: FichajeEntry
-  salida: FichajeEntry | null
-  autoClose: boolean
-}
+import {
+  pairEntries,
+  type FichajeEntry,
+  type FichajePair,
+} from '../../fichaje/lib/pairEntries'
 
 function toDateString(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
-}
-
-function isToday(date: Date): boolean {
-  return toDateString(date) === toDateString(new Date())
 }
 
 function formatTime(timestamp: unknown): string {
@@ -44,40 +34,6 @@ function formatHours(ms: number | null | undefined): string {
   const h = Math.floor(totalMinutes / 60)
   const m = totalMinutes % 60
   return `${h}h ${m.toString().padStart(2, '0')}m`
-}
-
-function pairEntries(entries: FichajeEntry[], selectedDate: Date): FichajePair[] {
-  const sorted = [...entries].sort(
-    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-  )
-  const pairs: FichajePair[] = []
-  let currentIn: FichajeEntry | null = null
-
-  for (const entry of sorted) {
-    if (entry.type === 'in') {
-      currentIn = entry
-    } else if (entry.type === 'out' && currentIn) {
-      pairs.push({ entrada: currentIn, salida: entry, autoClose: false })
-      currentIn = null
-    }
-  }
-
-  if (currentIn) {
-    if (!isToday(selectedDate)) {
-      // Use the entrada's own date so the 20:00 cutoff lands on the correct day
-      const autoCloseTime = new Date(currentIn.timestamp)
-      autoCloseTime.setHours(20, 0, 0, 0)
-      pairs.push({
-        entrada: currentIn,
-        salida: { ...currentIn, type: 'out', timestamp: autoCloseTime },
-        autoClose: true,
-      })
-    } else {
-      pairs.push({ entrada: currentIn, salida: null, autoClose: false })
-    }
-  }
-
-  return pairs
 }
 
 function startOfDay(date: Date): Date {
