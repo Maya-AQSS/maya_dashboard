@@ -5,15 +5,9 @@ namespace App\Repositories\Eloquent;
 use App\Models\Application;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
 final class ApplicationRepository implements ApplicationRepositoryInterface
 {
-    public function listActiveWithFavoriteFlag(string $userId): Collection
-    {
-        return $this->activeWithFavoriteFlagQuery($userId)->get();
-    }
-
     public function paginateActiveWithFavoriteFlag(string $userId, int $perPage = 100): LengthAwarePaginator
     {
         return $this->activeWithFavoriteFlagQuery($userId)->paginate($perPage);

@@ -7,15 +7,9 @@ use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use DateTimeInterface;
 use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
 final class AlertRuleRepository implements AlertRuleRepositoryInterface
 {
-    public function listOrderedBySlug(): Collection
-    {
-        return AlertRule::query()->orderBy('slug')->get();
-    }
-
     public function paginateOrderedBySlug(int $perPage = 100): LengthAwarePaginator
     {
         return AlertRule::query()->orderBy('slug')->paginate($perPage);

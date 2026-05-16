@@ -6,15 +6,9 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 
 final class UserFavoriteApplicationRepository implements UserFavoriteApplicationRepositoryInterface
 {
-    public function listForUser(User $user): Collection
-    {
-        return $user->favoriteApplications()->get();
-    }
-
     public function paginateForUser(User $user, int $perPage = 100): LengthAwarePaginator
     {
         return $user->favoriteApplications()->paginate($perPage);

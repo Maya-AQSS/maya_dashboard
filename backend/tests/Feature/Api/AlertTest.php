@@ -73,7 +73,7 @@ it('paginates results respecting per_page cap of 100', function () {
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
-    expect($response->json('meta.total'))->toBe(5);
+    expect($response->json('total'))->toBe(5);
 });
 
 // ─── acknowledge ──────────────────────────────────────────────────────────────
