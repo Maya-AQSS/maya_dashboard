@@ -44,4 +44,17 @@ export default {
     submitModification: 'Enviar solicitud',
     salidaNoFichada: 'Salida no fichada',
   },
+  systemAlerts: {
+    pageTitle: 'Alertas del sistema',
+    pageSubtitle: 'Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio.',
+    severityLabel: 'Severidad',
+    severityAll: 'Todas',
+    activeOnly: 'Solo activas',
+    loading: 'Cargando…',
+    emptyActive: 'No hay alertas activas.',
+    empty: 'No hay alertas.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Reconocer',
+    resolve: 'Resolver',
+  },
 }

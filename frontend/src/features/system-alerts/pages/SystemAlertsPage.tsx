@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
 import { Button, Checkbox, PageTitle, Select } from '@maya/shared-ui-react'
+import { useLocale } from '@maya/shared-i18n-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 
 const SEVERITY_CLASSES = {
@@ -12,6 +13,7 @@ const SEVERITY_CLASSES = {
 
 export default function SystemAlertsPage() {
   const { token } = useAuth()
+  const { t } = useLocale()
   const [severity, setSeverity] = useState('')
   const [activeOnly, setActiveOnly] = useState(true)
 
@@ -22,17 +24,17 @@ export default function SystemAlertsPage() {
   return (
     <div className="max-w-[960px] mx-auto p-4">
       <PageTitle
-        title="Alertas del sistema"
-        subtitle="Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio."
+        title={t('dashboard.systemAlerts.pageTitle')}
+        subtitle={t('dashboard.systemAlerts.pageSubtitle')}
       />
 
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div className="min-w-[180px]">
           <label className="mb-1 block text-xs font-semibold text-text-secondary dark:text-text-dark-secondary">
-            Severidad
+            {t('dashboard.systemAlerts.severityLabel')}
           </label>
           <Select fieldSize="md" value={severity} onChange={(e) => setSeverity(e.target.value)}>
-            <option value="">Todas</option>
+            <option value="">{t('dashboard.systemAlerts.severityAll')}</option>
             <option value="critical">Critical</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
@@ -42,15 +44,17 @@ export default function SystemAlertsPage() {
         <Checkbox
           checked={activeOnly}
           onChange={setActiveOnly}
-          label="Solo activas"
+          label={t('dashboard.systemAlerts.activeOnly')}
         />
       </div>
 
-      {loading && <p>Cargando…</p>}
+      {loading && <p>{t('dashboard.systemAlerts.loading')}</p>}
       {error && <p role="alert" className="text-danger">{error}</p>}
 
       {!loading && alerts.length === 0 && (
-        <p className="text-text-muted dark:text-text-dark-muted">No hay alertas {activeOnly ? 'activas' : ''}.</p>
+        <p className="text-text-muted dark:text-text-dark-muted">
+          {activeOnly ? t('dashboard.systemAlerts.emptyActive') : t('dashboard.systemAlerts.empty')}
+        </p>
       )}
 
       <ul className="list-none p-0 grid gap-2">
@@ -63,15 +67,19 @@ export default function SystemAlertsPage() {
               <div>
                 <strong>{a.title}</strong>
                 <div className="text-sm text-text-muted dark:text-text-dark-muted">
-                  {a.rule_slug || 'ad-hoc'} · {a.source} · {new Date(a.created_at).toLocaleString()}
+                  {a.rule_slug || t('dashboard.systemAlerts.adHoc')} · {a.source} · {new Date(a.created_at).toLocaleString()}
                 </div>
               </div>
               <div className="flex gap-1.5">
                 {!a.acknowledged_at && (
-                  <Button variant="outlineTeal" size="xs" onClick={() => onAcknowledge(a.id)}>Reconocer</Button>
+                  <Button variant="outlineTeal" size="xs" onClick={() => onAcknowledge(a.id)}>
+                    {t('dashboard.systemAlerts.acknowledge')}
+                  </Button>
                 )}
                 {!a.resolved_at && (
-                  <Button variant="primary" size="xs" onClick={() => onResolve(a.id)}>Resolver</Button>
+                  <Button variant="primary" size="xs" onClick={() => onResolve(a.id)}>
+                    {t('dashboard.systemAlerts.resolve')}
+                  </Button>
                 )}
               </div>
             </div>

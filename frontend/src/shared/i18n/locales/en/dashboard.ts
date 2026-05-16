@@ -44,4 +44,17 @@ export default {
     submitModification: 'Submit request',
     salidaNoFichada: 'Exit not registered',
   },
+  systemAlerts: {
+    pageTitle: 'System alerts',
+    pageSubtitle: 'Events derived from log or metric rules. Acknowledge and resolve them to keep the panel clean.',
+    severityLabel: 'Severity',
+    severityAll: 'All',
+    activeOnly: 'Active only',
+    loading: 'Loading…',
+    emptyActive: 'No active alerts.',
+    empty: 'No alerts.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Acknowledge',
+    resolve: 'Resolve',
+  },
 }

@@ -44,4 +44,17 @@ export default {
     submitModification: 'Enviar sol·licitud',
     salidaNoFichada: 'Eixida no fitxada',
   },
+  systemAlerts: {
+    pageTitle: 'Alertes del sistema',
+    pageSubtitle: 'Esdeveniments derivats de regles sobre logs o mètriques. Reconeix-les i resol-les per a mantindre el panell net.',
+    severityLabel: 'Severitat',
+    severityAll: 'Totes',
+    activeOnly: 'Només actives',
+    loading: 'Carregant…',
+    emptyActive: 'No hi ha alertes actives.',
+    empty: 'No hi ha alertes.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Reconéixer',
+    resolve: 'Resoldre',
+  },
 }
