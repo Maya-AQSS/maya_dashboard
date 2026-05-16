@@ -28,7 +28,7 @@ class EvaluateAlertRules extends Command
     public function handle(AlertPublisher $publisher, AlertRuleRepositoryInterface $ruleRepo): int
     {
         $logsConnection = (string) $this->option('logs-connection');
-        $now            = Carbon::now();
+        $now            = now();
 
         $rules = $ruleRepo->cursorActive();
         $this->info("Evaluating enabled rule(s) against connection: {$logsConnection}");
