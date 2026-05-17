@@ -30,8 +30,10 @@ use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use App\Services\Dashboard\ApplicationService;
 use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
+use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -64,5 +66,16 @@ class AppServiceProvider extends ServiceProvider
     {
         // AlertRule usa el attribute #[ObservedBy(AlertRuleObserver::class)] —
         // registrado automáticamente por Laravel sin llamada explícita aquí.
+
+        // Guard JWT stateless: resuelve el usuario desde el atributo 'jwt_user'
+        // que JwtMiddleware deposita en el request tras validar el token.
+        Auth::viaRequest('jwt-token', function ($request) {
+            $profile = $request->attributes->get('jwt_user');
+            if (! is_array($profile) || empty($profile['id'])) {
+                return null;
+            }
+
+            return User::query()->find($profile['id']);
+        });
     }
 }
