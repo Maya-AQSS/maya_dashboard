@@ -9,6 +9,7 @@ import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
 import { UserProfileProvider } from './features/user-profile'
+import { resolveServiceUrl } from './lib/peerService'
 
 function ErrorFallback() {
   const { t } = useTranslation('common')
@@ -37,8 +38,10 @@ function ErrorFallback() {
   )
 }
 
-const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | undefined)
-  ?? 'https://dashboard-api.maya.test'
+const DASHBOARD_API_URL = resolveServiceUrl(
+  import.meta.env.VITE_DASHBOARD_API_URL as string | undefined,
+  'dashboard-api',
+)
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,
 // the dashboard authenticates with Keycloak and redirects back with ?session_token=<jwt>.
