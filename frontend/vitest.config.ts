@@ -21,6 +21,9 @@ export default defineConfig({
         'src/test/**',
         'src/main.tsx',
         'src/vite-env.d.ts',
+        // Locale files are constant-object dictionaries with no branch logic;
+        // excluding them gives an accurate picture of business-logic coverage.
+        'src/shared/i18n/locales/**',
       ],
     },
   },

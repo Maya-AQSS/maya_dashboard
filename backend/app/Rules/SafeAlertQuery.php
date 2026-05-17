@@ -77,13 +77,12 @@ class SafeAlertQuery implements ValidationRule
             return;
         }
 
-        // Strip SQL comments before token scanning so attackers cannot hide
-        // banned verbs inside /* */ or -- comments.
-        $stripped = (string) preg_replace('#/\*.*?\*/#s', ' ', $sql);
-        $stripped = (string) preg_replace('/--[^\n]*/', ' ', $stripped);
-
+        // Scan the full SQL (including comments) for banned tokens. Banned verbs
+        // inside /* */ or -- comments are still rejected: a query containing
+        // "SELECT 1 /* DROP TABLE x */" is suspicious regardless of whether the
+        // comment would be executed.
         foreach (self::BANNED_TOKENS as $token) {
-            if (preg_match('/\b'.preg_quote($token, '/').'\b/i', $stripped) === 1) {
+            if (preg_match('/\b'.preg_quote($token, '/').'\b/i', $sql) === 1) {
                 $fail("La consulta contiene un token no permitido: {$token}.");
 
                 return;

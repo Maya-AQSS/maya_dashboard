@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Observers\AlertRuleObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 #[ObservedBy([AlertRuleObserver::class])]
 class AlertRule extends Model
 {
+    use HasFactory;
     public const VALID_SLUGS_CACHE_KEY = 'alert_rules.valid_slugs';
 
     protected $fillable = [

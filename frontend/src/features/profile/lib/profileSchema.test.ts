@@ -66,4 +66,49 @@ describe('profile form schema', () => {
     const result = schema.safeParse(validBase)
     expect(result.success).toBe(true)
   })
+
+  // ── street validation branches ───────────────────────────────────────
+  it('rechaza street demasiado corta (< STREET_MIN_LENGTH)', () => {
+    const errors = errorsFor({ ...validBase, street: 'A1' })
+    expect(errors.street).toContain('streetMinLength')
+  })
+
+  it('rechaza street sin ninguna letra', () => {
+    const errors = errorsFor({ ...validBase, street: '12345' })
+    expect(errors.street).toBe('profile.validation.streetHasLetters')
+  })
+
+  // ── city validation branches ─────────────────────────────────────────
+  it('rechaza city demasiado corta (< STREET_MIN_LENGTH)', () => {
+    const errors = errorsFor({ ...validBase, city: 'AB' })
+    expect(errors.city).toContain('cityMinLength')
+  })
+
+  it('rechaza city sin ninguna letra', () => {
+    const errors = errorsFor({ ...validBase, city: '12345' })
+    expect(errors.city).toBe('profile.validation.cityHasLetters')
+  })
+
+  // ── postalCode validation branches ───────────────────────────────────
+  it('rechaza postalCode con formato incorrecto (no 5 dígitos)', () => {
+    const errors = errorsFor({ ...validBase, postalCode: '123' })
+    expect(errors.postalCode).toBe('profile.validation.postalCodeDigits')
+  })
+
+  // ── addressNumber validation branches ────────────────────────────────
+  it('rechaza addressNumber no numérico', () => {
+    const errors = errorsFor({ ...validBase, addressNumber: '12A' })
+    expect(errors.addressNumber).toBe('profile.validation.addressNumberNumeric')
+  })
+
+  // ── optional numeric fields (addressFloor / addressDoor) ─────────────
+  it('acepta addressFloor vacío (campo opcional)', () => {
+    const result = schema.safeParse({ ...validBase, addressFloor: '' })
+    expect(result.success).toBe(true)
+  })
+
+  it('rechaza addressFloor con letras', () => {
+    const errors = errorsFor({ ...validBase, addressFloor: '2A' })
+    expect(errors.addressFloor).toBe('profile.validation.addressFloorNumeric')
+  })
 })
