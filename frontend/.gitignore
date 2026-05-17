@@ -1,3 +1,6 @@
 
 # TypeScript incremental build info
 *.tsbuildinfo
+
+# Vitest coverage (Fase B test coverage tooling)
+coverage/

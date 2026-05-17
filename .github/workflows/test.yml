@@ -2,7 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [main, develop]
+    # `refactor/**` se incluye explícitamente para que las ramas de refactor
+    # verifiquen tests en cada push sin necesidad de PR.
+    branches: [main, develop, 'refactor/**']
   pull_request:
     branches: [main, develop]
 
@@ -92,3 +94,11 @@ jobs:
 
       - name: Run vitest
         run: node_modules/.bin/vitest run --no-coverage
+
+      # Coverage no bloqueante: imprime métricas en el log para seguimiento del
+      # 80% objetivo. Cuando la cobertura medida lo alcance, eliminar
+      # `continue-on-error` y añadir `--coverage.thresholds.lines=80` al comando.
+      - name: Coverage report (non-blocking)
+        if: always()
+        continue-on-error: true
+        run: node_modules/.bin/vitest run --coverage --reporter=verbose

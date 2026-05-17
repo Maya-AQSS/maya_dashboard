@@ -23,9 +23,11 @@ RUN docker-php-ext-install \
     gd \
     sockets
 
+# Redis + pcov via PECL. pcov se usa para coverage en `php artisan test --coverage`.
+# Es mucho más rápido que xdebug en modo coverage y no afecta a runs normales.
 RUN apk add --no-cache $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
+    && pecl install redis pcov \
+    && docker-php-ext-enable redis pcov \
     && apk del $PHPIZE_DEPS
 
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer

@@ -17,6 +17,12 @@
             <directory>app</directory>
         </include>
     </source>
+    <coverage>
+        <report>
+            <text outputFile="coverage.txt" showOnlySummary="true"/>
+            <html outputDirectory="coverage-html"/>
+        </report>
+    </coverage>
     <php>
         <env name="APP_ENV" value="testing" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
