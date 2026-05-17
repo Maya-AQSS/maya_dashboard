@@ -23,8 +23,8 @@ final class UserFavoriteApplicationRepository implements UserFavoriteApplication
         return $user->favoriteApplications()->findOrFail($applicationId);
     }
 
-    public function detach(User $user, int $applicationId): void
+    public function detach(User $user, int $applicationId): int
     {
-        $user->favoriteApplications()->detach($applicationId);
+        return $user->favoriteApplications()->detach($applicationId);
     }
 }

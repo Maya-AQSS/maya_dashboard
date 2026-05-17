@@ -170,7 +170,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     restart: unless-stopped
-    mem_limit: 512m
+    # 512m bastaba para vite dev, pero vitest + jsdom necesita >1g para correr
+    # la suite completa sin OOM (exit 137). Single-fork pool en vitest.config.ts
+    # mantiene la huella controlada.
+    mem_limit: 2g
     environment:
       VITE_API_URL: ${VITE_API_URL}
       VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}

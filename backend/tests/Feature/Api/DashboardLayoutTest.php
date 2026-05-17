@@ -3,12 +3,24 @@
 use App\Models\User;
 use App\Models\UserDashboardLayout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Events\RouteMatched;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
     $this->user = User::factory()->create();
+
+    // Inject jwt_user attribute (normally set by JwtMiddleware) so that
+    // EnsureRouteUserMatchesToken accepts the request and downstream code
+    // that reads $request->attributes->get('jwt_user') sees the test user.
+    $userId = $this->user->id;
+    $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
+        $event->request->attributes->set('jwt_user', [
+            'id'  => $userId,
+            'sub' => $userId,
+        ]);
+    });
 });
 
 it('returns default empty layout when none exists', function () {

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class UserFavoriteApplicationService implements UserFavoriteApplicationServiceInterface
 {
@@ -38,6 +39,10 @@ final class UserFavoriteApplicationService implements UserFavoriteApplicationSer
 
     public function remove(User $user, int $applicationId): void
     {
-        $this->favorites->detach($user, $applicationId);
+        $detached = $this->favorites->detach($user, $applicationId);
+
+        if ($detached === 0) {
+            throw new NotFoundHttpException('Favorite application not found.');
+        }
     }
 }

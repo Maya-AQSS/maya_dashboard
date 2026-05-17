@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\V1\Alerts\AlertController;
 use App\Models\Alert;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -17,6 +17,17 @@ beforeEach(function () {
         'email' => 'test@maya.localhost',
         'name'  => 'Test User',
     ]);
+
+    // Inject jwt_user attribute (normally set by JwtMiddleware) so that
+    // ResolvesKeycloakUser trait in AlertController can resolve $this->user
+    // without a real JWT in the test.
+    $userId = $this->userId;
+    $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
+        $event->request->attributes->set('jwt_user', [
+            'id'  => $userId,
+            'sub' => $userId,
+        ]);
+    });
 });
 
 function makeAlert(array $overrides = []): Alert
@@ -43,11 +54,11 @@ it('lists only active alerts by default', function () {
     expect($response->json('data.0.severity'))->toBe('critical');
 });
 
-it('includes resolved alerts when active_only=false', function () {
+it('includes resolved alerts when active_only=0', function () {
     makeAlert();
     makeAlert(['message_id' => (string) Str::uuid(), 'resolved_at' => now()]);
 
-    $response = $this->getJson('/api/v1/alerts?active_only=false');
+    $response = $this->getJson('/api/v1/alerts?active_only=0');
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
@@ -57,7 +68,7 @@ it('filters by severity', function () {
     makeAlert(['severity' => 'high']);
     makeAlert(['message_id' => (string) Str::uuid(), 'severity' => 'low']);
 
-    $response = $this->getJson('/api/v1/alerts?severity=high&active_only=false');
+    $response = $this->getJson('/api/v1/alerts?severity=high&active_only=0');
 
     $response->assertOk();
     $severities = collect($response->json('data'))->pluck('severity')->unique()->values()->all();
@@ -81,11 +92,6 @@ it('paginates results respecting per_page cap of 100', function () {
 it('acknowledges an alert and preserves the Keycloak UUID — not cast to int', function () {
     $alert = makeAlert();
 
-    // Mock resolveKeycloakUser so we can test the controller without a real JWT.
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
-
     $this->postJson("/api/v1/alerts/{$alert->id}/acknowledge")->assertOk();
 
     $alert->refresh();
@@ -98,10 +104,6 @@ it('acknowledges an alert and preserves the Keycloak UUID — not cast to int', 
 it('acknowledge is idempotent — second call does not overwrite acknowledged_at', function () {
     $alert = makeAlert();
 
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
-
     $this->postJson("/api/v1/alerts/{$alert->id}/acknowledge")->assertOk();
     $first = $alert->refresh()->acknowledged_at;
 
@@ -113,10 +115,6 @@ it('acknowledge is idempotent — second call does not overwrite acknowledged_at
 });
 
 it('returns 404 when acknowledging a non-existent alert', function () {
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
-
     $this->postJson('/api/v1/alerts/9999/acknowledge')->assertNotFound();
 });
 
@@ -124,10 +122,6 @@ it('returns 404 when acknowledging a non-existent alert', function () {
 
 it('resolves an alert and stores resolved_by as UUID string', function () {
     $alert = makeAlert();
-
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
 
     $this->postJson("/api/v1/alerts/{$alert->id}/resolve")->assertOk();
 
@@ -140,10 +134,6 @@ it('resolve auto-acknowledges an unacknowledged alert', function () {
     $alert = makeAlert();
     expect($alert->acknowledged_at)->toBeNull();
 
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
-
     $this->postJson("/api/v1/alerts/{$alert->id}/resolve")->assertOk();
 
     $alert->refresh();
@@ -152,9 +142,5 @@ it('resolve auto-acknowledges an unacknowledged alert', function () {
 });
 
 it('returns 404 when resolving a non-existent alert', function () {
-    $this->partialMock(AlertController::class, function ($mock) {
-        $mock->shouldReceive('resolveKeycloakUser')->andReturn($this->user);
-    });
-
     $this->postJson('/api/v1/alerts/9999/resolve')->assertNotFound();
 });

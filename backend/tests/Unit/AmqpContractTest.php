@@ -66,8 +66,9 @@ it('notification DTO parses publisher payload with empty metadata', function () 
 
     $dto = IncomingNotificationPayload::fromArray($payload);
 
-    expect($dto->metadata)->toBeNull()   // (object)[] → {} → [] → null via is_array check? No — [] IS an array
-        ->or(fn () => expect($dto->metadata)->toBe([])); // accepts either
+    // (object)[] → json {} → json_decode(assoc=true) → [] → is_array([]) === true,
+    // so metadata is set to the empty array (NOT null).
+    expect($dto->metadata)->toBe([]);
 });
 
 it('notification DTO uses "app" channel default when channels key missing', function () {

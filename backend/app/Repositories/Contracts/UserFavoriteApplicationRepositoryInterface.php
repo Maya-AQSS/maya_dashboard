@@ -19,5 +19,8 @@ interface UserFavoriteApplicationRepositoryInterface
 
     public function attach(User $user, int $applicationId): Application;
 
-    public function detach(User $user, int $applicationId): void;
+    /**
+     * Devuelve el número de favoritos detached (0 si no existía).
+     */
+    public function detach(User $user, int $applicationId): int;
 }

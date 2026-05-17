@@ -52,7 +52,10 @@ return new class extends Migration
     private function createStubTable(): void
     {
         Schema::create(self::FDW_TBL, function (Blueprint $table) {
-            $table->bigInteger('id')->primary();
+            // bigIncrements para que factories e inserts sin id funcionen en
+            // tests; en producción la PK proviene del FDW maya_auth.applications
+            // y NUNCA se inserta desde aquí.
+            $table->bigIncrements('id');
             $table->string('name');
             $table->string('slug', 100);
             $table->text('description')->nullable();
