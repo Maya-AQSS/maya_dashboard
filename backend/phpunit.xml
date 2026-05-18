@@ -33,7 +33,7 @@
         <env name="DB_HOST" value="maya_infra_postgres" force="true"/>
         <env name="DB_PORT" value="5432" force="true"/>
         <env name="DB_DATABASE" value="maya_dashboard_test" force="true"/>
-        <env name="DB_USERNAME" value="maya" force="true"/>
+        <env name="DB_USERNAME" value="dashboard_user" force="true"/>
         <env name="DB_PASSWORD" value="secret" force="true"/>
         <env name="DB_URL" value="" force="true"/>
         <server name="DB_DATABASE" value="maya_dashboard_test" force="true"/>
