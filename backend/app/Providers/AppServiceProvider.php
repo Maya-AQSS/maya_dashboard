@@ -16,7 +16,7 @@ use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\NotificationRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
-use App\Repositories\Resolvers\CanonicalProfileResolver;
+use Maya\Profile\Repositories\Resolvers\FdwAcademicResolver;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
@@ -63,10 +63,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
         $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
 
-        // Resolver de perfil canónico cross-app: el shared MeController consume
-        // este binding para devolver /me con permisos/tipo_estudios/estudios/
-        // modulos/equipos (vacíos en maya_dashboard — no tiene tablas locales).
-        $this->app->singleton(UserProfileResolverInterface::class, CanonicalProfileResolver::class);
+        // Resolver de perfil enriquecido cross-app: el shared MeController consume
+        // este binding para devolver /me con permissions/study_type_ids/study_ids/
+        // module_ids/team_ids/teams enriquecidos desde las FDW locales (mismas
+        // vistas que el resto de apps Maya proyectan localmente — sin
+        // dependencias cruzadas en runtime).
+        $this->app->singleton(UserProfileResolverInterface::class, FdwAcademicResolver::class);
     }
 
     public function boot(): void
