@@ -16,6 +16,7 @@ use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\NotificationRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
+use Maya\Profile\Migrations as ProfileMigrations;
 use Maya\Profile\Repositories\Resolvers\FdwAcademicResolver;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
@@ -75,6 +76,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // AlertRule usa el attribute #[ObservedBy(AlertRuleObserver::class)] —
         // registrado automáticamente por Laravel sin llamada explícita aquí.
+
+        // Migraciones académicas compartidas (teams, team_members,
+        // user_study_types, user_studies, user_course_modules) vienen del
+        // paquete `maya/shared-profile-laravel`. Carga opt-in: dms no las
+        // usa porque tiene su propia variante con FK al catálogo académico.
+        $this->loadMigrationsFrom(ProfileMigrations::academicViews());
 
         // Guard JWT stateless: resuelve el usuario desde el atributo 'jwt_user'
         // que JwtMiddleware deposita en el request tras validar el token.
