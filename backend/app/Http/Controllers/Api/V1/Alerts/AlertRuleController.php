@@ -1,55 +1,53 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1\Alerts;
 
 use App\Http\Controllers\Controller;
-use App\Models\AlertRule;
+use App\Http\Requests\Api\Alerts\StoreAlertRuleRequest;
+use App\Http\Requests\Api\Alerts\UpdateAlertRuleRequest;
+use App\Http\Resources\AlertRuleResource;
+use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AlertRuleController extends Controller
 {
-    public function index(): JsonResponse
+    public function __construct(
+        private readonly AlertRuleServiceInterface $rules,
+    ) {}
+
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return response()->json(AlertRule::orderBy('slug')->get());
+        $perPage = (int) $request->query('per_page', 100);
+        $perPage = max(1, min($perPage, 200));
+
+        return AlertRuleResource::collection($this->rules->list($perPage));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreAlertRuleRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'slug'             => ['required', 'string', 'max:128', 'unique:alert_rules,slug', 'regex:/^[a-z0-9][a-z0-9\-]*$/'],
-            'name'             => ['required', 'string', 'max:200'],
-            'description'      => ['nullable', 'string'],
-            'query_sql'        => ['required', 'string'],
-            'severity'         => ['required', 'in:critical,high,medium,low'],
-            'schedule_cron'    => ['string', 'max:64'],
-            'enabled'          => ['boolean'],
-            'context_template' => ['array'],
-        ]);
-
-        $rule = AlertRule::create($data);
-        return response()->json($rule, 201);
+        return response()->json(
+            (new AlertRuleResource($this->rules->create($request->validated())))->resolve($request),
+            201,
+        );
     }
 
-    public function update(Request $request, int $ruleId): JsonResponse
+    public function update(UpdateAlertRuleRequest $request, int $ruleId): JsonResponse
     {
-        $rule = AlertRule::findOrFail($ruleId);
-        $data = $request->validate([
-            'name'             => ['sometimes', 'string', 'max:200'],
-            'description'      => ['sometimes', 'nullable', 'string'],
-            'query_sql'        => ['sometimes', 'string'],
-            'severity'         => ['sometimes', 'in:critical,high,medium,low'],
-            'schedule_cron'    => ['sometimes', 'string', 'max:64'],
-            'enabled'          => ['sometimes', 'boolean'],
-            'context_template' => ['sometimes', 'array'],
-        ]);
-        $rule->update($data);
-        return response()->json($rule);
+        return response()->json(
+            (new AlertRuleResource(
+                $this->rules->update($ruleId, $request->validated()),
+            ))->resolve($request),
+        );
     }
 
     public function destroy(int $ruleId): JsonResponse
     {
-        AlertRule::findOrFail($ruleId)->delete();
+        $this->rules->delete($ruleId);
+
         return response()->json(null, 204);
     }
 }

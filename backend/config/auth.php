@@ -16,7 +16,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => env('AUTH_GUARD', 'web'),
+        'guard' => env('AUTH_GUARD', 'api'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
@@ -41,6 +41,9 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+        'api' => [
+            'driver' => 'jwt-token',
         ],
     ],
 
@@ -114,8 +117,10 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    'jwks_url'     => env('JWKS_URL'),
-    'jwt_audience' => env('JWT_AUDIENCE'),
-    'jwt_issuer'   => env('JWT_ISSUER'),
+    'jwks_url'       => env('JWKS_URL'),
+    'jwt_audience'     => env('JWT_AUDIENCE'),
+    'dev_bypass_auth' => env('DEV_BYPASS_AUTH', false),
+    'jwt_issuer'     => env('JWT_ISSUER'),
+    'jwks_cache_ttl' => env('JWKS_CACHE_TTL', 3600),
 
 ];

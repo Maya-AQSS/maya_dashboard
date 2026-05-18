@@ -18,9 +18,9 @@ return new class extends Migration
             $table->jsonb('context');
             $table->timestampTz('created_at')->useCurrent();
             $table->timestampTz('acknowledged_at')->nullable();
-            $table->unsignedBigInteger('acknowledged_by')->nullable()->comment('FDW users.id');
+            $table->string('acknowledged_by', 255)->nullable()->comment('FDW users.id (Keycloak UUID)');
             $table->timestampTz('resolved_at')->nullable();
-            $table->unsignedBigInteger('resolved_by')->nullable()->comment('FDW users.id');
+            $table->string('resolved_by', 255)->nullable()->comment('FDW users.id (Keycloak UUID)');
 
             $table->foreign('rule_slug')->references('slug')->on('alert_rules')->nullOnDelete();
             $table->index(['severity', 'acknowledged_at']);

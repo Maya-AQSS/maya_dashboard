@@ -1,4 +1,5 @@
 export default {
+  title: 'Dashboard',
   editDashboard: 'Edit dashboard',
   exitEdit: 'Exit edit mode',
   editMode: 'Edit mode',
@@ -19,7 +20,7 @@ export default {
   fichaje: {
     notClockedIn: 'You have not clocked in today.',
     clockInButton: 'Clock in',
-    clockedInAt: 'Clocked in at {time}',
+    clockedInAt: 'Clocked in at {{time}}',
     dailyTitle: 'Daily clock-ins',
     prevDay: 'Previous day',
     nextDay: 'Next day',
@@ -42,5 +43,18 @@ export default {
     toTime: 'To',
     submitModification: 'Submit request',
     salidaNoFichada: 'Exit not registered',
+  },
+  systemAlerts: {
+    pageTitle: 'System alerts',
+    pageSubtitle: 'Events derived from log or metric rules. Acknowledge and resolve them to keep the panel clean.',
+    severityLabel: 'Severity',
+    severityAll: 'All',
+    activeOnly: 'Active only',
+    loading: 'Loading…',
+    emptyActive: 'No active alerts.',
+    empty: 'No alerts.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Acknowledge',
+    resolve: 'Resolve',
   },
 }

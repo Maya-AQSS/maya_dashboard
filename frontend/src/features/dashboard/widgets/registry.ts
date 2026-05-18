@@ -12,6 +12,7 @@ export const WIDGET_REGISTRY = {
   'fichaje-daily': {
     id: 'fichaje-daily',
     titleKey: 'dashboard.widgets.fichajeDaily',
+    hideTitle: true,
     defaultSize: { w: 8, h: 3 },
     minSize: { w: 4, h: 2 },
     component: DailyFichajesWidget,

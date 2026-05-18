@@ -1,4 +1,5 @@
 export default {
+  title: 'Panel',
   editDashboard: 'Editar dashboard',
   exitEdit: 'Salir de edición',
   editMode: 'Modo edición',
@@ -19,7 +20,7 @@ export default {
   fichaje: {
     notClockedIn: 'No has fichado hoy.',
     clockInButton: 'Fichar',
-    clockedInAt: 'Fichado a las {time}',
+    clockedInAt: 'Fichado a las {{time}}',
     dailyTitle: 'Fichajes del día',
     prevDay: 'Día anterior',
     nextDay: 'Día siguiente',
@@ -42,5 +43,18 @@ export default {
     toTime: 'Hasta',
     submitModification: 'Enviar solicitud',
     salidaNoFichada: 'Salida no fichada',
+  },
+  systemAlerts: {
+    pageTitle: 'Alertas del sistema',
+    pageSubtitle: 'Eventos derivados de reglas sobre logs o métricas. Reconoce y resuelve para mantener el panel limpio.',
+    severityLabel: 'Severidad',
+    severityAll: 'Todas',
+    activeOnly: 'Solo activas',
+    loading: 'Cargando…',
+    emptyActive: 'No hay alertas activas.',
+    empty: 'No hay alertas.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Reconocer',
+    resolve: 'Resolver',
   },
 }

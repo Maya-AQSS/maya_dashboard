@@ -9,7 +9,6 @@ export default {
   notFoundTitle: 'Pàgina no trobada',
   notFoundDescription: 'La ruta que has obert no existeix o ja no està disponible.',
   notFoundBackDashboard: 'Tornar al panell de Dashboard',
-  notFoundGoTools: 'Tornar a ferramentes',
   notFoundGoLogin: 'Anar a iniciar sessió',
   errorBoundaryTitle: 'Alguna cosa ha fallat en l\'aplicació',
   errorBoundaryDescription: 'Intenta recarregar la pàgina per a continuar.',

@@ -1,30 +1,39 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
-import { WIDGET_REGISTRY } from '../widgets/registry'
-import WidgetGrid from '../components/WidgetGrid'
-import DashboardEditToggleButton from '../components/DashboardEditToggleButton'
-import DashboardEditToolbar from '../components/DashboardEditToolbar'
-import { useTopbarActions } from '../../../shared/context/TopbarActionsContext'
-import { useToast } from '../../../shared/context/ToastContext'
-import { useLocale } from '../../../shared/i18n'
 
-function DashboardSkeleton() {
-  return (
-    <div className="p-4 sm:p-6 grid grid-cols-12 gap-4 animate-pulse">
-      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-      <div className="col-span-12 sm:col-span-6 h-48 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-      <div className="col-span-12 h-32 bg-ui-border-l dark:bg-ui-dark-border rounded-2xl" />
-    </div>
-  )
+type LayoutItem = {
+  i: string
+  x: number
+  y: number
+  w: number
+  h: number
+  minW?: number
+  minH?: number
 }
+type Layout = LayoutItem[]
+import {
+  DashboardEditToggleButton,
+  DashboardEditToolbar,
+  DashboardSkeleton,
+  WidgetGrid,
+  type SkeletonBlock,
+} from '@maya/shared-dashboard-react'
+import { WIDGET_REGISTRY } from '../widgets/registry'
+import { PageTitle, useToast } from '@maya/shared-ui-react'
+import { useLocale } from '@maya/shared-i18n-react'
+
+const SKELETON_BLOCKS: SkeletonBlock[] = [
+  { colSpanClasses: 'col-span-12 sm:col-span-6', heightClass: 'h-48' },
+  { colSpanClasses: 'col-span-12 sm:col-span-6', heightClass: 'h-48' },
+  { colSpanClasses: 'col-span-12', heightClass: 'h-32' },
+]
 
 function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
   const [editable, setEditable] = useState(false)
-  const [draftLayout, setDraftLayout] = useState(null)
-  const snapshotRef = useRef(null)
-  const { setActions } = useTopbarActions()
-  const toast = useToast()
+  const [draftLayout, setDraftLayout] = useState<Layout | null>(null)
+  const snapshotRef = useRef<Layout | null>(null)
+  const { show: showToast } = useToast()
   const { t } = useLocale()
 
   const activeLayout = editable ? (draftLayout ?? layout) : layout
@@ -35,8 +44,8 @@ function DashboardPage() {
         setDraftLayout(null)
         return false
       }
-      snapshotRef.current = layout
-      setDraftLayout(layout)
+      snapshotRef.current = layout as Layout
+      setDraftLayout(layout as Layout)
       return true
     })
   }, [layout])
@@ -46,30 +55,30 @@ function DashboardPage() {
       await saveLayout(draftLayout ?? layout)
       setEditable(false)
       setDraftLayout(null)
-      toast.success(t('dashboard.savedSuccess'))
+      showToast({ title: t('dashboard.savedSuccess'), tone: 'success' })
     } catch {
-      toast.error(t('dashboard.savedError'))
+      showToast({ title: t('dashboard.savedError'), tone: 'danger' })
     }
-  }, [saveLayout, draftLayout, layout, toast, t])
+  }, [saveLayout, draftLayout, layout, showToast, t])
 
   const handleCancel = useCallback(() => {
     setDraftLayout(null)
     setEditable(false)
   }, [])
 
-  const handleLayoutChange = useCallback((newLayout) => {
+  const handleLayoutChange = useCallback((newLayout: Layout) => {
     if (!editable) return
     setDraftLayout(newLayout)
   }, [editable])
 
-  const handleRemoveWidget = useCallback((widgetId) => {
-    setDraftLayout((prev) => (prev ?? layout).filter((item) => item.i !== widgetId))
+  const handleRemoveWidget = useCallback((widgetId: string) => {
+    setDraftLayout((prev) => ((prev ?? (layout as Layout)).filter((item) => item.i !== widgetId)))
   }, [layout])
 
-  const handleAddWidget = useCallback((widgetId) => {
-    const def = WIDGET_REGISTRY[widgetId]
+  const handleAddWidget = useCallback((widgetId: string) => {
+    const def = WIDGET_REGISTRY[widgetId as keyof typeof WIDGET_REGISTRY]
     if (!def) return
-    const current = draftLayout ?? layout
+    const current = (draftLayout ?? layout) as Layout
     const maxY = current.reduce((m, item) => Math.max(m, item.y + item.h), 0)
     setDraftLayout([...current, {
       i: widgetId,
@@ -84,46 +93,56 @@ function DashboardPage() {
 
   const handleReset = useCallback(async () => {
     try {
-      setDraftLayout(DEFAULT_LAYOUT)
+      setDraftLayout(DEFAULT_LAYOUT as Layout)
       await resetToDefault()
       setEditable(false)
       setDraftLayout(null)
-      toast.info(t('dashboard.resetSuccess'))
+      showToast({ title: t('dashboard.resetSuccess'), tone: 'info' })
     } catch {
-      toast.error(t('dashboard.savedError'))
+      showToast({ title: t('dashboard.savedError'), tone: 'danger' })
     }
-  }, [resetToDefault, toast, t])
-
-  useEffect(() => {
-    if (loading) return
-    setActions(
-      <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
-    )
-    return () => setActions(null)
-  }, [loading, editable, handleToggleEdit, setActions])
+  }, [resetToDefault, showToast, t])
 
   if (loading) {
-    return <DashboardSkeleton />
+    return <DashboardSkeleton blocks={SKELETON_BLOCKS} />
   }
 
   return (
-    <div className="p-4 sm:p-6">
-      {editable && (
-        <DashboardEditToolbar
-          layout={activeLayout}
-          onSave={handleSave}
-          onCancel={handleCancel}
-          onAddWidget={handleAddWidget}
-          onReset={handleReset}
-        />
-      )}
+    <>
+      <PageTitle
+        title={t('dashboard.title')}
+        actions={
+          editable ? (
+            <DashboardEditToolbar
+              layout={activeLayout}
+              registry={WIDGET_REGISTRY}
+              t={t}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              onReset={handleReset}
+              onAddWidget={handleAddWidget}
+              labels={{
+                save: t('dashboard.save'),
+                cancel: t('dashboard.cancel'),
+                reset: t('dashboard.resetLayout'),
+                addWidget: t('dashboard.addWidget'),
+              }}
+            />
+          ) : (
+            <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
+          )
+        }
+      />
+
       <WidgetGrid
+        registry={WIDGET_REGISTRY}
         layout={activeLayout}
         onLayoutChange={handleLayoutChange}
         editable={editable}
         onRemoveWidget={handleRemoveWidget}
+        t={t}
       />
-    </div>
+    </>
   )
 }
 

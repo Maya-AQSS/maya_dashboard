@@ -1,45 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
+ * Factory para User en maya_dashboard.
+ *
+ * El modelo se federa desde Keycloak vía FDW (Odoo.v_app_users) en
+ * producción. En `local`/`testing` se usa una tabla stub con la misma
+ * estructura — ver `0001_01_01_000000_create_users_table.php`. La factory
+ * inserta sólo columnas que existen en el stub; los campos
+ * password/email_verified_at/remember_token del scaffolding Laravel por
+ * defecto NO existen (auth es JWT/Keycloak, no Sanctum).
+ *
  * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'id' => (string) Str::uuid(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'name' => fake()->name(),
+            'first_name' => fake()->firstName(),
+            'last_name' => fake()->lastName(),
+            'username' => fake()->unique()->userName(),
+            'employee_id' => fake()->numerify('EMP####'),
+            'dni' => fake()->numerify('########X'),
+            'employee_type' => fake()->randomElement(['staff', 'admin', 'guest']),
+            'is_active' => true,
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'is_active' => false,
         ]);
     }
 }

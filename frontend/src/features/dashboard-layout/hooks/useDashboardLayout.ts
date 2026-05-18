@@ -1,95 +1,124 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '../../../shared/i18n'
+import { useCallback, useMemo, useRef } from 'react'
+import { createDataHook, createMutationHook, useAuth } from '@maya/shared-auth-react'
+import { useLocale } from '@maya/shared-i18n-react'
 import { getDashboardLayout, updateDashboardLayout } from '../api/dashboardLayoutApi'
+
+interface DashboardLayoutResponse {
+  layout?: unknown
+}
+
+type Translate = (key: string) => string
 
 export const DEFAULT_LAYOUT = [
   { i: 'user-alerts', x: 0, y: 0, w: 4, h: 3, minW: 3, minH: 2 },
   { i: 'fichaje-daily', x: 4, y: 0, w: 8, h: 3, minW: 4, minH: 2 },
 ]
 
-function resolveDashboardLayoutErrorMessage(err, fallbackKey, t) {
-  const msg = err?.message ?? ''
+/**
+ * Cache key común a query y mutation. La mutation invalida esta key
+ * tras un PUT exitoso, así el siguiente refetch lee del servidor.
+ */
+const dashboardLayoutKey = (userId: string) => ['dashboard-layout', userId] as const
+
+const useDashboardLayoutQuery = createDataHook<
+  { userId: string; token: string | null },
+  DashboardLayoutResponse
+>({
+  queryKey: ({ userId }) => dashboardLayoutKey(userId),
+  fetcher: ({ userId, token }) =>
+    getDashboardLayout(userId, token) as Promise<DashboardLayoutResponse>,
+  defaultOptions: {
+    // El backend es la fuente de verdad; cada navegación recarga.
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  },
+})
+
+const useUpdateDashboardLayoutMutation = createMutationHook<
+  { userId: string; layout: unknown; token: string | null },
+  DashboardLayoutResponse
+>({
+  mutationFn: ({ userId, layout, token }) =>
+    updateDashboardLayout(userId, layout, token) as Promise<DashboardLayoutResponse>,
+  invalidates: ({ userId }) => [dashboardLayoutKey(userId)],
+})
+
+function resolveDashboardLayoutErrorMessage(
+  err: unknown,
+  fallbackKey: string,
+  t: Translate,
+): string {
+  const msg = err instanceof Error ? err.message : ''
   if (msg.startsWith('dashboardLayout.')) return t(msg)
   if (msg) return msg
   return t(fallbackKey)
 }
 
+/**
+ * API pública del hook (preservada por compatibilidad con consumers
+ * existentes): `{ layout, loading, error, saveLayout, resetToDefault }`.
+ *
+ * Internamente compone:
+ *  - `useDashboardLayoutQuery` para GET (TanStack Query, caché 30s default).
+ *  - `useUpdateDashboardLayoutMutation` para PUT (auto-invalida la key).
+ *  - Mapping i18n de errores via `useLocale().t`.
+ *
+ * Reemplaza el `useEffect + useState + fetch` previo.
+ */
 function useDashboardLayout() {
   const { user, token } = useAuth()
   const { t } = useLocale()
   const tRef = useRef(t)
   tRef.current = t
 
-  const [layout, setLayout] = useState(DEFAULT_LAYOUT)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const userId = user?.sub ?? ''
+  const enabled = !!userId && !!token
 
-  useEffect(() => {
-    if (!user?.sub || !token) {
-      setLayout(DEFAULT_LAYOUT)
-      setLoading(false)
-      return
-    }
+  const query = useDashboardLayoutQuery(
+    { userId, token: token ?? null },
+    { enabled },
+  )
 
-    let isMounted = true
+  const mutation = useUpdateDashboardLayoutMutation()
 
-    async function fetchData() {
-      setLoading(true)
-      setError(null)
+  const layout = useMemo(() => {
+    if (!enabled) return DEFAULT_LAYOUT
+    const saved = query.data?.layout
+    return Array.isArray(saved) && saved.length > 0 ? saved : DEFAULT_LAYOUT
+  }, [enabled, query.data])
 
-      try {
-        const data = await getDashboardLayout(user.sub, token)
+  const error = useMemo(() => {
+    const e = query.error ?? mutation.error
+    if (!e) return null
+    const fallbackKey = mutation.error ? 'dashboardLayout.errorSave' : 'dashboardLayout.errorLoad'
+    return resolveDashboardLayoutErrorMessage(e, fallbackKey, tRef.current)
+  }, [query.error, mutation.error])
 
-        if (isMounted) {
-          const saved = data.layout
-          setLayout(Array.isArray(saved) && saved.length > 0 ? saved : DEFAULT_LAYOUT)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(resolveDashboardLayoutErrorMessage(err, 'dashboardLayout.errorLoad', tRef.current))
-          setLayout(DEFAULT_LAYOUT)
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    fetchData()
-
-    return () => {
-      isMounted = false
-    }
-  }, [user?.sub, token])
-
-  const saveLayout = useCallback(async (newLayout) => {
-    if (!user?.sub || !token) return
-
-    setLayout(newLayout)
-
+  const saveLayout = useCallback(async (newLayout: unknown) => {
+    if (!enabled) return
     try {
-      const data = await updateDashboardLayout(user.sub, newLayout, token)
-      setLayout(data.layout ?? newLayout)
-    } catch (err) {
-      setError(resolveDashboardLayoutErrorMessage(err, 'dashboardLayout.errorSave', tRef.current))
+      await mutation.mutateAsync({ userId, layout: newLayout, token: token ?? null })
+    } catch {
+      // El error se expone via `error` memo arriba.
     }
-  }, [user?.sub, token])
+  }, [enabled, mutation, userId, token])
 
   const resetToDefault = useCallback(async () => {
-    setLayout(DEFAULT_LAYOUT)
-
-    if (!user?.sub || !token) return
-
+    if (!enabled) return
     try {
-      await updateDashboardLayout(user.sub, DEFAULT_LAYOUT, token)
-    } catch (err) {
-      setError(resolveDashboardLayoutErrorMessage(err, 'dashboardLayout.errorSave', tRef.current))
+      await mutation.mutateAsync({ userId, layout: DEFAULT_LAYOUT, token: token ?? null })
+    } catch {
+      // El error se expone via `error` memo arriba.
     }
-  }, [user?.sub, token])
+  }, [enabled, mutation, userId, token])
 
-  return { layout, loading, error, saveLayout, resetToDefault }
+  return {
+    layout,
+    loading: enabled ? query.isLoading : false,
+    error,
+    saveLayout,
+    resetToDefault,
+  }
 }
 
 export default useDashboardLayout

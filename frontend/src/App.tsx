@@ -1,27 +1,56 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Route, Routes, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@maya/shared-layout-react'
-import { LocaleSelector, NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
-import { useAuth } from '@maya/shared-auth-react'
-import { useOidcSession } from './auth/useOidcSession'
+import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
+import { useKeycloakLocaleSync } from '@maya/shared-i18n-react'
+import { useAuth, useOidcSession } from '@maya/shared-auth-react'
+import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
 import { useNavItems } from './components/layout'
-import { LocaleProvider } from './shared/i18n'
-import { ToastProvider } from './shared/context/ToastContext'
-import { TopbarActionsProvider, useTopbarActions } from './shared/context/TopbarActionsContext'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
-import GlobalErrorBoundary from './shared/components/GlobalErrorBoundary'
-import PageSkeleton from './shared/components/PageSkeleton'
+import { UserProfileProvider } from './features/user-profile'
+import { resolveServiceUrl } from './lib/peerService'
 
-const DASHBOARD_API_URL = (import.meta.env.VITE_DASHBOARD_API_URL as string | undefined)
-  ?? 'http://maya_dashboard_api.localhost'
+function ErrorFallback() {
+  const { t } = useTranslation('common')
+  const handleReload = () => {
+    const url = new URL(window.location.href)
+    url.searchParams.delete('crash')
+    window.location.assign(url.toString())
+  }
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-ui-body dark:bg-ui-dark-bg px-6">
+      <div className="w-full max-w-[560px] rounded-2xl border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card px-8 py-10 text-center shadow-[0_18px_25px_-10px_rgba(17,24,39,0.2),0_4px_8px_-2px_rgba(17,24,39,0.08)] dark:shadow-none">
+        <p className="text-4xl font-semibold text-odoo-purple m-0">Error</p>
+        <h1 className="mt-4 mb-2 text-2xl font-semibold text-text-primary dark:text-text-dark-primary">
+          {t('layout.errorBoundaryTitle')}
+        </h1>
+        <p className="m-0 text-sm sm:text-base text-text-secondary dark:text-text-dark-secondary">
+          {t('layout.errorBoundaryDescription')}
+        </p>
+        <div className="mt-6">
+          <Button variant="primary" size="md" onClick={handleReload}>
+            {t('layout.errorBoundaryReload')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const DASHBOARD_API_URL = resolveServiceUrl(
+  import.meta.env.VITE_DASHBOARD_API_URL as string | undefined,
+  'dashboard-api',
+)
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,
 // the dashboard authenticates with Keycloak and redirects back with ?session_token=<jwt>.
 function isAllowedReturnUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    return parsed.hostname.endsWith('.localhost') || parsed.hostname === 'localhost'
+    const isAllowedScheme = parsed.protocol === 'http:' || parsed.protocol === 'https:'
+    const isAllowedHost = parsed.hostname.endsWith('.localhost') || parsed.hostname === 'localhost'
+    return isAllowedScheme && isAllowedHost
   } catch {
     return false
   }
@@ -35,7 +64,7 @@ function ReturnToHandler() {
     const returnTo = params.get('return_to')
     if (!returnTo || !isAllowedReturnUrl(returnTo)) return
     const redirectUrl = new URL(returnTo)
-    redirectUrl.searchParams.set('session_token', token)
+    redirectUrl.hash = `session_token=${encodeURIComponent(token)}`
     window.location.href = redirectUrl.toString()
   }, [isLoading, isAuthenticated, token])
   return null
@@ -49,11 +78,10 @@ const NotFoundPage = lazy(() => import('./shared/pages/NotFoundPage'))
 
 function AppRoutes() {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense fallback={<SkeletonPage />}>
       <Routes>
         <Route index element={<DashboardPage />} />
         <Route path="/applications" element={<ApplicationsListPage />} />
-        <Route path="/tools" element={<Navigate to="/applications" replace />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/alerts" element={<SystemAlertsPage />} />
         <Route path="*" element={<NotFoundPage />} />
@@ -64,12 +92,13 @@ function AppRoutes() {
 
 function AppWithLayout() {
   const { logout, user } = useOidcSession()
-  const { actions: topbarActions } = useTopbarActions()
   const navItems = useNavItems()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
+  useKeycloakLocaleSync()
 
   const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
+  const userEmail = (user?.email as string | undefined) ?? undefined
   const userInitials = displayName
     ? displayName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : 'U'
@@ -80,21 +109,17 @@ function AppWithLayout() {
       <AppLayout
         navItems={navItems}
         brandName="Maya Dashboard"
-        brandVersion="Maya Dashboard v1.0"
+        brandVersion="v1.0"
+        brandLogoUrl="/favicon.png"
         userName={displayName}
+        userEmail={userEmail}
         userInitials={userInitials}
         onLogout={logout}
         onProfile={() => navigate('/profile')}
-        topbarActions={
-          <div className="flex items-center gap-2">
-            {topbarActions}
-            <NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />
-            <LocaleSelector />
-          </div>
-        }
-        sidebarFooter={
+        favoritesSlot={
           <SidebarFavorites label={t('favorites.title')} dashboardApiUrl={DASHBOARD_API_URL} />
         }
+        notificationsSlot={<NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />}
       >
         <AppRoutes />
       </AppLayout>
@@ -102,21 +127,21 @@ function AppWithLayout() {
   )
 }
 
-// LocaleProvider handles locale sync (Keycloak + storage events + html lang attribute).
-// ToastProvider and TopbarActionsProvider must wrap AppWithLayout so their hooks are available.
+// Locale sync (Keycloak → i18n + cookie + `<html lang>`) lo cubre
+// `useKeycloakLocaleSync()` invocado desde `AppWithLayout`; el resto del
+// setup i18n vive en `src/i18n/index.ts` y `@maya/shared-i18n-react`.
+// ToastProvider envuelve AppWithLayout para que `useToast` esté disponible.
 function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <LocaleProvider>
-      <ToastProvider>
-        <TopbarActionsProvider>
-          <GlobalErrorBoundary>
-            <FavoritesProvider>
-              {children}
-            </FavoritesProvider>
-          </GlobalErrorBoundary>
-        </TopbarActionsProvider>
-      </ToastProvider>
-    </LocaleProvider>
+    <ToastProvider>
+      <ErrorBoundary fallback={<ErrorFallback />}>
+        <UserProfileProvider>
+          <FavoritesProvider>
+            {children}
+          </FavoritesProvider>
+        </UserProfileProvider>
+      </ErrorBoundary>
+    </ToastProvider>
   )
 }
 

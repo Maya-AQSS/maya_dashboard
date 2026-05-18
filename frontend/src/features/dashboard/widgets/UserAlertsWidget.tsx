@@ -1,3 +1,4 @@
+import { Button } from '@maya/shared-ui-react'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
 
 const COLOR_CLASSES = {
@@ -35,7 +36,7 @@ function UserAlertsWidget() {
     )
   }
 
-  const handleAction = (alert) => {
+  const handleAction = (alert: import('../../alerts/hooks/useActiveSystemAlerts').AlertItem) => {
     if (alert.actionKind === 'clockIn') {
       clockIn()
       return
@@ -57,24 +58,26 @@ function UserAlertsWidget() {
           >
             <span className="flex-1">{alert.text}</span>
             {alert.actionLabel && (
-              <button
-                type="button"
+              <Button
+                variant="unstyled"
+                size="xs"
                 onClick={() => handleAction(alert)}
                 className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium transition ${btnCls}`}
               >
                 {alert.actionLabel}
-              </button>
+              </Button>
             )}
             {alert.canDismiss !== false && (
-              <button
-                type="button"
+              <Button
+                variant="unstyled"
+                size="xs"
                 onClick={() => dismiss(alert.id)}
                 aria-label="Descartar alerta"
                 title="Descartar"
                 className={`shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-sm transition ${btnCls}`}
               >
                 ×
-              </button>
+              </Button>
             )}
           </div>
         )

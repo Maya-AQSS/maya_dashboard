@@ -1,50 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
-use App\Models\Application;
-use App\Models\User;
+use App\Services\Contracts\ApplicationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 
 class ApplicationController extends Controller
 {
+    use ResolvesKeycloakUser;
+
+    public function __construct(
+        private readonly ApplicationServiceInterface $applications,
+    ) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
-        $user = $this->resolveUser($request);
+        $user = $this->resolveKeycloakUser($request);
+        $perPage = (int) $request->query('per_page', 100);
+        $perPage = max(1, min($perPage, 200));
 
-        $favoriteIds = $user
-            ->favoriteApplications()
-            ->pluck('applications.id')
-            ->all();
-
-        $applications = Application::where('is_active', true)
-            ->orderBy('name')
-            ->get()
-            ->map(function (Application $app) use ($favoriteIds) {
-                $app->is_favorite = in_array($app->id, $favoriteIds, true);
-                return $app;
-            });
-
-        return ApplicationResource::collection($applications);
-    }
-
-    private function resolveUser(Request $request): User
-    {
-        $jwtUser = $request->attributes->get('jwt_user');
-        $keycloakId = $jwtUser['id'] ?? null;
-
-        abort_if($keycloakId === null, 401, 'Unauthenticated');
-
-        return User::firstOrCreate(
-            ['keycloak_id' => $keycloakId],
-            [
-                'name'     => $jwtUser['name']  ?? $jwtUser['username'] ?? 'Unknown',
-                'email'    => $jwtUser['email'] ?? "{$keycloakId}@keycloak.local",
-                'password' => '',
-            ],
+        return ApplicationResource::collection(
+            $this->applications->listForUser($user, $perPage),
         );
     }
 }

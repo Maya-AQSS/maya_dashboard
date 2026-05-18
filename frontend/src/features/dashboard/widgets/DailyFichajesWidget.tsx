@@ -1,32 +1,34 @@
 import { Fragment, useState } from 'react'
 import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '../../../shared/i18n'
+import { Button } from '@maya/shared-ui-react'
+import { useLocale } from '@maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
+import {
+  pairEntries,
+  type FichajeEntry,
+  type FichajePair,
+} from '../../fichaje/lib/pairEntries'
 
-function toDateString(date) {
+function toDateString(date: Date): string {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
-function isToday(date) {
-  return toDateString(date) === toDateString(new Date())
-}
-
-function formatTime(timestamp) {
+function formatTime(timestamp: unknown): string {
   if (!(timestamp instanceof Date)) return '—'
   return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-function toTimeValue(timestamp) {
+function toTimeValue(timestamp: unknown): string {
   if (!(timestamp instanceof Date)) return ''
   const h = String(timestamp.getHours()).padStart(2, '0')
   const m = String(timestamp.getMinutes()).padStart(2, '0')
   return `${h}:${m}`
 }
 
-function formatHours(ms) {
+function formatHours(ms: number | null | undefined): string {
   if (ms == null) return '—'
   const totalMinutes = Math.round(ms / 60000)
   const h = Math.floor(totalMinutes / 60)
@@ -34,41 +36,120 @@ function formatHours(ms) {
   return `${h}h ${m.toString().padStart(2, '0')}m`
 }
 
-function pairEntries(entries, selectedDate) {
-  const sorted = [...entries].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-  const pairs = []
-  let currentIn = null
+function startOfDay(date: Date): Date {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
 
-  for (const entry of sorted) {
-    if (entry.type === 'in') {
-      currentIn = entry
-    } else if (entry.type === 'out' && currentIn) {
-      pairs.push({ entrada: currentIn, salida: entry, autoClose: false })
-      currentIn = null
-    }
-  }
+function startOfWeek(date: Date): Date {
+  // Semana empieza en domingo (igual que la imagen de referencia).
+  const d = startOfDay(date)
+  d.setDate(d.getDate() - d.getDay())
+  return d
+}
 
-  if (currentIn) {
-    if (!isToday(selectedDate)) {
-      // Use the entrada's own date so the 20:00 cutoff lands on the correct day
-      const autoCloseTime = new Date(currentIn.timestamp)
-      autoCloseTime.setHours(20, 0, 0, 0)
-      pairs.push({
-        entrada: currentIn,
-        salida: { ...currentIn, type: 'out', timestamp: autoCloseTime },
-        autoClose: true,
-      })
-    } else {
-      pairs.push({ entrada: currentIn, salida: null, autoClose: false })
-    }
-  }
+function addDays(date: Date, n: number): Date {
+  const d = new Date(date)
+  d.setDate(d.getDate() + n)
+  return d
+}
 
-  return pairs
+interface WeekDatePickerProps {
+  selectedDate: Date
+  onSelect: (date: Date) => void
+  dateLocale: string
+  t: (key: string) => string
+}
+
+function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }: WeekDatePickerProps) {
+  const today = startOfDay(new Date())
+  const weekStart = startOfWeek(selectedDate)
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+
+  const monthYearFmt = new Intl.DateTimeFormat(dateLocale, { month: 'long', year: 'numeric' })
+  const weekdayFmt = new Intl.DateTimeFormat(dateLocale, { weekday: 'short' })
+
+  const goPrevWeek = () => onSelect(addDays(selectedDate, -7))
+  const nextDate = addDays(selectedDate, 7)
+  const canGoNext = nextDate <= today
+  const goNextWeek = () => { if (canGoNext) onSelect(nextDate) }
+
+  return (
+    <div className="px-1 pt-1 pb-1">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-display font-semibold text-text-primary dark:text-text-dark-primary capitalize">
+          {monthYearFmt.format(selectedDate)}
+        </h3>
+        <div className="flex items-center gap-0.5">
+          <button
+            type="button"
+            onClick={goPrevWeek}
+            aria-label={t('dashboard.fichaje.prevDay')}
+            className="w-6 h-6 inline-flex items-center justify-center rounded-full text-text-secondary dark:text-text-dark-secondary hover:bg-text-primary/5 dark:hover:bg-text-inverse/8 hover:text-odoo-purple dark:hover:text-odoo-dark-purple transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={goNextWeek}
+            disabled={!canGoNext}
+            aria-label={t('dashboard.fichaje.nextDay')}
+            className="w-6 h-6 inline-flex items-center justify-center rounded-full text-text-secondary dark:text-text-dark-secondary hover:bg-text-primary/5 dark:hover:bg-text-inverse/8 hover:text-odoo-purple dark:hover:text-odoo-dark-purple disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-secondary disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-7 gap-0.5">
+        {days.map((d) => {
+          const selected = startOfDay(d).getTime() === startOfDay(selectedDate).getTime()
+          const future = d > today
+          return (
+            <button
+              key={d.toISOString()}
+              type="button"
+              onClick={() => { if (!future) onSelect(d) }}
+              disabled={future}
+              aria-pressed={selected}
+              className={[
+                'flex flex-col items-center justify-center py-1 rounded-xl transition-all',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-odoo-purple/35',
+                selected
+                  ? 'bg-ui-card dark:bg-ui-dark-card shadow-[0_3px_10px_-3px_rgba(0,0,0,0.18)] ring-1 ring-ui-border-l dark:ring-ui-dark-border'
+                  : future
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'hover:bg-ui-card/60 dark:hover:bg-ui-dark-card/40',
+              ].join(' ')}
+            >
+              <span className="text-xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
+                {weekdayFmt.format(d).replace('.', '')}
+              </span>
+              <span className="text-xs font-semibold text-text-primary dark:text-text-dark-primary leading-tight">
+                {d.getDate()}
+              </span>
+              <span
+                className={[
+                  'mt-0.5 w-[3px] h-[3px] rounded-full transition-opacity',
+                  selected ? 'bg-text-primary dark:bg-text-dark-primary opacity-100' : 'opacity-0',
+                ].join(' ')}
+              />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 function DailyFichajesWidget() {
   const { user } = useAuth()
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
 
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date()
@@ -78,41 +159,19 @@ function DailyFichajesWidget() {
 
   const { entries, loading, error } = useDailyFichajes(user?.sub, selectedDate)
 
-  const [editingRow, setEditingRow] = useState(null)
+  const [editingRow, setEditingRow] = useState<number | null>(null)
   const [requestForm, setRequestForm] = useState({ date: '', from: '', to: '' })
-  const [pendingRequests, setPendingRequests] = useState({})
+  const [pendingRequests, setPendingRequests] = useState<Record<number, typeof requestForm>>({})
 
-  const goToPrevDay = () => {
-    setSelectedDate((d) => {
-      const next = new Date(d)
-      next.setDate(next.getDate() - 1)
-      return next
-    })
-    setEditingRow(null)
-    setPendingRequests({})
-  }
-
-  const goToNextDay = () => {
-    if (isToday(selectedDate)) return
-    setSelectedDate((d) => {
-      const next = new Date(d)
-      next.setDate(next.getDate() + 1)
-      return next
-    })
-    setEditingRow(null)
-    setPendingRequests({})
-  }
-
-  const handleDatePick = (e) => {
-    const [year, month, day] = e.target.value.split('-').map(Number)
-    const picked = new Date(year, month - 1, day)
+  const handleDatePicked = (date: Date): void => {
+    const picked = new Date(date)
     picked.setHours(0, 0, 0, 0)
     setSelectedDate(picked)
     setEditingRow(null)
     setPendingRequests({})
   }
 
-  const handleOpenEdit = (index, pair) => {
+  const handleOpenEdit = (index: number, pair: FichajePair): void => {
     setEditingRow(index)
     setRequestForm({
       date: toDateString(selectedDate),
@@ -121,45 +180,25 @@ function DailyFichajesWidget() {
     })
   }
 
-  const handleSubmitRequest = (index) => {
+  const handleSubmitRequest = (index: number): void => {
     setPendingRequests((prev) => ({ ...prev, [index]: { ...requestForm } }))
     setEditingRow(null)
   }
 
-  const pairs = pairEntries(entries, selectedDate)
+  const pairs = pairEntries((entries as FichajeEntry[]) ?? [], selectedDate)
   const totalMs = pairs.reduce((sum, p) => {
     if (!p.salida) return sum
-    return sum + (new Date(p.salida.timestamp) - new Date(p.entrada.timestamp))
+    return sum + (new Date(p.salida.timestamp).getTime() - new Date(p.entrada.timestamp).getTime())
   }, 0)
 
   return (
     <div className="h-full flex flex-col gap-2">
-      <div className="flex items-center gap-2 justify-center">
-        <button
-          type="button"
-          onClick={goToPrevDay}
-          aria-label={t('dashboard.fichaje.prevDay')}
-          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary"
-        >
-          ←
-        </button>
-        <input
-          type="date"
-          value={toDateString(selectedDate)}
-          max={toDateString(new Date())}
-          onChange={handleDatePick}
-          className="text-sm border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary rounded px-2 py-1 outline-none focus:border-warning-dark"
-        />
-        <button
-          type="button"
-          onClick={goToNextDay}
-          disabled={isToday(selectedDate)}
-          aria-label={t('dashboard.fichaje.nextDay')}
-          className="p-1 rounded hover:bg-ui-body dark:hover:bg-ui-dark-border transition text-text-secondary dark:text-text-dark-secondary disabled:opacity-40 disabled:cursor-default"
-        >
-          →
-        </button>
-      </div>
+      <WeekDatePicker
+        selectedDate={selectedDate}
+        onSelect={handleDatePicked}
+        dateLocale={dateLocale}
+        t={t}
+      />
 
       <div className="flex-1 overflow-auto">
         {loading && (
@@ -168,7 +207,9 @@ function DailyFichajesWidget() {
           </div>
         )}
         {error && !loading && (
-          <p className="text-danger dark:text-danger text-sm text-center py-4">{error}</p>
+          <p role="alert" aria-live="assertive" className="text-danger dark:text-danger text-sm text-center py-4">
+            {error}
+          </p>
         )}
         {!loading && !error && pairs.length === 0 && (
           <p className="text-text-secondary dark:text-text-dark-secondary text-sm text-center py-4">
@@ -194,7 +235,7 @@ function DailyFichajesWidget() {
             <tbody className="divide-y divide-gray-100 dark:divide-ui-dark-border">
               {pairs.map((pair, i) => {
                 const ms = pair.salida
-                  ? new Date(pair.salida.timestamp) - new Date(pair.entrada.timestamp)
+                  ? new Date(pair.salida.timestamp).getTime() - new Date(pair.entrada.timestamp).getTime()
                   : null
                 const pending = pendingRequests[i]
                 const isEditing = editingRow === i
@@ -246,32 +287,24 @@ function DailyFichajesWidget() {
                       <td className="px-1 py-1.5 text-center">
                         {isEditing ? (
                           <div className="flex flex-col gap-1">
-                            <button
-                              type="button"
-                              onClick={() => handleSubmitRequest(i)}
-                              className="py-0.5 px-1.5 rounded-full bg-odoo-purple hover:bg-odoo-purple-d text-text-inverse font-medium transition text-xs whitespace-nowrap"
-                            >
+                            <Button variant="primary" size="xs" onClick={() => handleSubmitRequest(i)}>
                               {t('dashboard.fichaje.submitModification')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingRow(null)}
-                              className="py-0.5 px-1.5 rounded-full border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:bg-ui-body dark:hover:bg-ui-dark-card transition text-xs"
-                            >
+                            </Button>
+                            <Button variant="secondary" size="xs" onClick={() => setEditingRow(null)}>
                               {t('dashboard.cancel')}
-                            </button>
+                            </Button>
                           </div>
                         ) : pending ? (
                           <span className="text-xs text-warning-dark dark:text-warning font-medium">⏳</span>
                         ) : (
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="xs"
                             onClick={() => handleOpenEdit(i, pair)}
                             title={t('dashboard.fichaje.requestModification')}
-                            className="text-text-muted hover:text-violet-600 dark:hover:text-violet-400 transition text-xs p-0.5 rounded"
                           >
                             ✏️
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>

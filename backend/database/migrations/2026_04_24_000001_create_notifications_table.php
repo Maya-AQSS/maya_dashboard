@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('message_id')->unique()->comment('AMQP message_id — idempotency key');
             $table->string('app', 64);
             $table->string('type', 128)->comment('Dot-separated, e.g. user.invited');
-            $table->unsignedBigInteger('recipient_id')->comment('FDW users.id');
+            $table->string('recipient_id', 255)->comment('FDW users.id (Keycloak UUID)');
             $table->string('title', 200);
             $table->text('body');
             $table->jsonb('channels')->comment('Array of app|email|webhook|slack');

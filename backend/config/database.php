@@ -100,17 +100,24 @@ return [
         ],
 
         // Read-only connection to log_mgmt_db used by EvaluateAlertRules.
+        // Must connect with a role that has SELECT-only grants — see
+        // database/sql/log_mgmt_readonly_role.sql.
         'pgsql_logs' => [
             'driver'   => 'pgsql',
             'host'     => env('LOG_MGMT_DB_HOST', 'maya_infra_postgres'),
             'port'     => env('LOG_MGMT_DB_PORT', '5432'),
             'database' => env('LOG_MGMT_DB_DATABASE', 'log_mgmt_db'),
-            'username' => env('LOG_MGMT_DB_USERNAME', 'log_mgmt_user'),
-            'password' => env('LOG_MGMT_DB_PASSWORD', 'secret'),
+            'username' => env('LOG_MGMT_DB_USERNAME', 'log_mgmt_readonly'),
+            'password' => env('LOG_MGMT_DB_PASSWORD')
+                ?: throw new \RuntimeException('LOG_MGMT_DB_PASSWORD is not set in the environment.'),
             'charset'  => 'utf8',
             'prefix'   => '',
             'search_path' => 'public',
             'sslmode'     => env('LOG_MGMT_DB_SSLMODE', 'prefer'),
+            // Connection-level statement_timeout as a second line of defense
+            // against runaway alert queries; the EvaluateAlertRules command
+            // also applies a transaction-local SET LOCAL.
+            'options' => '-c statement_timeout=5000',
         ],
 
         'sqlsrv' => [

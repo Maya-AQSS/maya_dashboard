@@ -1,228 +1,236 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getFavorites, addFavorite, removeFavorite } from './favoritesApi'
+
+/**
+ * Estos tests mockean el wrapper local `../../../api/http` (donde vive el
+ * cliente real basado en `@maya/shared-auth-react`). La auth (Bearer
+ * Keycloak) la inyecta el cliente automáticamente; el módulo
+ * `favoritesApi` solo construye la URL relativa y traduce el error con
+ * `mapApiError`.
+ */
+vi.mock('../../../api/http', () => {
+  class ApiHttpError extends Error {
+    status: number
+    constructor(status: number, message = `HTTP ${status}`) {
+      super(message)
+      this.name = 'ApiHttpError'
+      this.status = status
+    }
+  }
+
+  return {
+    ApiHttpError,
+    apiGetJson: vi.fn(),
+    apiFetchJson: vi.fn(),
+    mapApiError: (err: unknown, prefix: string, fallback = 'errorLoad'): Error => {
+      if (err instanceof ApiHttpError) {
+        if (err.status === 401) return new Error(`${prefix}.errorUnauthorized`)
+        if (err.status === 403) return new Error(`${prefix}.errorForbidden`)
+        if (err.status === 404) return new Error(`${prefix}.errorNotFound`)
+        if (err.status === 422) return new Error(`${prefix}.errorValidation`)
+        if (err.status >= 500) return new Error(`${prefix}.errorServer`)
+      }
+      if (err instanceof TypeError) return new Error(`${prefix}.errorNetwork`)
+      return new Error(`${prefix}.${fallback}`)
+    },
+  }
+})
+
+import { addFavorite, getFavorites, removeFavorite } from './favoritesApi'
+import { ApiHttpError, apiFetchJson, apiGetJson } from '../../../api/http'
 
 describe('favoritesApi', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn())
-    vi.stubEnv('VITE_API_URL', 'http://maya_dashboard_api.localhost')
-  })
-
   afterEach(() => {
-    vi.unstubAllEnvs()
-    vi.unstubAllGlobals()
+    vi.clearAllMocks()
   })
 
   // ─── getFavorites ──────────────────────────────────────────────
   describe('getFavorites', () => {
-    it('devuelve array de favoritos con GET y Authorization header', async () => {
+    it('GET al endpoint /dashboard/user/{id}/favorites y devuelve array directo', async () => {
       const payload = [{ id: 1, name: 'Maya DMS' }]
-      fetch.mockResolvedValue({ ok: true, json: async () => payload })
+      vi.mocked(apiGetJson).mockResolvedValue(payload)
 
       const result = await getFavorites('u-123', 'tok-abc')
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/favorite-applications',
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            Accept: 'application/json',
-            Authorization: 'Bearer tok-abc',
-          }),
-        }),
-      )
+      expect(apiGetJson).toHaveBeenCalledWith('/dashboard/user/u-123/favorites')
       expect(result).toEqual(payload)
     })
 
-    it('devuelve array vacío si la respuesta no es un array', async () => {
-      fetch.mockResolvedValue({ ok: true, json: async () => ({ data: [] }) })
+    it('extrae payload.data cuando la respuesta es un objeto envuelto', async () => {
+      vi.mocked(apiGetJson).mockResolvedValue({ data: [{ id: 7 }] })
 
-      const result = await getFavorites('u-123', 'tok-abc')
+      const result = await getFavorites('u-123')
+
+      expect(result).toEqual([{ id: 7 }])
+    })
+
+    it('devuelve [] si la respuesta no es array ni tiene data', async () => {
+      vi.mocked(apiGetJson).mockResolvedValue({ unexpected: 'shape' })
+
+      const result = await getFavorites('u-123')
 
       expect(result).toEqual([])
     })
 
-    it('falla con favorites.errorLoad si no hay userId', async () => {
-      await expect(getFavorites('', 'tok-abc')).rejects.toThrow('favorites.errorLoad')
+    it('encodea userId con caracteres especiales', async () => {
+      vi.mocked(apiGetJson).mockResolvedValue([])
+
+      await getFavorites('u/with space', 'tok')
+
+      expect(apiGetJson).toHaveBeenCalledWith('/dashboard/user/u%2Fwith%20space/favorites')
     })
 
-    it('falla con favorites.errorLoad si no hay token', async () => {
-      await expect(getFavorites('u-123', '')).rejects.toThrow('favorites.errorLoad')
+    it('rechaza con favorites.errorLoad si userId vacío (no llama API)', async () => {
+      await expect(getFavorites('', 'tok')).rejects.toThrow('favorites.errorLoad')
+      expect(apiGetJson).not.toHaveBeenCalled()
     })
 
-    it('falla con favorites.errorConfig si no hay VITE_API_URL', async () => {
-      vi.stubEnv('VITE_API_URL', '')
+    it('mapea 401 → favorites.errorUnauthorized', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(401))
 
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorConfig')
+      await expect(getFavorites('u-123')).rejects.toThrow('favorites.errorUnauthorized')
     })
 
-    it('falla con favorites.errorNetwork si fetch lanza', async () => {
-      fetch.mockRejectedValue(new Error('network'))
+    it('mapea 403 → favorites.errorForbidden', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(403))
 
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorNetwork')
+      await expect(getFavorites('u-123')).rejects.toThrow('favorites.errorForbidden')
     })
 
-    it('falla con favorites.errorUnauthorized en 401', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 401 })
+    it('mapea 500 → favorites.errorServer', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(500))
 
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorUnauthorized')
+      await expect(getFavorites('u-123')).rejects.toThrow('favorites.errorServer')
     })
 
-    it('falla con favorites.errorForbidden en 403', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 403 })
+    it('mapea TypeError (network) → favorites.errorNetwork', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new TypeError('fetch failed'))
 
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorForbidden')
+      await expect(getFavorites('u-123')).rejects.toThrow('favorites.errorNetwork')
     })
 
-    it('falla con favorites.errorServer en 500', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 500 })
+    it('errores sin reconocer caen al fallback favorites.errorLoad', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new Error('boom'))
 
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorServer')
-    })
-
-    it('falla con favorites.errorLoad en otro status no-ok', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 422 })
-
-      await expect(getFavorites('u-123', 'tok-abc')).rejects.toThrow('favorites.errorLoad')
+      await expect(getFavorites('u-123')).rejects.toThrow('favorites.errorLoad')
     })
   })
 
-  // ─── addFavorite ───────────────────────────────────────────────
+  // ─── addFavorite ──────────────────────────────────────────────
   describe('addFavorite', () => {
-    it('hace POST con body application_id y Authorization header', async () => {
-      const payload = { id: 1, name: 'Maya DMS' }
-      fetch.mockResolvedValue({ ok: true, json: async () => payload })
+    it('POST al endpoint con body { application_id }', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue({ data: { id: 42 } })
 
-      const result = await addFavorite('u-123', 42, 'tok-abc')
+      const result = await addFavorite('u-123', 42)
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/favorite-applications',
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer tok-abc',
-          }),
-          body: JSON.stringify({ application_id: 42 }),
-        }),
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/favorites',
+        { method: 'POST', body: { application_id: 42 } },
       )
-      expect(result).toEqual(payload)
+      expect(result).toEqual({ id: 42 })
     })
 
-    it('falla con favorites.errorAdd si no hay userId', async () => {
-      await expect(addFavorite('', 42, 'tok-abc')).rejects.toThrow('favorites.errorAdd')
+    it('devuelve payload completo si no contiene .data', async () => {
+      const payload = { id: 99, name: 'App' }
+      vi.mocked(apiFetchJson).mockResolvedValue(payload)
+
+      const result = await addFavorite('u-123', 99)
+
+      expect(result).toBe(payload)
     })
 
-    it('falla con favorites.errorAdd si no hay applicationId', async () => {
-      await expect(addFavorite('u-123', null, 'tok-abc')).rejects.toThrow('favorites.errorAdd')
+    it('acepta application_id string', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue({})
+
+      await addFavorite('u-123', 'app-slug')
+
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/favorites',
+        { method: 'POST', body: { application_id: 'app-slug' } },
+      )
     })
 
-    it('falla con favorites.errorAdd si no hay token', async () => {
-      await expect(addFavorite('u-123', 42, '')).rejects.toThrow('favorites.errorAdd')
+    it('rechaza con favorites.errorAdd si falta userId (no llama API)', async () => {
+      await expect(addFavorite('', 42)).rejects.toThrow('favorites.errorAdd')
+      expect(apiFetchJson).not.toHaveBeenCalled()
     })
 
-    it('falla con favorites.errorConfig si no hay VITE_API_URL', async () => {
-      vi.stubEnv('VITE_API_URL', '')
-
-      await expect(addFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorConfig')
+    it('rechaza con favorites.errorAdd si applicationId es 0 falsy', async () => {
+      // 0 es falsy → guard clause rechaza
+      await expect(addFavorite('u-123', 0)).rejects.toThrow('favorites.errorAdd')
+      expect(apiFetchJson).not.toHaveBeenCalled()
     })
 
-    it('falla con favorites.errorNetwork si fetch lanza', async () => {
-      fetch.mockRejectedValue(new Error('network'))
+    it('mapea 422 → favorites.errorValidation', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(422))
 
-      await expect(addFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorNetwork')
+      await expect(addFavorite('u-123', 42)).rejects.toThrow('favorites.errorValidation')
     })
 
-    it('falla con favorites.errorUnauthorized en 401', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 401 })
+    it('mapea otros errores con fallback errorAdd', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new Error('boom'))
 
-      await expect(addFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorUnauthorized')
-    })
-
-    it('falla con favorites.errorServer en 500', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 500 })
-
-      await expect(addFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorServer')
-    })
-
-    it('falla con favorites.errorAdd en otro status no-ok', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 422 })
-
-      await expect(addFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorAdd')
+      await expect(addFavorite('u-123', 42)).rejects.toThrow('favorites.errorAdd')
     })
   })
 
-  // ─── removeFavorite ────────────────────────────────────────────
+  // ─── removeFavorite ──────────────────────────────────────────────
   describe('removeFavorite', () => {
-    it('hace DELETE con applicationId en la URL y Authorization header', async () => {
-      fetch.mockResolvedValue({ ok: true })
+    it('DELETE al endpoint con applicationId encoded en la URL', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue(undefined)
 
-      await removeFavorite('u-123', 42, 'tok-abc')
+      await removeFavorite('u-123', 42)
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/favorite-applications/42',
-        expect.objectContaining({
-          method: 'DELETE',
-          headers: expect.objectContaining({
-            Accept: 'application/json',
-            Authorization: 'Bearer tok-abc',
-          }),
-        }),
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/favorites/42',
+        { method: 'DELETE' },
       )
     })
 
-    it('falla con favorites.errorRemove si no hay userId', async () => {
-      await expect(removeFavorite('', 42, 'tok-abc')).rejects.toThrow('favorites.errorRemove')
+    it('encodea application_id si es string con caracteres especiales', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue(undefined)
+
+      await removeFavorite('u-123', 'app/slug')
+
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/favorites/app%2Fslug',
+        { method: 'DELETE' },
+      )
     })
 
-    it('falla con favorites.errorRemove si no hay applicationId', async () => {
-      await expect(removeFavorite('u-123', null, 'tok-abc')).rejects.toThrow('favorites.errorRemove')
+    it('no devuelve nada (void) en éxito', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue(undefined)
+
+      const result = await removeFavorite('u-123', 42)
+
+      expect(result).toBeUndefined()
     })
 
-    it('falla con favorites.errorRemove si no hay token', async () => {
-      await expect(removeFavorite('u-123', 42, '')).rejects.toThrow('favorites.errorRemove')
+    it('rechaza con favorites.errorRemove si falta userId', async () => {
+      await expect(removeFavorite('', 42)).rejects.toThrow('favorites.errorRemove')
+      expect(apiFetchJson).not.toHaveBeenCalled()
     })
 
-    it('falla con favorites.errorConfig si no hay VITE_API_URL', async () => {
-      vi.stubEnv('VITE_API_URL', '')
-
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorConfig')
+    it('rechaza con favorites.errorRemove si applicationId es 0', async () => {
+      await expect(removeFavorite('u-123', 0)).rejects.toThrow('favorites.errorRemove')
+      expect(apiFetchJson).not.toHaveBeenCalled()
     })
 
-    it('falla con favorites.errorNetwork si fetch lanza', async () => {
-      fetch.mockRejectedValue(new Error('network'))
+    it('mapea 404 → favorites.errorNotFound (regression CB-3)', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(404))
 
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorNetwork')
+      await expect(removeFavorite('u-123', 42)).rejects.toThrow('favorites.errorNotFound')
     })
 
-    it('falla con favorites.errorUnauthorized en 401', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 401 })
+    it('mapea 500 → favorites.errorServer', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(500))
 
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorUnauthorized')
+      await expect(removeFavorite('u-123', 42)).rejects.toThrow('favorites.errorServer')
     })
 
-    it('falla con favorites.errorForbidden en 403', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 403 })
+    it('errores sin reconocer caen al fallback errorRemove', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new Error('boom'))
 
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorForbidden')
-    })
-
-    it('falla con favorites.errorNotFound en 404', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 404 })
-
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorNotFound')
-    })
-
-    it('falla con favorites.errorServer en 500', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 500 })
-
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorServer')
-    })
-
-    it('falla con favorites.errorRemove en otro status no-ok', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 409 })
-
-      await expect(removeFavorite('u-123', 42, 'tok-abc')).rejects.toThrow('favorites.errorRemove')
+      await expect(removeFavorite('u-123', 42)).rejects.toThrow('favorites.errorRemove')
     })
   })
 })

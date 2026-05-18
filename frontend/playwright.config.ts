@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://maya_dashboard.localhost';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'https://dashboard.maya.test';
 
 export default defineConfig({
   testDir: './e2e',

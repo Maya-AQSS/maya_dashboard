@@ -1,19 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources;
 
+use App\DTOs\UserFavoriteApplicationDto;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @property UserFavoriteApplicationDto $resource
+ */
 class UserFavoriteApplicationResource extends JsonResource
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(Request $request): array
     {
+        /** @var UserFavoriteApplicationDto $dto */
+        $dto = $this->resource;
+
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'traefik_url' => $this->traefik_url,
+            'id' => $dto->id,
+            'name' => $dto->name,
+            'slug' => $dto->slug,
+            'traefik_url' => $dto->traefikUrl,
         ];
     }
 }

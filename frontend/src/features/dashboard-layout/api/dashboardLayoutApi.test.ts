@@ -1,155 +1,156 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+/**
+ * Mockeamos el wrapper local `../../../api/http`. La auth Bearer la inyecta
+ * el cliente real (`createApiClient(keycloak, baseUrl)`); el módulo bajo
+ * test sólo construye la URL y traduce el error vía `mapApiError`.
+ */
+vi.mock('../../../api/http', () => {
+  class ApiHttpError extends Error {
+    status: number
+    constructor(status: number, message = `HTTP ${status}`) {
+      super(message)
+      this.name = 'ApiHttpError'
+      this.status = status
+    }
+  }
+
+  return {
+    ApiHttpError,
+    apiGetJson: vi.fn(),
+    apiFetchJson: vi.fn(),
+    mapApiError: (err: unknown, prefix: string, fallback = 'errorLoad'): Error => {
+      if (err instanceof ApiHttpError) {
+        if (err.status === 401) return new Error(`${prefix}.errorUnauthorized`)
+        if (err.status === 403) return new Error(`${prefix}.errorForbidden`)
+        if (err.status === 404) return new Error(`${prefix}.errorNotFound`)
+        if (err.status === 422) return new Error(`${prefix}.errorValidation`)
+        if (err.status >= 500) return new Error(`${prefix}.errorServer`)
+      }
+      if (err instanceof TypeError) return new Error(`${prefix}.errorNetwork`)
+      return new Error(`${prefix}.${fallback}`)
+    },
+  }
+})
+
 import { getDashboardLayout, updateDashboardLayout } from './dashboardLayoutApi'
+import { ApiHttpError, apiFetchJson, apiGetJson } from '../../../api/http'
 
 describe('dashboardLayoutApi', () => {
-  beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn())
-    vi.stubEnv('VITE_API_URL', 'http://maya_dashboard_api.localhost')
-  })
-
   afterEach(() => {
-    vi.unstubAllEnvs()
-    vi.unstubAllGlobals()
+    vi.clearAllMocks()
   })
 
-  // ─── getDashboardLayout ────────────────────────────────────────
+  // ─── getDashboardLayout ──────────────────────────────────────────
   describe('getDashboardLayout', () => {
-    it('hace GET y devuelve payload de layout', async () => {
-      const payload = { layout: { cols: 3 }, updated_at: '2024-01-01T00:00:00Z' }
-      fetch.mockResolvedValue({ ok: true, json: async () => payload })
+    it('GET al endpoint /dashboard/user/{id}/dashboard-layout y devuelve payload', async () => {
+      const payload = { layout: [{ i: 'w1', x: 0, y: 0, w: 4, h: 3 }], updated_at: '2026-01-01' }
+      vi.mocked(apiGetJson).mockResolvedValue(payload)
 
       const result = await getDashboardLayout('u-123', 'tok-abc')
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            Accept: 'application/json',
-            Authorization: 'Bearer tok-abc',
-          }),
-        }),
-      )
-      expect(result).toEqual(payload)
+      expect(apiGetJson).toHaveBeenCalledWith('/dashboard/user/u-123/dashboard-layout')
+      expect(result).toBe(payload)
     })
 
-    it('falla con dashboardLayout.errorLoad si no hay userId', async () => {
-      await expect(getDashboardLayout('', 'tok-abc')).rejects.toThrow('dashboardLayout.errorLoad')
+    it('encodea userId con caracteres especiales en la URL', async () => {
+      vi.mocked(apiGetJson).mockResolvedValue({})
+
+      await getDashboardLayout('u/with space')
+
+      expect(apiGetJson).toHaveBeenCalledWith('/dashboard/user/u%2Fwith%20space/dashboard-layout')
     })
 
-    it('falla con dashboardLayout.errorLoad si no hay token', async () => {
-      await expect(getDashboardLayout('u-123', '')).rejects.toThrow('dashboardLayout.errorLoad')
+    it('rechaza con dashboardLayout.errorLoad si userId vacío (no llama API)', async () => {
+      await expect(getDashboardLayout('')).rejects.toThrow('dashboardLayout.errorLoad')
+      expect(apiGetJson).not.toHaveBeenCalled()
     })
 
-    it('falla con dashboardLayout.errorConfig si no hay VITE_API_URL', async () => {
-      vi.stubEnv('VITE_API_URL', '')
+    it('mapea 401 → dashboardLayout.errorUnauthorized', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(401))
 
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorConfig')
+      await expect(getDashboardLayout('u-123')).rejects.toThrow('dashboardLayout.errorUnauthorized')
     })
 
-    it('falla con dashboardLayout.errorNetwork si fetch lanza', async () => {
-      fetch.mockRejectedValue(new Error('network'))
+    it('mapea 403 → dashboardLayout.errorForbidden', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(403))
 
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorNetwork')
+      await expect(getDashboardLayout('u-123')).rejects.toThrow('dashboardLayout.errorForbidden')
     })
 
-    it('falla con dashboardLayout.errorUnauthorized en 401', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 401 })
+    it('mapea 500 → dashboardLayout.errorServer', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(500))
 
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorUnauthorized')
+      await expect(getDashboardLayout('u-123')).rejects.toThrow('dashboardLayout.errorServer')
     })
 
-    it('falla con dashboardLayout.errorForbidden en 403', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 403 })
+    it('mapea TypeError (network) → dashboardLayout.errorNetwork', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new TypeError('fetch failed'))
 
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorForbidden')
+      await expect(getDashboardLayout('u-123')).rejects.toThrow('dashboardLayout.errorNetwork')
     })
 
-    it('falla con dashboardLayout.errorServer en 500', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 500 })
+    it('errores no reconocidos caen al fallback errorLoad', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new Error('boom'))
 
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorServer')
-    })
-
-    it('falla con dashboardLayout.errorLoad en otro status no-ok', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 404 })
-
-      await expect(getDashboardLayout('u-123', 'tok-abc')).rejects.toThrow('dashboardLayout.errorLoad')
+      await expect(getDashboardLayout('u-123')).rejects.toThrow('dashboardLayout.errorLoad')
     })
   })
 
-  // ─── updateDashboardLayout ─────────────────────────────────────
+  // ─── updateDashboardLayout ──────────────────────────────────────
   describe('updateDashboardLayout', () => {
-    it('hace PUT con body layout y Authorization header', async () => {
-      const layout = { cols: 3, rows: 2 }
-      const payload = { layout, updated_at: '2024-01-01T00:00:00Z' }
-      fetch.mockResolvedValue({ ok: true, json: async () => payload })
+    it('PUT al endpoint con body { layout }', async () => {
+      const layout = [{ i: 'w1', x: 0, y: 0, w: 6, h: 4 }]
+      const response = { layout, updated_at: '2026-01-02' }
+      vi.mocked(apiFetchJson).mockResolvedValue(response)
 
       const result = await updateDashboardLayout('u-123', layout, 'tok-abc')
 
-      expect(fetch).toHaveBeenCalledWith(
-        'http://maya_dashboard_api.localhost/api/v1/dashboard/user/u-123/dashboard-layout',
-        expect.objectContaining({
-          method: 'PUT',
-          headers: expect.objectContaining({
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer tok-abc',
-          }),
-          body: JSON.stringify({ layout }),
-        }),
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/dashboard-layout',
+        { method: 'PUT', body: { layout } },
       )
-      expect(result).toEqual(payload)
+      expect(result).toBe(response)
     })
 
-    it('falla con dashboardLayout.errorSave si no hay userId', async () => {
-      await expect(updateDashboardLayout('', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorSave')
+    it('acepta layout array vacío', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue({ layout: [] })
+
+      await updateDashboardLayout('u-123', [])
+
+      expect(apiFetchJson).toHaveBeenCalledWith(
+        '/dashboard/user/u-123/dashboard-layout',
+        { method: 'PUT', body: { layout: [] } },
+      )
     })
 
-    it('falla con dashboardLayout.errorSave si no hay token', async () => {
-      await expect(updateDashboardLayout('u-123', {}, '')).rejects.toThrow('dashboardLayout.errorSave')
+    it('rechaza con dashboardLayout.errorSave si userId vacío (no llama API)', async () => {
+      await expect(updateDashboardLayout('', [])).rejects.toThrow('dashboardLayout.errorSave')
+      expect(apiFetchJson).not.toHaveBeenCalled()
     })
 
-    it('falla con dashboardLayout.errorConfig si no hay VITE_API_URL', async () => {
-      vi.stubEnv('VITE_API_URL', '')
+    it('mapea 401 → dashboardLayout.errorUnauthorized', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(401))
 
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorConfig')
+      await expect(updateDashboardLayout('u-123', [])).rejects.toThrow('dashboardLayout.errorUnauthorized')
     })
 
-    it('falla con dashboardLayout.errorNetwork si fetch lanza', async () => {
-      fetch.mockRejectedValue(new Error('network'))
+    it('mapea 422 → dashboardLayout.errorValidation', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(422))
 
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorNetwork')
+      await expect(updateDashboardLayout('u-123', [{ i: 'w', x: -1 }])).rejects.toThrow('dashboardLayout.errorValidation')
     })
 
-    it('falla con dashboardLayout.errorUnauthorized en 401', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 401 })
+    it('mapea 500 → dashboardLayout.errorServer', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new ApiHttpError(500))
 
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorUnauthorized')
+      await expect(updateDashboardLayout('u-123', [])).rejects.toThrow('dashboardLayout.errorServer')
     })
 
-    it('falla con dashboardLayout.errorForbidden en 403', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 403 })
+    it('errores no reconocidos caen al fallback errorSave', async () => {
+      vi.mocked(apiFetchJson).mockRejectedValue(new Error('boom'))
 
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorForbidden')
-    })
-
-    it('falla con dashboardLayout.errorValidation en 422', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 422 })
-
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorValidation')
-    })
-
-    it('falla con dashboardLayout.errorServer en 500', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 500 })
-
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorServer')
-    })
-
-    it('falla con dashboardLayout.errorSave en otro status no-ok', async () => {
-      fetch.mockResolvedValue({ ok: false, status: 409 })
-
-      await expect(updateDashboardLayout('u-123', {}, 'tok-abc')).rejects.toThrow('dashboardLayout.errorSave')
+      await expect(updateDashboardLayout('u-123', [])).rejects.toThrow('dashboardLayout.errorSave')
     })
   })
 })

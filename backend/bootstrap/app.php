@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'auth.keycloak' => \Maya\Auth\Middleware\JwtMiddleware::class,
+            'auth.keycloak'       => \Maya\Auth\Middleware\JwtMiddleware::class,
+            'user.owns.resource'  => \App\Http\Middleware\EnsureRouteUserMatchesToken::class,
+            'permission'          => \Maya\Auth\Middleware\RequirePermissionMiddleware::class,
+            'role'                => \Maya\Auth\Middleware\RequireRoleMiddleware::class,
         ]);
         $middleware->api(prepend: [\Illuminate\Http\Middleware\HandleCors::class]);
     })

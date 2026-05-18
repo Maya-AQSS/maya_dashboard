@@ -3,6 +3,7 @@
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Events\RouteMatched;
 
 uses(RefreshDatabase::class);
 
@@ -10,6 +11,16 @@ beforeEach(function () {
     $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
     $this->user = User::factory()->create();
     $this->other = User::factory()->create();
+
+    // Inject jwt_user matching $this->user so EnsureRouteUserMatchesToken
+    // accepts /api/v1/dashboard/user/{$this->user->id}/...
+    $userId = $this->user->id;
+    $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
+        $event->request->attributes->set('jwt_user', [
+            'id'  => $userId,
+            'sub' => $userId,
+        ]);
+    });
 });
 
 it('returns an empty list when user has no favorites', function () {

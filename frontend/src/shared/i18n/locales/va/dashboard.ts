@@ -1,4 +1,5 @@
 export default {
+  title: 'Panell',
   editDashboard: 'Editar tauler',
   exitEdit: "Eixir del mode d'edició",
   editMode: "Mode d'edició",
@@ -19,7 +20,7 @@ export default {
   fichaje: {
     notClockedIn: "No has fitxat hui.",
     clockInButton: 'Fitxar',
-    clockedInAt: 'Fitxat a les {time}',
+    clockedInAt: 'Fitxat a les {{time}}',
     dailyTitle: 'Fitxatges del dia',
     prevDay: 'Dia anterior',
     nextDay: 'Dia següent',
@@ -42,5 +43,18 @@ export default {
     toTime: 'Fins a',
     submitModification: 'Enviar sol·licitud',
     salidaNoFichada: 'Eixida no fitxada',
+  },
+  systemAlerts: {
+    pageTitle: 'Alertes del sistema',
+    pageSubtitle: 'Esdeveniments derivats de regles sobre logs o mètriques. Reconeix-les i resol-les per a mantindre el panell net.',
+    severityLabel: 'Severitat',
+    severityAll: 'Totes',
+    activeOnly: 'Només actives',
+    loading: 'Carregant…',
+    emptyActive: 'No hi ha alertes actives.',
+    empty: 'No hi ha alertes.',
+    adHoc: 'ad-hoc',
+    acknowledge: 'Reconéixer',
+    resolve: 'Resoldre',
   },
 }

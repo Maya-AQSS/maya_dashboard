@@ -1,44 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 
-class User extends Authenticatable
+/**
+ * Mapea la vista FDW 'users' → odoo.v_app_users (read-only).
+ * PK = keycloak_user_id (UUID Keycloak). Sin timestamps ni password local.
+ */
+class User extends Model implements \Illuminate\Contracts\Auth\Access\Authorizable, AuthenticatableContract
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Authenticatable, Authorizable, HasFactory;
 
-    protected $fillable = ['keycloak_id', 'name', 'email', 'password'];
+    public $timestamps = false;
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $primaryKey = 'id';
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $fillable = [
+        'id',
+        'email',
+        'name',
+        'first_name',
+        'last_name',
+        'username',
+        'employee_id',
+        'dni',
+        'employee_type',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     public function favoriteApplications(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'user_favorite_applications');
+        return $this->belongsToMany(Application::class, 'user_favorite_applications', 'user_id', 'application_id');
     }
 
     public function dashboardLayout(): HasOne
     {
-        return $this->hasOne(UserDashboardLayout::class);
+        return $this->hasOne(UserDashboardLayout::class, 'user_id', 'id');
     }
 }
