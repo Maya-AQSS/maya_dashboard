@@ -16,6 +16,7 @@ use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\NotificationRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
+use App\Repositories\Resolvers\CanonicalProfileResolver;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
@@ -35,6 +36,7 @@ use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Maya\Profile\Repositories\Contracts\UserProfileResolverInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +62,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AlertServiceInterface::class, AlertService::class);
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
         $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
+
+        // Resolver de perfil canónico cross-app: el shared MeController consume
+        // este binding para devolver /me con permisos/tipo_estudios/estudios/
+        // modulos/equipos (vacíos en maya_dashboard — no tiene tablas locales).
+        $this->app->singleton(UserProfileResolverInterface::class, CanonicalProfileResolver::class);
     }
 
     public function boot(): void
