@@ -19,7 +19,7 @@ use Maya\Messaging\Publishers\AuditPublisher;
  */
 class AlertRuleObserver
 {
-    private const APPLICATION_SLUG = 'maya_dashboard';
+    private const APPLICATION_SLUG = 'maya-dashboard';
 
     private const ENTITY_TYPE = 'alert_rule';
 

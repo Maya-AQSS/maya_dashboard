@@ -14,7 +14,7 @@ it('returns false when recipient_keycloak_id is empty', function () {
     $service = new NotificationIngestionService($repo);
 
     $result = $service->ingest([
-        'app'                   => 'maya_authorization',
+        'app'                   => 'maya-authorization',
         'type'                  => 'test',
         'recipient_keycloak_id' => '',
         'title'                 => 'Title',
@@ -37,7 +37,7 @@ it('returns false when recipient user does not exist in DB', function () {
     $service = new NotificationIngestionService($repo);
 
     $result = $service->ingest([
-        'app'                   => 'maya_authorization',
+        'app'                   => 'maya-authorization',
         'type'                  => 'user.created',
         'recipient_keycloak_id' => $keycloakId,
         'title'                 => 'New User',
@@ -66,7 +66,7 @@ it('returns true and upserts when recipient user exists', function () {
     $service = new NotificationIngestionService($repo);
 
     $result = $service->ingest([
-        'app'                   => 'maya_authorization',
+        'app'                   => 'maya-authorization',
         'type'                  => 'user.created',
         'recipient_keycloak_id' => $keycloakId,
         'title'                 => 'New User',
@@ -91,7 +91,7 @@ it('caches known user IDs — userExists called only once for repeated ingestion
     $service = new NotificationIngestionService($repo);
 
     $payload = [
-        'app'                   => 'maya_authorization',
+        'app'                   => 'maya-authorization',
         'type'                  => 'user.created',
         'recipient_keycloak_id' => $keycloakId,
         'title'                 => 'Title',
@@ -147,7 +147,7 @@ it('passes metadata and channels arrays correctly', function () {
     $service = new NotificationIngestionService($repo);
 
     $service->ingest([
-        'app'                   => 'maya_dms',
+        'app'                   => 'maya-dms',
         'type'                  => 'doc.approved',
         'recipient_keycloak_id' => $keycloakId,
         'title'                 => 'Doc approved',

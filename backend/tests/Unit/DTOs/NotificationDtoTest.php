@@ -6,7 +6,7 @@ use App\Models\Notification;
 it('creates NotificationDto from model with all fields', function () {
     $model = Notification::make([
         'message_id'   => 'uuid-1234',
-        'app'          => 'maya_authorization',
+        'app'          => 'maya-authorization',
         'type'         => 'user.created',
         'recipient_id' => 'user-uuid-456',
         'title'        => 'New User',
@@ -22,7 +22,7 @@ it('creates NotificationDto from model with all fields', function () {
 
     expect($dto->id)->toBe(1);
     expect($dto->messageId)->toBe('uuid-1234');
-    expect($dto->app)->toBe('maya_authorization');
+    expect($dto->app)->toBe('maya-authorization');
     expect($dto->type)->toBe('user.created');
     expect($dto->recipientId)->toBe('user-uuid-456');
     expect($dto->title)->toBe('New User');
@@ -36,7 +36,7 @@ it('creates NotificationDto from model with all fields', function () {
 it('formats read_at as ISO 8601 string when set', function () {
     $model = Notification::make([
         'message_id'   => 'uuid-5678',
-        'app'          => 'maya_dms',
+        'app'          => 'maya-dms',
         'type'         => 'doc.approved',
         'recipient_id' => 'user-uuid',
         'title'        => 'Document approved',
@@ -57,7 +57,7 @@ it('formats read_at as ISO 8601 string when set', function () {
 it('handles null channels by defaulting to empty array', function () {
     $model = Notification::make([
         'message_id'   => null,
-        'app'          => 'maya_logs',
+        'app'          => 'maya-logs',
         'type'         => 'alert.triggered',
         'recipient_id' => 'user-uuid',
         'title'        => 'Alert',

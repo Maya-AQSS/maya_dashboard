@@ -31,7 +31,7 @@ function makeNotification(string $recipientId, array $overrides = []): Notificat
 {
     return Notification::forceCreate(array_merge([
         'message_id'   => (string) Str::uuid(),
-        'app'          => 'maya_authorization',
+        'app'          => 'maya-authorization',
         'type'         => 'user.created',
         'recipient_id' => $recipientId,
         'title'        => 'Test Notification',

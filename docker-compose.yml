@@ -34,7 +34,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
-      MAYA_MESSAGING_APP: maya_dashboard
+      MAYA_MESSAGING_APP: maya-dashboard
       LOG_STACK: "daily,rabbit"
       LOG_RABBIT_LEVEL: warning
       LOG_MGMT_DB_HOST: maya_infra_postgres
@@ -88,7 +88,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
-      MAYA_MESSAGING_APP: maya_dashboard
+      MAYA_MESSAGING_APP: maya-dashboard
       LOG_MGMT_DB_HOST: maya_infra_postgres
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
@@ -135,7 +135,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
-      MAYA_MESSAGING_APP: maya_dashboard
+      MAYA_MESSAGING_APP: maya-dashboard
       LOG_STACK: "daily,rabbit"
       LOG_RABBIT_LEVEL: warning
       LOG_MGMT_DB_HOST: maya_infra_postgres
