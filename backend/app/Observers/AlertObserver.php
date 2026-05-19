@@ -16,7 +16,7 @@ use Maya\Messaging\Publishers\AuditPublisher;
  */
 final class AlertObserver
 {
-    private const APPLICATION_SLUG = 'maya_dashboard';
+    private const APPLICATION_SLUG = 'maya-dashboard';
 
     private const ENTITY_TYPE = 'alert';
 

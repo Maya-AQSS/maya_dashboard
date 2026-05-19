@@ -30,7 +30,7 @@ function wire(array $payload): array
 it('notification DTO parses publisher payload with all required fields', function () {
     // Exact payload shape from NotificationPublisher::send()
     $publisherPayload = wire([
-        'app'                   => 'maya_authorization',
+        'app'                   => 'maya-authorization',
         'type'                  => 'user.created',
         'recipient_keycloak_id' => 'uuid-1234-abcd',
         'title'                 => 'Nuevo usuario creado',
@@ -42,7 +42,7 @@ it('notification DTO parses publisher payload with all required fields', functio
 
     $dto = IncomingNotificationPayload::fromArray($publisherPayload);
 
-    expect($dto->app)->toBe('maya_authorization')
+    expect($dto->app)->toBe('maya-authorization')
         ->and($dto->type)->toBe('user.created')
         ->and($dto->recipientKeycloakId)->toBe('uuid-1234-abcd')
         ->and($dto->title)->toBe('Nuevo usuario creado')
@@ -54,7 +54,7 @@ it('notification DTO parses publisher payload with all required fields', functio
 
 it('notification DTO parses publisher payload with empty metadata', function () {
     $payload = wire([
-        'app'                   => 'maya_dms',
+        'app'                   => 'maya-dms',
         'type'                  => 'document.approved',
         'recipient_keycloak_id' => 'uuid-5678-efgh',
         'title'                 => 'Documento aprobado',
@@ -73,7 +73,7 @@ it('notification DTO parses publisher payload with empty metadata', function () 
 
 it('notification DTO uses "app" channel default when channels key missing', function () {
     $payload = wire([
-        'app'                   => 'maya_logs',
+        'app'                   => 'maya-logs',
         'type'                  => 'alert.triggered',
         'recipient_keycloak_id' => 'uuid-9999',
         'title'                 => 'Alerta',
@@ -90,7 +90,7 @@ it('notification DTO regression: recipient_id is NOT mapped (must use recipient_
     // This test would have caught the original bug where publisher sent
     // 'recipient_id' instead of 'recipient_keycloak_id' (jedi-review CRITICAL #1).
     $payload = wire([
-        'app'          => 'maya_authorization',
+        'app'          => 'maya-authorization',
         'type'         => 'test',
         'recipient_id' => 'uuid-wrong-field',  // wrong field name
         'title'        => 'T',
