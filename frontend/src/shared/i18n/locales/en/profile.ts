@@ -10,6 +10,7 @@ export default {
   save: 'Save changes',
   saving: 'Saving...',
   noUser: 'No user information available',
+  noPermission: 'You do not have permission to view the profile.',
   saveError: 'Error saving profile.',
   errorUpdate: 'Could not update profile.',
   basicData: 'Basic data',

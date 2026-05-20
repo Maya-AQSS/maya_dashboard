@@ -10,6 +10,7 @@ export default {
   save: 'Guardar canvis',
   saving: 'Guardant...',
   noUser: "No hi ha informació d'usuari",
+  noPermission: 'No tens permís per veure el perfil.',
   saveError: 'Error en guardar el perfil.',
   errorUpdate: "No s'ha pogut actualitzar el perfil.",
   basicData: 'Dades bàsiques',

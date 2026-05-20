@@ -4,12 +4,19 @@ use App\Models\User;
 use App\Models\UserDashboardLayout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['cache.default' => 'array']);
     $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
     $this->user = User::factory()->create();
+
+    DB::table('user_resolved_permissions')->insert([
+        'user_id'         => $this->user->id,
+        'permission_slug' => 'dashboard.dashboard.update',
+    ]);
 
     // Inject jwt_user attribute (normally set by JwtMiddleware) so that
     // EnsureRouteUserMatchesToken accepts the request and downstream code
@@ -71,6 +78,17 @@ it('rejects negative coordinates', function () {
     $this->putJson("/api/v1/dashboard/user/{$this->user->id}/dashboard-layout", [
         'layout' => [['i' => 'widget-1', 'x' => -1, 'y' => 0, 'w' => 4, 'h' => 2]],
     ])->assertUnprocessable();
+});
+
+it('denies layout update without dashboard.dashboard.update', function () {
+    DB::table('user_resolved_permissions')
+        ->where('user_id', $this->user->id)
+        ->where('permission_slug', 'dashboard.dashboard.update')
+        ->delete();
+
+    $this->putJson("/api/v1/dashboard/user/{$this->user->id}/dashboard-layout", [
+        'layout' => [['i' => 'widget-1', 'x' => 0, 'y' => 0, 'w' => 4, 'h' => 2]],
+    ])->assertForbidden();
 });
 
 it('response contains updated_at timestamp', function () {

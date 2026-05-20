@@ -13,6 +13,8 @@ import {
 } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { updateMyLocale } from '../../../api/auth'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { updateProfile } from '../api/profileApi'
 import {
   createProfileFormSchema,
@@ -105,6 +107,9 @@ function ProfileSection({ title, children }: { title: string; children: React.Re
 function ProfilePage() {
   const { user: authUser } = useAuth()
   const user = authUser as ProfileUser | null
+  const { hasPermission } = useUserProfile()
+  const canShow = hasPermission(DASHBOARD_PERMISSIONS.profileShow)
+  const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.profileUpdate)
   const { t } = useLocale()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
@@ -127,7 +132,19 @@ function ProfilePage() {
     return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
   }
 
+  if (!canShow) {
+    return (
+      <>
+        <PageTitle title={t('profile.title')} onBack={() => navigate(-1)} />
+        <p className="text-text-primary dark:text-text-dark-primary" role="status">
+          {t('profile.noPermission')}
+        </p>
+      </>
+    )
+  }
+
   const handleEdit = () => {
+    if (!canUpdate) return
     reset({
       name: user.name ?? '',
       surname: user.surname ?? '',
@@ -154,6 +171,7 @@ function ProfilePage() {
   }
 
   const onSubmit = handleSubmit(async (values) => {
+    if (!canUpdate) return
     setSaveError(null)
     try {
       const updatedUser = await updateProfile({ id: user.id, ...values })
@@ -185,7 +203,7 @@ function ProfilePage() {
         }
         onBack={() => navigate(-1)}
         actions={
-          !isEditing ? (
+          !isEditing && canUpdate ? (
             <Button variant="primary" size="sm" onClick={handleEdit} className="w-full sm:w-auto">
               {t('profile.edit')}
             </Button>
@@ -267,7 +285,7 @@ function ProfilePage() {
             </dl>
           </div>
 
-          <PreferencesCard />
+          <PreferencesCard canUpdate={canUpdate} />
         </section>
       ) : (
         <section className="max-w-[600px] mx-auto min-w-0">
@@ -332,7 +350,7 @@ function ProfilePage() {
  * Tarjeta de preferencias en el perfil. Único punto de cambio de idioma
  * en el ecosistema (no hay selector en el sidebar).
  */
-function PreferencesCard() {
+function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
   const { t, locale, setLocale, localeOptions } = useLocale()
   const [savingLocale, setSavingLocale] = useState(false)
 
@@ -340,7 +358,7 @@ function PreferencesCard() {
   // exista la escritura real a Odoo la UI esté ya lista. Tras 200 OK aplica
   // el cambio local (i18next + localStorage + maya_user_profile.locale).
   const handleLocaleChange = async (next: string) => {
-    if (next === locale || savingLocale) return
+    if (!canUpdate || next === locale || savingLocale) return
     setSavingLocale(true)
     try {
       await updateMyLocale(next)
@@ -365,7 +383,7 @@ function PreferencesCard() {
           id="profile-locale-select"
           fieldSize="md"
           value={locale}
-          disabled={savingLocale}
+          disabled={savingLocale || !canUpdate}
           onChange={(e) => void handleLocaleChange(e.target.value)}
           className="max-w-[260px]"
         >

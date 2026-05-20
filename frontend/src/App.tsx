@@ -9,7 +9,7 @@ import { useLogoutWithoutLoginPermission } from '@maya/shared-profile-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
-import { UserProfileProvider } from './features/user-profile'
+import { UserProfileProvider, useUserProfile } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
 import { DASHBOARD_PERMISSIONS } from './permissions'
 
@@ -94,6 +94,8 @@ function AppRoutes() {
 
 function AppWithLayout() {
   const { logout, user } = useOidcSession()
+  const { hasPermission } = useUserProfile()
+  const canShowProfile = hasPermission(DASHBOARD_PERMISSIONS.profileShow)
   const navItems = useNavItems()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
@@ -117,7 +119,7 @@ function AppWithLayout() {
         userEmail={userEmail}
         userInitials={userInitials}
         onLogout={logout}
-        onProfile={() => navigate('/profile')}
+        onProfile={canShowProfile ? () => navigate('/profile') : undefined}
         favoritesSlot={
           <SidebarFavorites label={t('favorites.title')} dashboardApiUrl={DASHBOARD_API_URL} />
         }

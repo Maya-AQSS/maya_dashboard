@@ -112,6 +112,14 @@ vi.mock('@maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
+const hasPermissionMock = vi.fn(() => true)
+
+vi.mock('../../user-profile', () => ({
+  useUserProfile: () => ({
+    hasPermission: hasPermissionMock,
+  }),
+}))
+
 import useDashboardLayout from '../../dashboard-layout/hooks/useDashboardLayout'
 import { useToast } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
@@ -150,6 +158,7 @@ function setupMocks({ loading = false } = {}) {
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    hasPermissionMock.mockReturnValue(true)
     setupMocks()
     saveLayoutMock.mockResolvedValue(undefined)
     resetToDefaultMock.mockResolvedValue(undefined)
@@ -179,9 +188,15 @@ describe('DashboardPage', () => {
       expect(screen.getByText('dashboard.title')).toBeTruthy()
     })
 
-    it('muestra el botón de toggle edición', () => {
+    it('muestra el botón de toggle edición con dashboard.dashboard.update', () => {
       render(<DashboardPage />)
       expect(screen.getByTestId('edit-toggle')).toBeTruthy()
+    })
+
+    it('oculta el botón de edición sin dashboard.dashboard.update', () => {
+      hasPermissionMock.mockReturnValue(false)
+      render(<DashboardPage />)
+      expect(screen.queryByTestId('edit-toggle')).toBeNull()
     })
 
     it('no muestra la toolbar de edición en modo normal', () => {
