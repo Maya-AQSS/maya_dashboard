@@ -21,6 +21,8 @@ import {
 import { WIDGET_REGISTRY } from '../widgets/registry'
 import { PageTitle, useToast } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 
 const SKELETON_BLOCKS: SkeletonBlock[] = [
   { colSpanClasses: 'col-span-12 sm:col-span-6', heightClass: 'h-48' },
@@ -30,6 +32,8 @@ const SKELETON_BLOCKS: SkeletonBlock[] = [
 
 function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
+  const { hasPermission } = useUserProfile()
+  const canEditLayout = hasPermission(DASHBOARD_PERMISSIONS.dashboardUpdate)
   const [editable, setEditable] = useState(false)
   const [draftLayout, setDraftLayout] = useState<Layout | null>(null)
   const snapshotRef = useRef<Layout | null>(null)
@@ -39,6 +43,7 @@ function DashboardPage() {
   const activeLayout = editable ? (draftLayout ?? layout) : layout
 
   const handleToggleEdit = useCallback(() => {
+    if (!canEditLayout) return
     setEditable((prev) => {
       if (prev) {
         setDraftLayout(null)
@@ -48,7 +53,7 @@ function DashboardPage() {
       setDraftLayout(layout as Layout)
       return true
     })
-  }, [layout])
+  }, [canEditLayout, layout])
 
   const handleSave = useCallback(async () => {
     try {
@@ -112,7 +117,7 @@ function DashboardPage() {
       <PageTitle
         title={t('dashboard.title')}
         actions={
-          editable ? (
+          canEditLayout && editable ? (
             <DashboardEditToolbar
               layout={activeLayout}
               registry={WIDGET_REGISTRY}
@@ -128,9 +133,9 @@ function DashboardPage() {
                 addWidget: t('dashboard.addWidget'),
               }}
             />
-          ) : (
+          ) : canEditLayout ? (
             <DashboardEditToggleButton editable={editable} onToggle={handleToggleEdit} />
-          )
+          ) : null
         }
       />
 

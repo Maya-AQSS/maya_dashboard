@@ -7,6 +7,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\Application;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Profile\Database\ViewPermissionGateQuery;
 
 final class ApplicationRepository implements ApplicationRepositoryInterface
 {
@@ -17,8 +18,10 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
 
     private function activeWithFavoriteFlagQuery(string $userId)
     {
-        return Application::query()
-            ->where('applications.is_active', true)
+        $query = Application::query()->where('applications.is_active', true);
+        ViewPermissionGateQuery::apply($query, $userId);
+
+        return $query
             ->leftJoin(
                 'user_favorite_applications',
                 fn ($join) => $join

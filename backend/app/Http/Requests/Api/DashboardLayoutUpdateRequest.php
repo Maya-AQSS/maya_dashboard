@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
+use App\Http\Requests\Concerns\AuthorizesByPermission;
 use Illuminate\Foundation\Http\FormRequest;
 
 class DashboardLayoutUpdateRequest extends FormRequest
 {
+    use AuthorizesByPermission;
+
     public function authorize(): bool
     {
-        return true;
+        return $this->userHasPermission('dashboard.dashboard.update');
     }
 
     public function rules(): array

@@ -1,4 +1,8 @@
 export default {
+  initializing: 'Iniciant sessió…',
+  redirecting: 'Redirigint a l\'inici de sessió…',
+  signingOutNoPermission:
+    'No tens permís per accedir al portal. Tancant sessió…',
   loginTitle: 'Iniciar sessió',
   loginSubtitle: 'Introduïx les teues credencials per accedir.',
   registerTitle: 'Registre',

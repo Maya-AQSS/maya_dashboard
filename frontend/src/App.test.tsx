@@ -54,6 +54,9 @@ vi.mock('./features/favorites/context/FavoritesContext', () => ({
 
 vi.mock('./features/user-profile', () => ({
   UserProfileProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useUserProfile: vi.fn(() => ({
+    hasPermission: () => true,
+  })),
 }))
 
 // Lazy page mocks — loaded synchronously

@@ -1,4 +1,8 @@
 export default {
+  initializing: 'Iniciando sesión…',
+  redirecting: 'Redirigiendo al inicio de sesión…',
+  signingOutNoPermission:
+    'No tienes permiso para acceder al portal. Cerrando sesión…',
   loginTitle: 'Iniciar sesión',
   loginSubtitle: 'Introduce tus credenciales para acceder.',
   registerTitle: 'Registro',

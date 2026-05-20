@@ -24,6 +24,14 @@ vi.mock('../api/profileApi', () => ({
   updateProfile: vi.fn(),
 }))
 
+const hasPermissionMock = vi.fn((_slug: string) => true)
+
+vi.mock('../../user-profile', () => ({
+  useUserProfile: () => ({
+    hasPermission: hasPermissionMock,
+  }),
+}))
+
 vi.mock('@maya/shared-ui-react', () => ({
   Button: ({
     children,
@@ -150,6 +158,7 @@ function setupMocks({
 describe('ProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    hasPermissionMock.mockImplementation(() => true)
     setupMocks()
   })
 
@@ -168,6 +177,28 @@ describe('ProfilePage', () => {
       setupMocks({ user: null })
       render(<ProfilePage />)
       expect(screen.queryByTestId('page-title')).toBeNull()
+    })
+  })
+
+  describe('permisos', () => {
+    it('muestra mensaje sin profile.show', () => {
+      hasPermissionMock.mockImplementation((slug: string) => slug !== 'profile.show')
+      render(<ProfilePage />)
+      expect(screen.getByText('profile.noPermission')).toBeTruthy()
+      expect(screen.queryByText('Juan')).toBeNull()
+    })
+
+    it('oculta el botón de editar sin profile.update', () => {
+      hasPermissionMock.mockImplementation((slug: string) => slug === 'profile.show')
+      render(<ProfilePage />)
+      expect(screen.queryByText('profile.edit')).toBeNull()
+      expect(screen.getByText('Juan')).toBeTruthy()
+    })
+
+    it('deshabilita el selector de idioma sin profile.update', () => {
+      hasPermissionMock.mockImplementation((slug: string) => slug === 'profile.show')
+      render(<ProfilePage />)
+      expect(screen.getByRole('combobox')).toHaveProperty('disabled', true)
     })
   })
 
@@ -303,7 +334,8 @@ describe('ProfilePage', () => {
       expect(select).toBeTruthy()
     })
 
-    it('llama updateMyLocale al cambiar el idioma', async () => {
+    it('llama updateMyLocale al cambiar el idioma con profile.update', async () => {
+      hasPermissionMock.mockImplementation(() => true)
       mockUpdateMyLocale.mockResolvedValueOnce(undefined)
       render(<ProfilePage />)
       const select = screen.getByRole('combobox')
@@ -311,6 +343,16 @@ describe('ProfilePage', () => {
         fireEvent.change(select, { target: { value: 'en' } })
       })
       expect(mockUpdateMyLocale).toHaveBeenCalledWith('en')
+    })
+
+    it('no llama updateMyLocale sin profile.update', async () => {
+      hasPermissionMock.mockImplementation((slug: string) => slug === 'profile.show')
+      render(<ProfilePage />)
+      const select = screen.getByRole('combobox')
+      await act(async () => {
+        fireEvent.change(select, { target: { value: 'en' } })
+      })
+      expect(mockUpdateMyLocale).not.toHaveBeenCalled()
     })
 
     it('no llama updateMyLocale cuando el idioma seleccionado es el actual', async () => {

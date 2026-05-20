@@ -15,6 +15,7 @@ it('creates ApplicationDto from model with all fields', function () {
     $model->setAttribute('id', 1);
     // is_favorite comes from a raw query select, simulate it as attribute
     $model->setAttribute('is_favorite', true);
+    $model->setAttribute('view_permission_slug', 'auth.login');
 
     $dto = ApplicationDto::fromModel($model);
 
@@ -25,6 +26,7 @@ it('creates ApplicationDto from model with all fields', function () {
     expect($dto->traefikUrl)->toBe('https://auth.maya.test');
     expect($dto->isActive)->toBeTrue();
     expect($dto->isFavorite)->toBeTrue();
+    expect($dto->viewPermissionSlug)->toBe('auth.login');
 });
 
 it('defaults isFavorite to false when is_favorite attribute is null', function () {
@@ -65,6 +67,7 @@ it('ApplicationDto is immutable (readonly)', function () {
         traefikUrl: null,
         isActive: true,
         isFavorite: false,
+        viewPermissionSlug: 'logs.login',
     );
 
     expect(fn () => $dto->id = 999)->toThrow(Error::class);

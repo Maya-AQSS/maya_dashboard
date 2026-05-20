@@ -1,4 +1,8 @@
 export default {
+  initializing: 'Signing in…',
+  redirecting: 'Redirecting to sign in…',
+  signingOutNoPermission:
+    'You do not have permission to access the portal. Signing out…',
   loginTitle: 'Log in',
   loginSubtitle: 'Enter your credentials to access.',
   registerTitle: 'Register',

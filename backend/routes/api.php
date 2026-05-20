@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
-use Maya\Profile\Routing\MeRoutes;
+use Maya\Profile\Controllers\MeController;
 
 Route::middleware(['auth.keycloak', 'user.owns.resource'])
     ->prefix('v1/dashboard/user/{user}')
@@ -20,12 +20,16 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::get('applications', [ApplicationController::class, 'index']);
 
         Route::get('dashboard-layout', [UserDashboardLayoutController::class, 'show']);
-        Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update']);
+        Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update'])
+            ->middleware('permission:dashboard.dashboard.update');
     });
 
-// Perfil del usuario autenticado — endpoints en maya/shared-profile-laravel.
+// Perfil del usuario autenticado — maya/shared-profile-laravel.
+// GET /me sin profile.show: lo usa el portal para login, permisos y layout.
 Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
-    MeRoutes::register();
+    Route::get('/me', [MeController::class, 'show']);
+    Route::put('/me/locale', [MeController::class, 'updateLocale'])
+        ->middleware('permission:profile.update');
 });
 
 // Notifications (per authenticated user)

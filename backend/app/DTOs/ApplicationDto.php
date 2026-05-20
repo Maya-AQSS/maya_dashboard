@@ -16,6 +16,7 @@ final readonly class ApplicationDto
         public ?string $traefikUrl,
         public bool $isActive,
         public bool $isFavorite,
+        public ?string $viewPermissionSlug,
     ) {}
 
     public static function fromModel(Application $m): self
@@ -28,6 +29,7 @@ final readonly class ApplicationDto
             traefikUrl: $m->traefik_url,
             isActive: (bool) $m->is_active,
             isFavorite: (bool) ($m->is_favorite ?? false),
+            viewPermissionSlug: $m->view_permission_slug,
         );
     }
 }

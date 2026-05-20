@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Application extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'traefik_url', 'is_active'];
+    protected $fillable = ['name', 'slug', 'description', 'traefik_url', 'is_active', 'view_permission_slug'];
 
     public function favoritedByUsers(): BelongsToMany
     {

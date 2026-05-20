@@ -2,13 +2,16 @@ import { useCallback, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
+import { canAccessByViewPermission } from '@maya/shared-profile-react'
 import { getApplicationsData } from '../api/applicationsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
+import { useUserProfile } from '../../user-profile'
 
 function useApplicationsData() {
   const { user, token } = useAuth()
   const { t } = useLocale()
   const { favorites, add, remove } = useFavoritesContext()
+  const { hasPermission } = useUserProfile()
 
   const { data: rawApps = [], isLoading: loading, error: queryError } = useQuery({
     queryKey: ['applications', user?.sub],
@@ -27,10 +30,16 @@ function useApplicationsData() {
 
   const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.id)), [favorites])
 
-  const apps = useMemo(
-    () => rawApps.map((app) => ({ ...app, isFavorite: favoriteIds.has(app.id) })),
-    [rawApps, favoriteIds],
-  )
+  const apps = useMemo(() => {
+    const accessible = rawApps.filter((app) =>
+      canAccessByViewPermission(app.viewPermissionSlug, hasPermission),
+    )
+
+    return accessible.map((app) => ({
+      ...app,
+      isFavorite: favoriteIds.has(app.id),
+    }))
+  }, [rawApps, favoriteIds, hasPermission])
 
   const toggleFavorite = useCallback(
     (id: string | number) => {
