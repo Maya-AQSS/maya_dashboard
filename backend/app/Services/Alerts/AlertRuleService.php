@@ -8,7 +8,7 @@ use App\DTOs\AlertRuleDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 
 final class AlertRuleService implements AlertRuleServiceInterface
 {
@@ -17,17 +17,14 @@ final class AlertRuleService implements AlertRuleServiceInterface
     ) {}
 
     /**
-     * @return LengthAwarePaginator<AlertRuleDto>
+     * @return PaginatedDto<AlertRuleDto>
      */
-    public function list(int $perPage = 100): LengthAwarePaginator
+    public function list(int $perPage = 100): PaginatedDto
     {
-        $paginator = $this->rules->paginateOrderedBySlug($perPage);
-
-        $paginator->getCollection()->transform(
+        return PaginatedDto::fromPaginator(
+            $this->rules->paginateOrderedBySlug($perPage),
             fn (AlertRule $r): AlertRuleDto => AlertRuleDto::fromModel($r),
         );
-
-        return $paginator;
     }
 
     public function create(array $attributes): AlertRuleDto

@@ -11,10 +11,12 @@ use App\Services\Contracts\NotificationServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maya\Auth\Concerns\ResolvesKeycloakUser;
+use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class NotificationController extends Controller
 {
     use ResolvesKeycloakUser;
+    use RespondsWithEnvelope;
 
     public function __construct(
         private readonly NotificationServiceInterface $notifications,
@@ -34,13 +36,7 @@ class NotificationController extends Controller
             $perPage > 0 ? $perPage : 25,
         );
 
-        // Preserva la shape LengthAwarePaginator consumida por `useNotifications`
-        // en el sidebar compartido: PaginatedDto::jsonSerialize() emite las mismas
-        // claves planas (`current_page`, `data`, `per_page`, `total`, …).
-        return response()->json([
-            ...$page->jsonSerialize(),
-            'data' => NotificationResource::collection($page->items)->resolve($request),
-        ]);
+        return $this->paginated($page, NotificationResource::class, $request);
     }
 
     public function markRead(Request $request, int $notificationId): JsonResponse

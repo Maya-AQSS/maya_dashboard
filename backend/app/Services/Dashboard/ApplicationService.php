@@ -9,7 +9,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 
 final class ApplicationService implements ApplicationServiceInterface
 {
@@ -18,16 +18,13 @@ final class ApplicationService implements ApplicationServiceInterface
     ) {}
 
     /**
-     * @return LengthAwarePaginator<ApplicationDto>
+     * @return PaginatedDto<ApplicationDto>
      */
-    public function listForUser(User $user, int $perPage = 100): LengthAwarePaginator
+    public function listForUser(User $user, int $perPage = 100): PaginatedDto
     {
-        $paginator = $this->applications->paginateActiveWithFavoriteFlag((string) $user->id, $perPage);
-
-        $paginator->getCollection()->transform(
+        return PaginatedDto::fromPaginator(
+            $this->applications->paginateActiveWithFavoriteFlag((string) $user->id, $perPage),
             fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app),
         );
-
-        return $paginator;
     }
 }

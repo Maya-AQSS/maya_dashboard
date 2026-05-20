@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Services\Contracts;
 
 use App\DTOs\AlertRuleDto;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 
 interface AlertRuleServiceInterface
 {
     /**
-     * @return LengthAwarePaginator<AlertRuleDto>
+     * @return PaginatedDto<AlertRuleDto>
      */
-    public function list(int $perPage = 100): LengthAwarePaginator;
+    public function list(int $perPage = 100): PaginatedDto;
 
     /**
      * @param  array<string, mixed>  $attributes

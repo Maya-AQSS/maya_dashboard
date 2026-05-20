@@ -6,14 +6,14 @@ namespace App\Services\Contracts;
 
 use App\DTOs\UserFavoriteApplicationDto;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 
 interface UserFavoriteApplicationServiceInterface
 {
     /**
-     * @return LengthAwarePaginator<UserFavoriteApplicationDto>
+     * @return PaginatedDto<UserFavoriteApplicationDto>
      */
-    public function list(User $user, int $perPage = 100): LengthAwarePaginator;
+    public function list(User $user, int $perPage = 100): PaginatedDto;
 
     public function add(User $user, int $applicationId): UserFavoriteApplicationDto;
 

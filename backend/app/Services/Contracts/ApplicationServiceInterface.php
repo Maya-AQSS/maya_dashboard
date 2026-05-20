@@ -6,12 +6,12 @@ namespace App\Services\Contracts;
 
 use App\DTOs\ApplicationDto;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 
 interface ApplicationServiceInterface
 {
     /**
-     * @return LengthAwarePaginator<ApplicationDto>
+     * @return PaginatedDto<ApplicationDto>
      */
-    public function listForUser(User $user, int $perPage = 100): LengthAwarePaginator;
+    public function listForUser(User $user, int $perPage = 100): PaginatedDto;
 }
