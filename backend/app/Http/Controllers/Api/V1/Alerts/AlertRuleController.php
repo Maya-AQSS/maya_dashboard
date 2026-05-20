@@ -11,20 +11,24 @@ use App\Http\Resources\AlertRuleResource;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class AlertRuleController extends Controller
 {
+    use RespondsWithEnvelope;
+
     public function __construct(
         private readonly AlertRuleServiceInterface $rules,
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->query('per_page', 100);
         $perPage = max(1, min($perPage, 200));
 
-        return AlertRuleResource::collection($this->rules->list($perPage));
+        $page = $this->rules->list($perPage);
+
+        return $this->paginated($page, AlertRuleResource::class, $request);
     }
 
     public function store(StoreAlertRuleRequest $request): JsonResponse

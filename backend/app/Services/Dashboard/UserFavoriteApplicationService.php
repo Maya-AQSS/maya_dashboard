@@ -9,7 +9,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Http\Pagination\PaginatedDto;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class UserFavoriteApplicationService implements UserFavoriteApplicationServiceInterface
@@ -19,17 +19,14 @@ final class UserFavoriteApplicationService implements UserFavoriteApplicationSer
     ) {}
 
     /**
-     * @return LengthAwarePaginator<UserFavoriteApplicationDto>
+     * @return PaginatedDto<UserFavoriteApplicationDto>
      */
-    public function list(User $user, int $perPage = 100): LengthAwarePaginator
+    public function list(User $user, int $perPage = 100): PaginatedDto
     {
-        $paginator = $this->favorites->paginateForUser($user, $perPage);
-
-        $paginator->getCollection()->transform(
+        return PaginatedDto::fromPaginator(
+            $this->favorites->paginateForUser($user, $perPage),
             fn (Application $app): UserFavoriteApplicationDto => UserFavoriteApplicationDto::fromModel($app),
         );
-
-        return $paginator;
     }
 
     public function add(User $user, int $applicationId): UserFavoriteApplicationDto

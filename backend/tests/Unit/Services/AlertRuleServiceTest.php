@@ -7,6 +7,7 @@ use App\Services\Alerts\AlertRuleService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Maya\Http\Pagination\PaginatedDto;
 
 function makeAlertRuleModel(array $attributes = []): AlertRule
 {
@@ -30,7 +31,7 @@ function makeAlertRuleModel(array $attributes = []): AlertRule
 
 // ─── list ─────────────────────────────────────────────────────────────────────
 
-it('list returns a paginator of AlertRuleDto', function () {
+it('list returns a PaginatedDto of AlertRuleDto', function () {
     $model = makeAlertRuleModel(['slug' => 'test-slug', 'severity' => 'critical']);
 
     $collection = new Collection([$model]);
@@ -42,10 +43,10 @@ it('list returns a paginator of AlertRuleDto', function () {
     $service = new AlertRuleService($repo);
     $result  = $service->list(100);
 
-    expect($result)->toBeInstanceOf(LengthAwarePaginator::class);
-    expect($result->total())->toBe(1);
+    expect($result)->toBeInstanceOf(PaginatedDto::class);
+    expect($result->total)->toBe(1);
 
-    $dto = $result->getCollection()->first();
+    $dto = $result->items[0];
     expect($dto)->toBeInstanceOf(AlertRuleDto::class);
     expect($dto->slug)->toBe('test-slug');
     expect($dto->severity)->toBe('critical');
@@ -64,8 +65,10 @@ it('list transforms all models in the paginator collection to DTOs', function ()
     $service = new AlertRuleService($repo);
     $result  = $service->list();
 
-    $result->getCollection()->each(fn ($item) => expect($item)->toBeInstanceOf(AlertRuleDto::class));
-    expect($result->getCollection())->toHaveCount(2);
+    foreach ($result->items as $item) {
+        expect($item)->toBeInstanceOf(AlertRuleDto::class);
+    }
+    expect($result->items)->toHaveCount(2);
 });
 
 // ─── create ───────────────────────────────────────────────────────────────────

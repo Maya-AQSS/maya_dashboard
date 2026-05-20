@@ -76,7 +76,7 @@ it('paginates alert rules respecting per_page parameter', function () {
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
-    expect($response->json('meta.total'))->toBe(5);
+    expect($response->json('total'))->toBe(5);
 });
 
 it('caps per_page at 200', function () {

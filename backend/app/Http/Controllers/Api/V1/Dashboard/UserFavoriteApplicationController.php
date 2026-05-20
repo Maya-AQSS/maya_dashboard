@@ -10,26 +10,27 @@ use App\Http\Resources\UserFavoriteApplicationResource;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Maya\Auth\Concerns\ResolvesKeycloakUser;
+use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class UserFavoriteApplicationController extends Controller
 {
     use ResolvesKeycloakUser;
+    use RespondsWithEnvelope;
 
     public function __construct(
         private readonly UserFavoriteApplicationServiceInterface $favorites,
     ) {}
 
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(Request $request): JsonResponse
     {
         $user = $this->resolveKeycloakUser($request);
         $perPage = (int) $request->query('per_page', 100);
         $perPage = max(1, min($perPage, 200));
 
-        return UserFavoriteApplicationResource::collection(
-            $this->favorites->list($user, $perPage),
-        );
+        $page = $this->favorites->list($user, $perPage);
+
+        return $this->paginated($page, UserFavoriteApplicationResource::class, $request);
     }
 
     public function store(FavoriteStoreRequest $request): UserFavoriteApplicationResource
