@@ -4,6 +4,7 @@ use App\Models\Application;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -37,13 +38,38 @@ function makeApplication(array $overrides = []): Application
 // ─── index ────────────────────────────────────────────────────────────────────
 
 it('returns active applications for the user', function () {
-    makeApplication(['is_active' => true]);
-    makeApplication(['is_active' => true]);
+    makeApplication(['is_active' => true, 'view_permission_slug' => null]);
+    makeApplication(['is_active' => true, 'view_permission_slug' => null]);
 
     $response = $this->getJson("/api/v1/dashboard/user/{$this->user->id}/applications");
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
+});
+
+it('only returns applications whose view_permission_slug the user has in FDW', function () {
+    $visible = makeApplication([
+        'slug'                 => 'maya-logs',
+        'view_permission_slug' => 'logs.login',
+        'is_active'            => true,
+    ]);
+    makeApplication([
+        'slug'                 => 'maya-dms',
+        'view_permission_slug' => 'dms.login',
+        'is_active'            => true,
+    ]);
+
+    DB::table('user_resolved_permissions')->insert([
+        'user_id'         => $this->user->id,
+        'permission_slug' => 'logs.login',
+    ]);
+
+    $response = $this->getJson("/api/v1/dashboard/user/{$this->user->id}/applications");
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+    expect($response->json('data.0.id'))->toBe($visible->id);
+    expect($response->json('data.0.view_permission_slug'))->toBe('logs.login');
 });
 
 it('excludes inactive applications', function () {
@@ -109,7 +135,7 @@ it('response contains expected application fields', function () {
 
     $response->assertOk();
     $app = $response->json('data.0');
-    expect($app)->toHaveKeys(['id', 'name', 'slug', 'description', 'traefik_url', 'is_active', 'is_favorite']);
+    expect($app)->toHaveKeys(['id', 'name', 'slug', 'description', 'traefik_url', 'is_active', 'is_favorite', 'view_permission_slug']);
     expect($app['name'])->toBe('Named App');
     expect($app['slug'])->toBe('named-app');
 });

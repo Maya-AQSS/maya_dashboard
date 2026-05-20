@@ -174,6 +174,8 @@ return [
             'username'    => env('FDW_USER_PERMISSIONS_USERNAME', 'maya'),
             'password'    => env('FDW_USER_PERMISSIONS_PASSWORD', 'secret'),
             'schema'      => env('FDW_USER_PERMISSIONS_SCHEMA', 'public'),
+            // Portal completo (logs.login, dms.login, …): v_portal_user_permissions
+            // tras `php artisan migrate` en maya_authorization. Hasta entonces:
             'remote_view' => env('FDW_USER_PERMISSIONS_REMOTE_VIEW', 'v_dashboard_user_permissions'),
         ],
     ],

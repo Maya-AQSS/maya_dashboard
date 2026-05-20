@@ -5,11 +5,13 @@ import { AppLayout } from '@maya/shared-layout-react'
 import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
 import { useKeycloakLocaleSync } from '@maya/shared-i18n-react'
 import { useAuth, useOidcSession } from '@maya/shared-auth-react'
+import { useLogoutWithoutLoginPermission } from '@maya/shared-profile-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
 import { UserProfileProvider } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
+import { DASHBOARD_PERMISSIONS } from './permissions'
 
 function ErrorFallback() {
   const { t } = useTranslation('common')
@@ -145,7 +147,34 @@ function AppProviders({ children }: { children: ReactNode }) {
   )
 }
 
+function AuthLoadingScreen({ message }: { message: string }) {
+  return (
+    <div className="flex items-center justify-center h-screen bg-ui-body dark:bg-ui-dark-bg text-text-muted dark:text-text-dark-muted font-sans">
+      {message}
+    </div>
+  )
+}
+
+/** Requiere dashboard.login en /me; si falta, cierra sesión SSO. */
+function AppAfterProfile() {
+  const { t } = useTranslation('auth')
+  const { profileLoading, lacksLoginPermission } = useLogoutWithoutLoginPermission(
+    DASHBOARD_PERMISSIONS.login,
+  )
+
+  if (profileLoading) {
+    return <AuthLoadingScreen message={t('initializing')} />
+  }
+
+  if (lacksLoginPermission) {
+    return <AuthLoadingScreen message={t('signingOutNoPermission')} />
+  }
+
+  return <AppWithLayout />
+}
+
 export default function App() {
+  const { t } = useTranslation('auth')
   const { isOidcLoading, isOidcSignedIn, beginSignIn } = useOidcSession()
 
   useEffect(() => {
@@ -155,24 +184,16 @@ export default function App() {
   }, [isOidcLoading, isOidcSignedIn, beginSignIn])
 
   if (isOidcLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-ui-body dark:bg-ui-dark-bg text-text-muted dark:text-text-dark-muted font-sans">
-        Iniciando sesión…
-      </div>
-    )
+    return <AuthLoadingScreen message={t('initializing')} />
   }
 
   if (!isOidcSignedIn) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-ui-body dark:bg-ui-dark-bg text-text-muted dark:text-text-dark-muted font-sans">
-        Redirigiendo al inicio de sesión...
-      </div>
-    )
+    return <AuthLoadingScreen message={t('redirecting')} />
   }
 
   return (
     <AppProviders>
-      <AppWithLayout />
+      <AppAfterProfile />
     </AppProviders>
   )
 }

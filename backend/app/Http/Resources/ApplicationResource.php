@@ -29,6 +29,7 @@ class ApplicationResource extends JsonResource
             'traefik_url' => $dto->traefikUrl,
             'is_active' => $dto->isActive,
             'is_favorite' => $dto->isFavorite,
+            'view_permission_slug' => $dto->viewPermissionSlug,
         ];
     }
 }

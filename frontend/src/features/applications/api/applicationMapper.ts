@@ -19,6 +19,7 @@ function mapApplicationFromApi(app: any) {
     description: app.description,
     isFavorite: Boolean(app.is_favorite),
     documentationUrl: app.traefik_url || app.documentation_url || defaultUrl,
+    viewPermissionSlug: app.view_permission_slug ?? null,
     lastUsedAt: validateIsoDate(app.last_used_at || app.updated_at),
   }
 }
