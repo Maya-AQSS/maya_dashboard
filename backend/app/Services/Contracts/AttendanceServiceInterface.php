@@ -12,4 +12,9 @@ interface AttendanceServiceInterface
      * @return list<AttendanceDto>
      */
     public function listForUserOnDate(string $userId, string $dateYmd): array;
+
+    /**
+     * Registra un check-in para el usuario con timestamp = ahora.
+     */
+    public function clockIn(string $userId, ?string $source = null): AttendanceDto;
 }

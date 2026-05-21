@@ -26,8 +26,9 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update'])
             ->middleware('permission:dashboard.dashboard.update');
 
-        // Widgets alimentados desde Odoo vía FDW (read-only).
+        // Widgets alimentados desde Odoo vía FDW.
         Route::get('attendances', [AttendanceController::class, 'index']);
+        Route::post('attendances', [AttendanceController::class, 'store']);
         Route::get('bookings', [BookingController::class, 'index']);
     });
 

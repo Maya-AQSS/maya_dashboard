@@ -82,3 +82,36 @@ it('returns open attendances with null check_out', function () {
     $response->assertOk();
     expect($response->json('data.0.check_out'))->toBeNull();
 });
+
+it('clocks the user in with current timestamp', function () {
+    $before = now()->subSecond();
+    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", []);
+    $after = now()->addSecond();
+
+    $response->assertStatus(201);
+    expect($response->json('user_id'))->toBe($this->user->id);
+    expect($response->json('check_out'))->toBeNull();
+
+    $checkIn = \Carbon\Carbon::parse($response->json('check_in'));
+    expect($checkIn->greaterThanOrEqualTo($before))->toBeTrue();
+    expect($checkIn->lessThanOrEqualTo($after))->toBeTrue();
+
+    expect(\Illuminate\Support\Facades\DB::table('attendances')->where('user_id', $this->user->id)->count())->toBe(1);
+});
+
+it('defaults the source to manual when not provided', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", [])
+        ->assertStatus(201)
+        ->assertJsonFragment(['source' => 'manual']);
+});
+
+it('accepts a custom source string', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => 'mobile'])
+        ->assertStatus(201)
+        ->assertJsonFragment(['source' => 'mobile']);
+});
+
+it('rejects a source longer than 64 chars', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => str_repeat('a', 65)])
+        ->assertStatus(422);
+});

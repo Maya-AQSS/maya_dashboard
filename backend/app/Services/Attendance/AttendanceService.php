@@ -21,4 +21,9 @@ final class AttendanceService implements AttendanceServiceInterface
     {
         return $this->attendances->findForUserOnDate($userId, $dateYmd);
     }
+
+    public function clockIn(string $userId, ?string $source = null): AttendanceDto
+    {
+        return $this->attendances->createCheckIn($userId, $source);
+    }
 }
