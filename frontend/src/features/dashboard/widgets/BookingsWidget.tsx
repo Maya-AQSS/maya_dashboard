@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { View } from 'react-big-calendar'
-import { DashboardCalendar, type CalendarEvent } from '@maya/shared-dashboard-react'
+import { DashboardCalendar, type CalendarEvent } from '@maya/shared-dashboard-react/calendar'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useBookings } from '../../bookings/hooks/useBookings'
