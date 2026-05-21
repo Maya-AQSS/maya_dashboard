@@ -4,7 +4,7 @@ import {
   DashboardCalendar,
   type CalendarEvent,
 } from '../../bookings/components/DashboardCalendar'
-import { BookingDetailsDrawer } from '../../bookings/components/BookingDetailsDrawer'
+import { BookingDetailsPopover } from '../../bookings/components/BookingDetailsPopover'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useBookings } from '../../bookings/hooks/useBookings'
@@ -144,7 +144,7 @@ function BookingsWidget() {
         locale={dateLocale}
         messages={messages}
       />
-      <BookingDetailsDrawer
+      <BookingDetailsPopover
         booking={selectedBooking}
         onClose={handleCloseDrawer}
         dateLocale={dateLocale}
