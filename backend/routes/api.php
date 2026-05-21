@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Maya\Profile\Controllers\MeController;
+use Maya\Profile\Routing\AcademicContextRoutes;
 
 Route::middleware(['auth.keycloak', 'user.owns.resource'])
     ->prefix('v1/dashboard/user/{user}')
@@ -30,6 +31,9 @@ Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/locale', [MeController::class, 'updateLocale'])
         ->middleware('permission:profile.update');
+
+    // Contexto académico del propio usuario (perfil).
+    AcademicContextRoutes::registerMe();
 });
 
 // Notifications (per authenticated user)

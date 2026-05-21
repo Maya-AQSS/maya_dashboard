@@ -12,9 +12,11 @@ import {
   TextInput,
 } from '@maya/shared-ui-react'
 import { useLocale } from '@maya/shared-i18n-react'
+import { UserAcademicContext } from '@maya/shared-profile-react'
 import { updateMyLocale } from '../../../api/auth'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
+import { useMyAcademicContext } from '../api/academicContextApi'
 import { updateProfile } from '../api/profileApi'
 import {
   createProfileFormSchema,
@@ -190,6 +192,9 @@ function ProfilePage() {
 
   const saving = isSubmitting
 
+  const { data: academicContext, isLoading: loadingAcademic, error: academicError } =
+    useMyAcademicContext()
+
   return (
     <>
       <PageTitle
@@ -284,6 +289,12 @@ function ProfilePage() {
               </div>
             </dl>
           </div>
+
+          <UserAcademicContext
+            data={academicContext}
+            isLoading={loadingAcademic}
+            error={academicError instanceof Error ? academicError : null}
+          />
 
           <PreferencesCard canUpdate={canUpdate} />
         </section>

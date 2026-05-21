@@ -52,7 +52,9 @@ it('returns empty arrays when no local data', function () {
     expect($dto->extra['study_ids'] ?? null)->toBe([]);
     expect($dto->extra['module_ids'] ?? null)->toBe([]);
     expect($dto->extra['team_ids'] ?? null)->toBe([]);
-    expect($dto->extra['teams'] ?? null)->toBe([]);
+    // `teams[]` no se incluye en /me cross-app — solo `team_ids`. Las apps que
+    // necesiten los objetos completos (maya_dms) lo materializan aparte.
+    expect(array_key_exists('teams', $dto->extra))->toBeFalse();
 });
 
 it('enriches with academic data from fdw stubs', function () {
@@ -110,16 +112,8 @@ it('enriches with academic data from fdw stubs', function () {
     sort($teamIds);
     expect($teamIds)->toBe(['T1', 'T2']);
 
-    $teams = collect($dto->extra['teams'])->sortBy('id')->values()->all();
-    expect($teams)->toHaveCount(2);
-    expect($teams[0]['id'])->toBe('T1');
-    expect($teams[0]['name'])->toBe('Equipo Calidad');
-    expect($teams[0]['description'])->toBe('QA');
-    expect($teams[0]['role'])->toBe('member');
-    expect($teams[0]['is_department'])->toBeFalse();
-    expect($teams[1]['id'])->toBe('T2');
-    expect($teams[1]['role'])->toBe('lead');
-    expect($teams[1]['is_department'])->toBeTrue();
+    // `teams[]` no se incluye en /me cross-app — solo `team_ids`.
+    expect(array_key_exists('teams', $dto->extra))->toBeFalse();
 });
 
 it('filters strictly by user id never returns others data', function () {
@@ -137,7 +131,7 @@ it('filters strictly by user id never returns others data', function () {
 
     expect($dto->extra['study_type_ids'])->toBe([]);
     expect($dto->extra['team_ids'])->toBe([]);
-    expect($dto->extra['teams'])->toBe([]);
+    expect(array_key_exists('teams', $dto->extra))->toBeFalse();
 });
 
 it('returns empty arrays for empty user id', function () {
@@ -148,5 +142,5 @@ it('returns empty arrays for empty user id', function () {
     expect($dto->extra['study_ids'])->toBe([]);
     expect($dto->extra['module_ids'])->toBe([]);
     expect($dto->extra['team_ids'])->toBe([]);
-    expect($dto->extra['teams'])->toBe([]);
+    expect(array_key_exists('teams', $dto->extra))->toBeFalse();
 });
