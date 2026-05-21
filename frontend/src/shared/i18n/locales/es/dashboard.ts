@@ -70,6 +70,18 @@ export default {
     errorValidation: 'Rango inválido.',
     errorServer: 'Error del servidor consultando reservas.',
     errorNetwork: 'Sin conexión al servidor.',
+    fields: {
+      schedule: 'Horario',
+      duration: 'Duración',
+      resource: 'Recurso',
+      id: 'Identificador',
+      allDay: 'Todo el día',
+    },
+    status: {
+      confirmed: 'Confirmada',
+      pending: 'Pendiente',
+      cancelled: 'Cancelada',
+    },
   },
   systemAlerts: {
     pageTitle: 'Alertas del sistema',

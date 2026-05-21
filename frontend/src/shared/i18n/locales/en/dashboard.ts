@@ -70,6 +70,18 @@ export default {
     errorValidation: 'Invalid range.',
     errorServer: 'Server error while loading bookings.',
     errorNetwork: 'Cannot reach the server.',
+    fields: {
+      schedule: 'Schedule',
+      duration: 'Duration',
+      resource: 'Resource',
+      id: 'Identifier',
+      allDay: 'All day',
+    },
+    status: {
+      confirmed: 'Confirmed',
+      pending: 'Pending',
+      cancelled: 'Cancelled',
+    },
   },
   systemAlerts: {
     pageTitle: 'System alerts',

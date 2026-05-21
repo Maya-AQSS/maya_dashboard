@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { View } from 'react-big-calendar'
 import {
   DashboardCalendar,
   type CalendarEvent,
 } from '../../bookings/components/DashboardCalendar'
+import { BookingDetailsDrawer } from '../../bookings/components/BookingDetailsDrawer'
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import { useBookings } from '../../bookings/hooks/useBookings'
+import type { Booking } from '../../bookings/types/booking'
 
 const TONE_BY_STATUS: Record<string, CalendarEvent['tone']> = {
   confirmed: 'primary',
@@ -71,6 +73,7 @@ function BookingsWidget() {
   const { t, dateLocale } = useLocale()
   const [view, setView] = useState<View>('month')
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date())
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const [from, to] = useMemo(() => rangeForView(view, currentDate), [view, currentDate])
 
@@ -94,6 +97,19 @@ function BookingsWidget() {
       })),
     [bookings],
   )
+
+  const selectedBooking = useMemo<Booking | null>(
+    () => bookings.find((b) => b.id === selectedId) ?? null,
+    [bookings, selectedId],
+  )
+
+  const handleSelectEvent = useCallback((event: CalendarEvent): void => {
+    setSelectedId(event.id)
+  }, [])
+
+  const handleCloseDrawer = useCallback((): void => {
+    setSelectedId(null)
+  }, [])
 
   const messages = {
     today: t('dashboard.calendar.today'),
@@ -123,9 +139,16 @@ function BookingsWidget() {
         date={currentDate}
         onView={setView}
         onNavigate={setCurrentDate}
+        onSelectEvent={handleSelectEvent}
         loading={loading}
         locale={dateLocale}
         messages={messages}
+      />
+      <BookingDetailsDrawer
+        booking={selectedBooking}
+        onClose={handleCloseDrawer}
+        dateLocale={dateLocale}
+        t={t}
       />
     </div>
   )

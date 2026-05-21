@@ -70,6 +70,18 @@ export default {
     errorValidation: 'Rang no vàlid.',
     errorServer: 'Error del servidor consultant reserves.',
     errorNetwork: 'Sense connexió al servidor.',
+    fields: {
+      schedule: 'Horari',
+      duration: 'Duració',
+      resource: 'Recurs',
+      id: 'Identificador',
+      allDay: 'Tot el dia',
+    },
+    status: {
+      confirmed: 'Confirmada',
+      pending: 'Pendent',
+      cancelled: 'Cancel·lada',
+    },
   },
   systemAlerts: {
     pageTitle: 'Alertes del sistema',
