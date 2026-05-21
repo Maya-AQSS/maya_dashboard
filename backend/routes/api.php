@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\HealthCheckController;
 use App\Http\Controllers\Api\V1\Alerts\AlertController;
 use App\Http\Controllers\Api\V1\Alerts\AlertRuleController;
+use App\Http\Controllers\Api\V1\Attendance\AttendanceController;
+use App\Http\Controllers\Api\V1\Booking\BookingController;
 use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
 use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
@@ -23,6 +25,11 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::get('dashboard-layout', [UserDashboardLayoutController::class, 'show']);
         Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update'])
             ->middleware('permission:dashboard.dashboard.update');
+
+        // Widgets alimentados desde Odoo vía FDW.
+        Route::get('attendances', [AttendanceController::class, 'index']);
+        Route::post('attendances', [AttendanceController::class, 'store']);
+        Route::get('bookings', [BookingController::class, 'index']);
     });
 
 // Perfil del usuario autenticado — maya/shared-profile-laravel.
