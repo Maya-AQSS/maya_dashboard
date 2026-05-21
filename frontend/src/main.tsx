@@ -9,6 +9,7 @@ import { AuthProvider } from '@maya/shared-auth-react'
 import { oidcAuthService } from './auth/oidcAdapter'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

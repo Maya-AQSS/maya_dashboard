@@ -7,12 +7,16 @@ namespace App\Providers;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
+use App\Repositories\Contracts\AttendanceRepositoryInterface;
+use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Repositories\Eloquent\AlertRepository;
 use App\Repositories\Eloquent\AlertRuleRepository;
 use App\Repositories\Eloquent\ApplicationRepository;
+use App\Repositories\Eloquent\AttendanceRepository;
+use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\NotificationRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
@@ -21,10 +25,14 @@ use Maya\Profile\Repositories\Resolvers\FdwAcademicResolver;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
+use App\Services\Attendance\AttendanceService;
+use App\Services\Booking\BookingService;
 use App\Services\Contracts\AlertIngestionServiceInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use App\Services\Contracts\AlertServiceInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
+use App\Services\Contracts\AttendanceServiceInterface;
+use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
@@ -63,6 +71,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AlertServiceInterface::class, AlertService::class);
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
         $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
+
+        // Odoo-sourced widgets (read-only via postgres_fdw).
+        $this->app->singleton(AttendanceRepositoryInterface::class, AttendanceRepository::class);
+        $this->app->singleton(AttendanceServiceInterface::class, AttendanceService::class);
+        $this->app->singleton(BookingRepositoryInterface::class, BookingRepository::class);
+        $this->app->singleton(BookingServiceInterface::class, BookingService::class);
 
         // Resolver de perfil enriquecido cross-app: el shared MeController consume
         // este binding para devolver /me con permissions/study_type_ids/study_ids/

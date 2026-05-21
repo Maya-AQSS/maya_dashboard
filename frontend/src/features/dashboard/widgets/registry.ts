@@ -1,3 +1,4 @@
+import BookingsWidget from './BookingsWidget'
 import DailyFichajesWidget from './DailyFichajesWidget'
 import UserAlertsWidget from './UserAlertsWidget'
 
@@ -16,5 +17,12 @@ export const WIDGET_REGISTRY = {
     defaultSize: { w: 8, h: 3 },
     minSize: { w: 4, h: 2 },
     component: DailyFichajesWidget,
+  },
+  'bookings-calendar': {
+    id: 'bookings-calendar',
+    titleKey: 'dashboard.widgets.bookings',
+    defaultSize: { w: 12, h: 6 },
+    minSize: { w: 6, h: 4 },
+    component: BookingsWidget,
   },
 }

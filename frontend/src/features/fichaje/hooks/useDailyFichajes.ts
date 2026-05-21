@@ -1,56 +1,56 @@
-// TODO: replace mock with GET /api/v1/fichaje/daily?userId=...&date=YYYY-MM-DD when API is available
+import { useQuery } from '@tanstack/react-query'
+import { apiGetJson, mapApiError } from '../../../api/http'
+import type { FichajeEntry } from '../lib/pairEntries'
 
-type EntryType = 'in' | 'out'
-
-interface FichajeEntry {
-  id: number
-  type: EntryType
-  timestamp: Date
+interface AttendanceRow {
+  id: string
+  user_id: string
+  check_in: string
+  check_out: string | null
+  source: string | null
 }
 
-type EntryTemplate = readonly [number, number, EntryType]
-
-function makeEntries(date: Date, pairs: readonly EntryTemplate[]): FichajeEntry[] {
-  return pairs.map(([hours, minutes, type], i) => ({
-    id: i + 1,
-    type,
-    timestamp: new Date(new Date(date).setHours(hours, minutes, 0, 0)),
-  }))
+interface AttendancesResponse {
+  data: AttendanceRow[]
+  meta: { date: string; count: number }
 }
 
 function toDateString(date: Date): string {
-  if (!(date instanceof Date)) return ''
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
 
-function buildMockHistory(): Record<string, FichajeEntry[]> {
-  const history: Record<string, FichajeEntry[]> = {}
-  const today = new Date()
-
-  const templates: readonly (readonly EntryTemplate[])[] = [
-    [[8, 30, 'in'], [14, 0, 'out'], [15, 0, 'in']],
-    [[9, 0, 'in'], [13, 30, 'out'], [14, 30, 'in']],
-    [[8, 45, 'in'], [14, 15, 'out'], [15, 15, 'in']],
-    [[8, 0, 'in'], [13, 0, 'out'], [14, 0, 'in']],
-    [[9, 15, 'in'], [14, 0, 'out'], [15, 0, 'in']],
-    [[8, 30, 'in'], [13, 45, 'out'], [14, 45, 'in']],
-    [[8, 0, 'in'], [14, 30, 'out']],
-  ]
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() - i)
-    const key = toDateString(d)
-    history[key] = makeEntries(d, templates[i % templates.length])
+/**
+ * Expande filas `attendances` (1 fila = check_in + check_out opcional) en la
+ * lista de eventos `FichajeEntry` que consume `pairEntries`: cada check_in es
+ * una entrada 'in' y cada check_out no nulo es una 'out'. El pairing del UI
+ * sigue siendo responsabilidad de `pairEntries`.
+ */
+function rowsToEntries(rows: readonly AttendanceRow[]): FichajeEntry[] {
+  const entries: FichajeEntry[] = []
+  for (const row of rows) {
+    entries.push({ type: 'in', timestamp: new Date(row.check_in) })
+    if (row.check_out) {
+      entries.push({ type: 'out', timestamp: new Date(row.check_out) })
+    }
   }
-
-  return history
+  return entries
 }
 
-const MOCK_HISTORY: Record<string, FichajeEntry[]> = import.meta.env.DEV ? buildMockHistory() : {}
+async function fetchDailyAttendances(userId: string, date: Date): Promise<AttendanceRow[]> {
+  if (!userId) throw new Error('dashboard.fichaje.errorLoad')
+  const ymd = toDateString(date)
+  try {
+    const response = await apiGetJson<AttendancesResponse>(
+      `/dashboard/user/${encodeURIComponent(userId)}/attendances?date=${ymd}`,
+    )
+    return response.data
+  } catch (err) {
+    throw mapApiError(err, 'dashboard.fichaje')
+  }
+}
 
 interface UseDailyFichajesReturn {
   entries: FichajeEntry[]
@@ -58,11 +58,21 @@ interface UseDailyFichajesReturn {
   error: string | undefined
 }
 
-function useDailyFichajes(_userId: string | undefined, date: Date): UseDailyFichajesReturn {
-  const key = toDateString(date)
-  const entries = MOCK_HISTORY[key] ?? []
+function useDailyFichajes(userId: string | undefined, date: Date): UseDailyFichajesReturn {
+  const dateKey = toDateString(date)
 
-  return { entries, loading: false, error: undefined }
+  const query = useQuery({
+    queryKey: ['daily-fichajes', userId, dateKey],
+    queryFn: () => fetchDailyAttendances(userId as string, date),
+    enabled: Boolean(userId),
+    staleTime: 60_000,
+  })
+
+  return {
+    entries: query.data ? rowsToEntries(query.data) : [],
+    loading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : undefined,
+  }
 }
 
 export default useDailyFichajes
