@@ -123,7 +123,7 @@ export function BookingDetailsPopover({
 
         <dl className="px-4 py-3 flex flex-col gap-3 text-sm">
           <div>
-            <dt className="text-[10px] uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
+            <dt className="text-2xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
               {t('dashboard.bookings.fields.schedule')}
             </dt>
             <dd className="text-text-primary dark:text-text-dark-primary">
@@ -162,7 +162,7 @@ export function BookingDetailsPopover({
 
           {!booking.allDay && (
             <div>
-              <dt className="text-[10px] uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
+              <dt className="text-2xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
                 {t('dashboard.bookings.fields.duration')}
               </dt>
               <dd className="text-text-primary dark:text-text-dark-primary">{duration}</dd>
@@ -171,7 +171,7 @@ export function BookingDetailsPopover({
 
           {booking.resourceName && (
             <div>
-              <dt className="text-[10px] uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
+              <dt className="text-2xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary mb-0.5">
                 {t('dashboard.bookings.fields.resource')}
               </dt>
               <dd className="text-text-primary dark:text-text-dark-primary">

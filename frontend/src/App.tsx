@@ -112,7 +112,7 @@ function AppWithLayout() {
       <ReturnToHandler />
       <AppLayout
         navItems={navItems}
-        brandName="Maya Dashboard"
+        brandName="PortalCEED"
         brandVersion="v1.0"
         brandLogoUrl="/favicon.png"
         userName={displayName}

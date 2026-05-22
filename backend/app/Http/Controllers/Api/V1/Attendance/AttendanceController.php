@@ -10,6 +10,7 @@ use App\Http\Requests\Api\Attendance\ListAttendanceRequest;
 use App\Http\Resources\AttendanceResource;
 use App\Services\Contracts\AttendanceServiceInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
@@ -41,6 +42,25 @@ class AttendanceController extends Controller
         return response()->json(
             (new AttendanceResource($dto))->resolve($request),
             201,
+        );
+    }
+
+    /**
+     * Cierra el check-in abierto del usuario (UPDATE check_out = now).
+     * Devuelve 200 con el DTO actualizado o 409 si no hay fila abierta.
+     */
+    public function checkOut(Request $request, string $user): JsonResponse
+    {
+        $dto = $this->attendances->clockOut($user);
+
+        if ($dto === null) {
+            return response()->json([
+                'message' => 'No hay fichaje abierto que cerrar.',
+            ], 409);
+        }
+
+        return response()->json(
+            (new AttendanceResource($dto))->resolve($request),
         );
     }
 }

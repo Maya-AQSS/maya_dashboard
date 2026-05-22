@@ -25,6 +25,8 @@ class UserFavoriteApplicationResource extends JsonResource
             'id' => $dto->id,
             'name' => $dto->name,
             'slug' => $dto->slug,
+            'icon' => $dto->icon,
+            'color' => $dto->color,
             'traefik_url' => $dto->traefikUrl,
         ];
     }

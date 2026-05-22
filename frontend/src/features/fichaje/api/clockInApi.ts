@@ -27,3 +27,20 @@ export async function postClockIn(
     throw mapApiError(err, 'dashboard.fichaje')
   }
 }
+
+/**
+ * Cierra el check-in abierto del usuario actualizando `check_out = now`.
+ * Devuelve la fila actualizada. Lanza si no hay ningún check-in abierto.
+ */
+export async function postClockOut(userId: string): Promise<ClockInResponse> {
+  if (!userId) throw new Error('dashboard.fichaje.errorLoad')
+
+  try {
+    return await apiFetchJson<ClockInResponse>(
+      `/dashboard/user/${encodeURIComponent(userId)}/attendances/check-out`,
+      { method: 'POST' },
+    )
+  } catch (err) {
+    throw mapApiError(err, 'dashboard.fichaje')
+  }
+}

@@ -115,3 +115,40 @@ it('rejects a source longer than 64 chars', function () {
     $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => str_repeat('a', 65)])
         ->assertStatus(422);
 });
+
+it('closes the open attendance via check-out endpoint', function () {
+    insertAttendance($this->user->id, '2026-05-22 09:00:00', null);
+
+    $before = now()->subSecond();
+    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out");
+    $after = now()->addSecond();
+
+    $response->assertStatus(200);
+    expect($response->json('check_out'))->not->toBeNull();
+
+    $checkOut = \Carbon\Carbon::parse($response->json('check_out'));
+    expect($checkOut->greaterThanOrEqualTo($before))->toBeTrue();
+    expect($checkOut->lessThanOrEqualTo($after))->toBeTrue();
+});
+
+it('returns 409 from check-out when no open attendance exists', function () {
+    insertAttendance($this->user->id, '2026-05-22 09:00:00', '2026-05-22 13:00:00');
+
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
+        ->assertStatus(409)
+        ->assertJsonStructure(['message']);
+});
+
+it('closes only the most recent open attendance when several exist', function () {
+    insertAttendance($this->user->id, '2026-05-22 08:00:00', '2026-05-22 09:00:00');
+    insertAttendance($this->user->id, '2026-05-22 10:00:00', null);
+
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
+        ->assertStatus(200);
+
+    $openCount = DB::table('attendances')
+        ->where('user_id', $this->user->id)
+        ->whereNull('check_out')
+        ->count();
+    expect($openCount)->toBe(0);
+});

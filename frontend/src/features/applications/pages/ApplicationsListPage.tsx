@@ -179,7 +179,43 @@ function ApplicationsListPage() {
             setPage(1)
           }}
           defaultView="cards"
+          viewStorageKey="maya:dashboard:applications-table"
           emptyMessage={t('applications.noApplications')}
+          flipCardRender={(app) => {
+            return {
+              image: `/applications/${app.name}.png`,
+              back: (
+                <>
+                  <p className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed">
+                    {app.description || t('applications.noDescription') || '—'}
+                  </p>
+                  {app.documentationUrl && app.documentationUrl !== '#' ? (
+                    <p className="mt-3 text-xs text-text-muted dark:text-text-dark-muted break-all">
+                      {app.documentationUrl}
+                    </p>
+                  ) : null}
+                </>
+              ),
+              backAction: (
+                <button
+                  type="button"
+                  onClick={(e) => handleFavoriteClick(app, e)}
+                  aria-pressed={app.isFavorite}
+                  aria-label={app.isFavorite ? t('applications.removeFromFavorites') : t('applications.addToFavorites')}
+                  className={[
+                    'inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium transition',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning/40',
+                    app.isFavorite
+                      ? 'bg-warning-light dark:bg-warning-dark/40 text-warning-dark dark:text-warning border border-warning/40'
+                      : 'bg-transparent border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:bg-ui-body dark:hover:bg-ui-dark-bg',
+                  ].join(' ')}
+                >
+                  <span aria-hidden>{app.isFavorite ? FAVORITE_STAR_FILLED_CHAR : FAVORITE_STAR_OUTLINE_CHAR}</span>
+                  {app.isFavorite ? t('applications.removeFromFavorites') : t('applications.addToFavorites')}
+                </button>
+              ),
+            }
+          }}
           cardRender={(app) => (
             <div
               className="flex items-center gap-4 flex-1 cursor-pointer"

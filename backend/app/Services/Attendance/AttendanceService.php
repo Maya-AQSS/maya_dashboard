@@ -26,4 +26,9 @@ final class AttendanceService implements AttendanceServiceInterface
     {
         return $this->attendances->createCheckIn($userId, $source);
     }
+
+    public function clockOut(string $userId): ?AttendanceDto
+    {
+        return $this->attendances->closeOpenAttendance($userId);
+    }
 }

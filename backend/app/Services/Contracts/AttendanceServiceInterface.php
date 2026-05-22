@@ -17,4 +17,10 @@ interface AttendanceServiceInterface
      * Registra un check-in para el usuario con timestamp = ahora.
      */
     public function clockIn(string $userId, ?string $source = null): AttendanceDto;
+
+    /**
+     * Cierra el check-in abierto del usuario actualizando check_out = ahora.
+     * Devuelve `null` si no había ningún check-in abierto.
+     */
+    public function clockOut(string $userId): ?AttendanceDto;
 }
