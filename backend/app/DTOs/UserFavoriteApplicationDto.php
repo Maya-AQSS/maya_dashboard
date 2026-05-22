@@ -12,6 +12,8 @@ final readonly class UserFavoriteApplicationDto
         public int $id,
         public string $name,
         public string $slug,
+        public ?string $icon,
+        public ?string $color,
         public ?string $traefikUrl,
     ) {}
 
@@ -21,6 +23,8 @@ final readonly class UserFavoriteApplicationDto
             id: (int) $m->id,
             name: (string) $m->name,
             slug: (string) $m->slug,
+            icon: $m->icon,
+            color: $m->color,
             traefikUrl: $m->traefik_url,
         );
     }
