@@ -265,7 +265,7 @@ function DailyFichajesWidget() {
                           />
                         ) : !pair.salida ? (
                           <span className="text-warning-dark dark:text-warning text-xs">
-                            {t('dashboard.fichaje.inProgress')}
+                            {t('states.inProgress')}
                           </span>
                         ) : pair.autoClose ? (
                           <span className="text-text-muted dark:text-text-secondary text-xs italic">
@@ -291,7 +291,7 @@ function DailyFichajesWidget() {
                               {t('dashboard.fichaje.submitModification')}
                             </Button>
                             <Button variant="secondary" size="xs" onClick={() => setEditingRow(null)}>
-                              {t('dashboard.cancel')}
+                              {t('actions.cancel')}
                             </Button>
                           </div>
                         ) : pending ? (
@@ -332,7 +332,7 @@ function DailyFichajesWidget() {
               <tfoot>
                 <tr className="border-t-2 border-ui-border dark:border-ui-dark-border">
                   <td colSpan={2} className="px-2 py-1.5 text-right text-xs font-semibold text-text-secondary dark:text-text-dark-secondary uppercase tracking-wide">
-                    {t('dashboard.fichaje.total')}
+                    {t('tables.total')}
                   </td>
                   <td className="px-2 py-1.5 text-center font-semibold text-text-primary dark:text-text-dark-primary">
                     {formatHours(totalMs)}

@@ -1,4 +1,5 @@
 import { Button } from '@maya/shared-ui-react'
+import { useTranslation } from 'react-i18next'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
 
 const COLOR_CLASSES = {
@@ -16,6 +17,7 @@ const BUTTON_CLASSES = {
 }
 
 function UserAlertsWidget() {
+  const { t } = useTranslation('common')
   const { alerts, loading, dismiss, clockIn } = useUserAlerts()
 
   if (loading) {
@@ -31,7 +33,7 @@ function UserAlertsWidget() {
   if (!alerts.length) {
     return (
       <p className="text-sm text-text-secondary dark:text-text-dark-secondary text-center py-4">
-        No hay alertas
+        {t('dashboard.userAlerts.empty')}
       </p>
     )
   }
@@ -72,8 +74,8 @@ function UserAlertsWidget() {
                 variant="unstyled"
                 size="xs"
                 onClick={() => dismiss(alert.id)}
-                aria-label="Descartar alerta"
-                title="Descartar"
+                aria-label={t('dashboard.userAlerts.dismissAria')}
+                title={t('dashboard.userAlerts.dismissTitle')}
                 className={`shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-sm transition ${btnCls}`}
               >
                 ×

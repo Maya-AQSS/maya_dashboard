@@ -27,14 +27,14 @@ export default function SystemAlertsPage() {
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div className="min-w-[180px]">
           <label className="mb-1 block text-xs font-semibold text-text-secondary dark:text-text-dark-secondary">
-            {t('dashboard.systemAlerts.severityLabel')}
+            {t('filters.severityLabel')}
           </label>
           <Select fieldSize="md" value={severity} onChange={(e) => setSeverity(e.target.value)}>
             <option value="">{t('dashboard.systemAlerts.severityAll')}</option>
-            <option value="critical">Critical</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="critical">{t('severity.critical')}</option>
+            <option value="high">{t('severity.high')}</option>
+            <option value="medium">{t('severity.medium')}</option>
+            <option value="low">{t('severity.low')}</option>
           </Select>
         </div>
         <Checkbox
@@ -44,7 +44,7 @@ export default function SystemAlertsPage() {
         />
       </div>
 
-      {loading && <p>{t('dashboard.systemAlerts.loading')}</p>}
+      {loading && <p>{t('status.loading')}</p>}
       {error && <p role="alert" className="text-danger">{error}</p>}
 
       {!loading && alerts.length === 0 && (

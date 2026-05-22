@@ -91,7 +91,7 @@ export function BookingDetailsPopover({
       {/* Backdrop local al widget */}
       <button
         type="button"
-        aria-label={t('dashboard.cancel')}
+        aria-label={t('actions.cancel')}
         onClick={onClose}
         className="absolute inset-0 bg-text-primary/30 dark:bg-black/50 backdrop-blur-[1px] cursor-default"
       />
@@ -114,7 +114,7 @@ export function BookingDetailsPopover({
           <button
             type="button"
             onClick={onClose}
-            aria-label={t('dashboard.cancel')}
+            aria-label={t('actions.cancel')}
             className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-md text-text-secondary hover:text-text-primary hover:bg-text-primary/5 dark:hover:bg-text-inverse/10 text-lg leading-none"
           >
             ×

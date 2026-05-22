@@ -65,8 +65,8 @@ function FavoriteCard({ fav, onRemove }: FavoriteCardProps) {
         open={showConfirm}
         title={t('favorites.removeFromFavoritesTitle', { name: fav.name })}
         description={t('favorites.removeFromFavoritesMessage')}
-        confirmLabel={t('favorites.confirmButton')}
-        cancelLabel={t('profile.cancel')}
+        confirmLabel={t('actions.confirm')}
+        cancelLabel={t('actions.cancel')}
         variant="danger"
         onConfirm={handleConfirm}
         onCancel={handleCancel}
