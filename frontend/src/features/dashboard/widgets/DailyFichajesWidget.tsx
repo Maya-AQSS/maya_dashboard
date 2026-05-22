@@ -127,7 +127,7 @@ function WeekDatePicker({ selectedDate, onSelect, dateLocale, t }: WeekDatePicke
                     : 'hover:bg-ui-card/60 dark:hover:bg-ui-dark-card/40',
               ].join(' ')}
             >
-              <span className="text-xs uppercase tracking-wide text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
+              <span className="text-xs uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary capitalize leading-tight">
                 {weekdayFmt.format(d).replace('.', '')}
               </span>
               <span className="text-xs font-semibold text-text-primary dark:text-text-dark-primary leading-tight">
@@ -331,7 +331,7 @@ function DailyFichajesWidget() {
             {pairs.filter((p) => p.salida).length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-ui-border dark:border-ui-dark-border">
-                  <td colSpan={2} className="px-2 py-1.5 text-right text-xs font-semibold text-text-secondary dark:text-text-dark-secondary uppercase tracking-wide">
+                  <td colSpan={2} className="px-2 py-1.5 text-right text-xs font-semibold text-text-secondary dark:text-text-dark-secondary uppercase tracking-wider">
                     {t('tables.total')}
                   </td>
                   <td className="px-2 py-1.5 text-center font-semibold text-text-primary dark:text-text-dark-primary">
