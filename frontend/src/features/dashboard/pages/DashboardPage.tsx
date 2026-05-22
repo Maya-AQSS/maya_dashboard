@@ -115,7 +115,7 @@ function DashboardPage() {
   return (
     <>
       <PageTitle
-        title={t('dashboard.title')}
+        title={t('nav.dashboard')}
         actions={
           canEditLayout && editable ? (
             <DashboardEditToolbar
@@ -127,9 +127,9 @@ function DashboardPage() {
               onReset={handleReset}
               onAddWidget={handleAddWidget}
               labels={{
-                save: t('dashboard.save'),
-                cancel: t('dashboard.cancel'),
-                reset: t('dashboard.resetLayout'),
+                save: t('actions.save'),
+                cancel: t('actions.cancel'),
+                reset: t('actions.reset'),
                 addWidget: t('dashboard.addWidget'),
               }}
             />

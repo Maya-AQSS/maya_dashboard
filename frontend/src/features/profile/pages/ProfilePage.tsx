@@ -326,8 +326,8 @@ function ProfilePage() {
                 <div className="flex flex-col gap-4">
                   <ProfileField name="street" label={t('profile.street')} register={register} errors={errors} />
                   <ProfileField name="addressNumber" label={t('profile.addressNumber')} register={register} errors={errors} inputMode="numeric" pattern="[0-9]*" />
-                  <ProfileField name="addressFloor" label={t('profile.addressFloor')} register={register} errors={errors} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
-                  <ProfileField name="addressDoor" label={t('profile.addressDoor')} register={register} errors={errors} optionalLabel={t('profile.optional')} inputMode="numeric" pattern="[0-9]*" />
+                  <ProfileField name="addressFloor" label={t('profile.addressFloor')} register={register} errors={errors} optionalLabel={t('values.optional')} inputMode="numeric" pattern="[0-9]*" />
+                  <ProfileField name="addressDoor" label={t('profile.addressDoor')} register={register} errors={errors} optionalLabel={t('values.optional')} inputMode="numeric" pattern="[0-9]*" />
                   <ProfileField name="postalCode" label={t('profile.postalCode')} register={register} errors={errors} placeholder={t('profile.placeholderPostalCode')} />
                   <ProfileField name="city" label={t('profile.city')} register={register} errors={errors} />
                 </div>
@@ -344,10 +344,10 @@ function ProfilePage() {
 
             <div className="flex flex-col sm:flex-row gap-2">
               <Button type="button" variant="secondary" size="sm" onClick={handleCancel} disabled={saving} className="w-full sm:w-auto">
-                {t('profile.cancel')}
+                {t('actions.cancel')}
               </Button>
               <Button type="submit" variant="primary" size="sm" disabled={saving} loading={saving} className="w-full sm:w-auto">
-                {saving ? t('profile.saving') : t('profile.save')}
+                {saving ? t('status.saving') : t('profile.save')}
               </Button>
             </div>
           </form>
@@ -365,17 +365,19 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
   const { t, locale, setLocale, localeOptions } = useLocale()
   const [savingLocale, setSavingLocale] = useState(false)
 
-  // Cambio de idioma: primero llama al endpoint (MOCK hoy) para que cuando
-  // exista la escritura real a Odoo la UI esté ya lista. Tras 200 OK aplica
-  // el cambio local (i18next + localStorage + maya_user_profile.locale).
+  // Cambio de idioma: aplica PRIMERO el cambio local (i18next + cookie
+  // cross-app + cache) — la cookie `maya_session_overrides.locale` es la
+  // fuente de verdad provisional hasta que exista persistencia real en Odoo.
+  // Tras eso, llama al endpoint en best-effort (hoy es no-op vía
+  // NoopLocaleWriter, mañana persistirá en Odoo sin tocar este código).
   const handleLocaleChange = async (next: string) => {
     if (!canUpdate || next === locale || savingLocale) return
     setSavingLocale(true)
+    setLocale(next)
     try {
       await updateMyLocale(next)
-      setLocale(next)
     } catch (error) {
-      console.error('[profile] updateMyLocale failed', error)
+      console.warn('[profile] updateMyLocale failed (no bloqueante)', error)
     } finally {
       setSavingLocale(false)
     }
@@ -384,7 +386,7 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
   return (
     <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
       <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
-        {t('profile.preferences') || 'Preferencias'}
+        {t('userMenu.preferences') || 'Preferencias'}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2 sm:gap-3 items-center">
         <FieldLabel htmlFor="profile-locale-select">

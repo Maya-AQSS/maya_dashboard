@@ -108,7 +108,7 @@ function ApplicationsListPage() {
     () => [
       {
         id: 'name',
-        header: t('applications.title') === 'Aplicaciones' ? 'Nombre' : 'Name',
+        header: t('nav.applications') === 'Aplicaciones' ? 'Nombre' : 'Name',
         cell: (app) => <span className="font-medium">{app.name}</span>,
         sortable: true,
         alwaysVisible: true,
@@ -151,7 +151,7 @@ function ApplicationsListPage() {
   if (error) {
     return (
       <>
-        <PageTitle title={t('applications.title')} />
+        <PageTitle title={t('nav.applications')} />
         <div role="alert" className="rounded-lg border border-warning/40 bg-warning-light/40 dark:bg-warning-dark/10 px-4 py-3 text-sm text-warning-dark dark:text-warning-light">
           {error}
         </div>
@@ -161,7 +161,7 @@ function ApplicationsListPage() {
 
   return (
     <>
-      <PageTitle title={t('applications.title')} />
+      <PageTitle title={t('nav.applications')} />
 
       <div className="space-y-4">
         <DataTable
@@ -252,7 +252,7 @@ function ApplicationsListPage() {
           currentPage={safePage}
           totalPages={totalPages}
           onChange={setPage}
-          info={`${t('applications.page')} ${safePage} ${t('applications.of')} ${totalPages} — ${filtered.length} ${t('applications.title').toLowerCase()}`}
+          info={`${t('applications.page')} ${safePage} ${t('applications.of')} ${totalPages} — ${filtered.length} ${t('nav.applications').toLowerCase()}`}
         />
       </div>
 
@@ -269,8 +269,8 @@ function ApplicationsListPage() {
               ? t('favorites.removeFromFavoritesMessage')
               : t('favorites.addToFavoritesMessage')
           }
-          confirmLabel={t('favorites.confirmButton')}
-          cancelLabel={t('favorites.cancelButton')}
+          confirmLabel={t('actions.confirm')}
+          cancelLabel={t('actions.cancel')}
           variant={confirmApp.isFavorite ? 'danger' : 'primary'}
           onConfirm={handleConfirmToggle}
           onCancel={() => setConfirmApp(null)}

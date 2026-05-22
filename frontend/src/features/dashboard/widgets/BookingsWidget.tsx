@@ -112,9 +112,9 @@ function BookingsWidget() {
   }, [])
 
   const messages = {
-    today: t('dashboard.calendar.today'),
-    previous: t('dashboard.calendar.previous'),
-    next: t('dashboard.calendar.next'),
+    today: t('dates.today'),
+    previous: t('pagination.previous'),
+    next: t('pagination.next'),
     month: t('dashboard.calendar.month'),
     week: t('dashboard.calendar.week'),
     day: t('dashboard.calendar.day'),

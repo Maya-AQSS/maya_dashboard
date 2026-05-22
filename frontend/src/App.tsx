@@ -121,7 +121,7 @@ function AppWithLayout() {
         onLogout={logout}
         onProfile={canShowProfile ? () => navigate('/profile') : undefined}
         favoritesSlot={
-          <SidebarFavorites label={t('favorites.title')} dashboardApiUrl={DASHBOARD_API_URL} />
+          <SidebarFavorites label={t('nav.favorites')} dashboardApiUrl={DASHBOARD_API_URL} />
         }
         notificationsSlot={<NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />}
       >
@@ -165,7 +165,7 @@ function AppAfterProfile() {
   )
 
   if (profileLoading) {
-    return <AuthLoadingScreen message={t('initializing')} />
+    return <AuthLoadingScreen message={t('auth.initializing')} />
   }
 
   if (lacksLoginPermission) {
@@ -186,11 +186,11 @@ export default function App() {
   }, [isOidcLoading, isOidcSignedIn, beginSignIn])
 
   if (isOidcLoading) {
-    return <AuthLoadingScreen message={t('initializing')} />
+    return <AuthLoadingScreen message={t('auth.initializing')} />
   }
 
   if (!isOidcSignedIn) {
-    return <AuthLoadingScreen message={t('redirecting')} />
+    return <AuthLoadingScreen message={t('auth.redirecting')} />
   }
 
   return (
