@@ -123,7 +123,7 @@ function BookingsWidget() {
   }
 
   return (
-    <div className="h-full flex flex-col relative">
+    <div className="h-full flex flex-col relative p-2 sm:p-3">
       {error && (
         <p
           role="alert"

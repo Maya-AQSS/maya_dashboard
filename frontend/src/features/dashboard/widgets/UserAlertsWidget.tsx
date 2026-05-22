@@ -142,7 +142,7 @@ function UserAlertsWidget() {
       </div>
 
       {/* ── Cabecera con título de marca ─────────────────────────────────── */}
-      <div className="relative z-10 flex items-center gap-2 px-4 pt-3 pb-2 text-text-inverse">
+      <div className="relative z-10 flex items-center gap-2 px-5 pt-4 pb-2 text-text-inverse">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M3 11l18-7v16L3 13z" />
           <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
@@ -153,7 +153,7 @@ function UserAlertsWidget() {
       </div>
 
       {/* ── Bloque blanco interior con las alertas ──────────────────────── */}
-      <div className="relative z-10 mx-3 mb-3 bg-ui-card dark:bg-ui-dark-card rounded-xl shadow-card-md border border-white/40 dark:border-ui-dark-border/40 p-3 overflow-auto max-h-[calc(100%-3.5rem)]">
+      <div className="relative z-10 mx-5 mb-5 bg-ui-card dark:bg-ui-dark-card rounded-xl shadow-card-md border border-white/40 dark:border-ui-dark-border/40 p-3 overflow-auto max-h-[calc(100%-3.5rem)]">
         {loading && (
           <div className="flex flex-col gap-2">
             {[1, 2].map((n) => (
