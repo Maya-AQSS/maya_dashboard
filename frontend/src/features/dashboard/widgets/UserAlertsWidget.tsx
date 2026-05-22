@@ -132,8 +132,6 @@ function UserAlertsWidget() {
           <path d="M0 60 Q 100 10, 200 70 T 400 50 L400 0 L0 0 Z" fill="rgba(255,255,255,0.5)" />
           <path d="M0 160 Q 120 200, 240 150 T 400 170 L400 200 L0 200 Z" fill="rgba(0,0,0,0.18)" />
         </svg>
-        {/* Patrón de puntos sutil */}
-        <span className="maya-alerts-dots absolute top-3 left-3 w-14 h-14 opacity-30" />
       </div>
 
       {/* ── Megáfono que sobresale por encima del card ──────────────────── */}

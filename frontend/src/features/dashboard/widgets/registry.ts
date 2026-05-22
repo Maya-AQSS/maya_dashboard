@@ -24,6 +24,8 @@ export const WIDGET_REGISTRY = {
   'bookings-calendar': {
     id: 'bookings-calendar',
     titleKey: 'dashboard.widgets.bookings',
+    hideTitle: true,
+    bleed: true,
     defaultSize: { w: 12, h: 6 },
     minSize: { w: 6, h: 4 },
     component: BookingsWidget,

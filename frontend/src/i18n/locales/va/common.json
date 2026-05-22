@@ -206,6 +206,7 @@
       },
       "status": {
         "confirmed": "Confirmada",
+        "pending": "Pendent",
         "cancelled": "Cancel·lada"
       }
     },

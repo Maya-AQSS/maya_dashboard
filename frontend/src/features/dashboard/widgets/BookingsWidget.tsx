@@ -123,7 +123,7 @@ function BookingsWidget() {
   }
 
   return (
-    <div className="h-full flex flex-col relative p-2 sm:p-3">
+    <div className="maya-bookings-canvas bg-card-tinted h-full flex flex-col relative p-3 sm:p-4 rounded-2xl">
       {error && (
         <p
           role="alert"
