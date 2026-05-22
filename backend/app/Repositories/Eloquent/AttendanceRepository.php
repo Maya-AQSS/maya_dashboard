@@ -85,4 +85,64 @@ final class AttendanceRepository implements AttendanceRepositoryInterface
 
         return AttendanceDto::fromRow($row);
     }
+
+    public function closeOpenAttendance(string $userId): ?AttendanceDto
+    {
+        $now = now();
+
+        // En testing operamos sobre la tabla física local. En el resto de
+        // entornos el destino real es Odoo vía FDW; el UPDATE se proyecta a
+        // la foreign table `attendances_fdw`. Filtramos por user_id +
+        // check_out IS NULL para cerrar SIEMPRE la fila abierta más reciente.
+        $isLocal = app()->environment('testing')
+            || str_ends_with((string) config('database.connections.pgsql.database'), '_test');
+
+        if ($isLocal) {
+            $row = DB::table('attendances')
+                ->where('user_id', $userId)
+                ->whereNull('check_out')
+                ->orderByDesc('check_in')
+                ->first();
+
+            if ($row === null) {
+                return null;
+            }
+
+            DB::table('attendances')
+                ->where('id', $row->id)
+                ->update(['check_out' => $now]);
+
+            return AttendanceDto::fromRow([
+                'id' => $row->id,
+                'user_id' => $row->user_id,
+                'check_in' => $row->check_in,
+                'check_out' => $now,
+                'source' => $row->source,
+            ]);
+        }
+
+        // FDW: localizamos la fila abierta y la actualizamos. El postgres_fdw
+        // soporta UPDATE en foreign tables; la PK vive en Odoo.
+        $row = DB::table('attendances')
+            ->where('user_id', $userId)
+            ->whereNull('check_out')
+            ->orderByDesc('check_in')
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        DB::table('attendances_fdw')
+            ->where('id', $row->id)
+            ->update(['check_out' => $now]);
+
+        return AttendanceDto::fromRow([
+            'id' => $row->id,
+            'user_id' => $row->user_id,
+            'check_in' => $row->check_in,
+            'check_out' => $now,
+            'source' => $row->source,
+        ]);
+    }
 }

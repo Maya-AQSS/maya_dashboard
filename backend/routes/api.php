@@ -29,6 +29,7 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         // Widgets alimentados desde Odoo vía FDW.
         Route::get('attendances', [AttendanceController::class, 'index']);
         Route::post('attendances', [AttendanceController::class, 'store']);
+        Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);
         Route::get('bookings', [BookingController::class, 'index']);
     });
 
