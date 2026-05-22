@@ -6,6 +6,9 @@ export const WIDGET_REGISTRY = {
   'user-alerts': {
     id: 'user-alerts',
     titleKey: 'dashboard.widgets.userAlerts',
+    hideTitle: true,
+    allowOverflow: true,
+    bleed: true,
     defaultSize: { w: 4, h: 3 },
     minSize: { w: 3, h: 2 },
     component: UserAlertsWidget,
