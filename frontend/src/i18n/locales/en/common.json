@@ -160,6 +160,9 @@
     "fichaje": {
       "notClockedIn": "You have not clocked in today.",
       "clockInButton": "Clock in",
+      "clockOutButton": "Clock out",
+      "clockingIn": "Clocking in…",
+      "totalWorked": "Total worked",
       "clockedInAt": "Clocked in at {{time}}",
       "dailyTitle": "Daily clock-ins",
       "prevDay": "Previous day",

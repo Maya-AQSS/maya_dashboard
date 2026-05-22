@@ -159,7 +159,10 @@
     },
     "fichaje": {
       "notClockedIn": "No has fitxat hui.",
-      "clockInButton": "Fitxar",
+      "clockInButton": "Fitxar entrada",
+      "clockOutButton": "Fitxar eixida",
+      "clockingIn": "Fitxant…",
+      "totalWorked": "Total treballat",
       "clockedInAt": "Fitxat a les {{time}}",
       "dailyTitle": "Fitxatges del dia",
       "prevDay": "Dia anterior",

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 
 vi.mock('@maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
@@ -9,8 +11,20 @@ vi.mock('@maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
+vi.mock('../../user-profile', () => ({
+  useUserProfile: vi.fn(() => ({
+    profile: { id: 'user-1', name: 'Sophia Jones', email: 'sophia@ceedcv.es', locale: 'es' },
+  })),
+  profileDisplayInitials: vi.fn(() => 'SJ'),
+}))
+
 vi.mock('../../fichaje/hooks/useDailyFichajes', () => ({
   default: vi.fn(),
+}))
+
+vi.mock('../../fichaje/api/clockInApi', () => ({
+  postClockIn: vi.fn().mockResolvedValue({}),
+  postClockOut: vi.fn().mockResolvedValue({}),
 }))
 
 vi.mock('@maya/shared-ui-react', () => ({
@@ -18,12 +32,14 @@ vi.mock('@maya/shared-ui-react', () => ({
     children,
     onClick,
     title,
+    disabled,
   }: {
-    children: React.ReactNode
+    children: ReactNode
     onClick?: () => void
     title?: string
+    disabled?: boolean
   }) => (
-    <button onClick={onClick} title={title}>
+    <button onClick={onClick} title={title} disabled={disabled}>
       {children}
     </button>
   ),
@@ -32,16 +48,19 @@ vi.mock('@maya/shared-ui-react', () => ({
 import { useAuth } from '@maya/shared-auth-react'
 import { useLocale } from '@maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
+import { postClockIn, postClockOut } from '../../fichaje/api/clockInApi'
 import DailyFichajesWidget from './DailyFichajesWidget'
 
 const mockUseAuth = vi.mocked(useAuth)
 const mockUseLocale = vi.mocked(useLocale)
 const mockUseDailyFichajes = vi.mocked(useDailyFichajes)
+const mockPostClockIn = vi.mocked(postClockIn)
+const mockPostClockOut = vi.mocked(postClockOut)
 
 function makeEntry(type: 'in' | 'out', hours: number, minutes = 0, date = new Date()) {
   const ts = new Date(date)
   ts.setHours(hours, minutes, 0, 0)
-  return { id: Math.random(), type, timestamp: ts }
+  return { type, timestamp: ts }
 }
 
 function setupMocks({
@@ -49,7 +68,7 @@ function setupMocks({
   loading = false,
   error = undefined as string | undefined,
 } = {}) {
-  mockUseAuth.mockReturnValue({ user: { sub: 'user-1' }, token: 'tok' } as any)
+  mockUseAuth.mockReturnValue({ user: { sub: 'user-1' }, token: 'tok' } as never)
 
   mockUseLocale.mockReturnValue({
     t: (key: string) => key,
@@ -57,9 +76,18 @@ function setupMocks({
     dateLocale: 'es-ES',
     setLocale: vi.fn(),
     localeOptions: [],
-  } as any)
+  } as never)
 
   mockUseDailyFichajes.mockReturnValue({ entries, loading, error })
+}
+
+function renderWidget() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return render(
+    <QueryClientProvider client={client}>
+      <DailyFichajesWidget />
+    </QueryClientProvider>,
+  )
 }
 
 describe('DailyFichajesWidget', () => {
@@ -74,217 +102,134 @@ describe('DailyFichajesWidget', () => {
 
   describe('renderizado básico', () => {
     it('renderiza sin errores con entries vacías', () => {
-      setupMocks()
-      const { container } = render(<DailyFichajesWidget />)
+      const { container } = renderWidget()
       expect(container.firstChild).not.toBeNull()
     })
 
-    it('muestra el WeekDatePicker con botones de semana anterior/siguiente', () => {
-      setupMocks()
-      render(<DailyFichajesWidget />)
-      expect(screen.getByLabelText('dashboard.fichaje.prevDay')).toBeTruthy()
-      expect(screen.getByLabelText('dashboard.fichaje.nextDay')).toBeTruthy()
+    it('muestra el título del widget', () => {
+      renderWidget()
+      expect(screen.getByText('dashboard.fichaje.dailyTitle')).toBeTruthy()
     })
 
-    it('el botón de semana siguiente está deshabilitado (hoy es la fecha máxima)', () => {
-      setupMocks()
-      render(<DailyFichajesWidget />)
-      const nextBtn = screen.getByLabelText('dashboard.fichaje.nextDay')
-      expect((nextBtn as HTMLButtonElement).disabled).toBe(true)
+    it('muestra la etiqueta de total trabajado', () => {
+      renderWidget()
+      expect(screen.getByText('dashboard.fichaje.totalWorked')).toBeTruthy()
     })
   })
 
   describe('estado de carga', () => {
     it('muestra el skeleton de carga cuando loading es true', () => {
       setupMocks({ loading: true })
-      const { container } = render(<DailyFichajesWidget />)
+      const { container } = renderWidget()
       const skeleton = container.querySelector('.animate-pulse')
       expect(skeleton).not.toBeNull()
-    })
-
-    it('no muestra tabla cuando loading es true', () => {
-      setupMocks({ loading: true })
-      render(<DailyFichajesWidget />)
-      expect(screen.queryByRole('table')).toBeNull()
     })
   })
 
   describe('estado de error', () => {
     it('muestra role=alert cuando hay error', () => {
-      setupMocks({ error: 'dashboard.fichaje.errorLoad' })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByRole('alert')).toBeTruthy()
-    })
-
-    it('el alert contiene el mensaje de error', () => {
       setupMocks({ error: 'Error al cargar fichajes' })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByRole('alert').textContent).toContain('Error al cargar fichajes')
+      renderWidget()
+      const alert = screen.getByRole('alert')
+      expect(alert.textContent).toContain('Error al cargar fichajes')
     })
   })
 
-  describe('sin entries', () => {
-    it('muestra mensaje de no hay entradas cuando entries está vacío', () => {
+  describe('sin entries (hoy)', () => {
+    it('muestra mensaje de no hay entradas', () => {
       setupMocks({ entries: [] })
-      render(<DailyFichajesWidget />)
+      renderWidget()
       expect(screen.getByText('dashboard.fichaje.noEntries')).toBeTruthy()
     })
 
-    it('no renderiza tabla cuando no hay entries', () => {
+    it('muestra el botón Fichar como CTA central', () => {
       setupMocks({ entries: [] })
-      render(<DailyFichajesWidget />)
-      expect(screen.queryByRole('table')).toBeNull()
+      renderWidget()
+      expect(screen.getByText('dashboard.fichaje.clockInButton')).toBeTruthy()
+    })
+
+    it('clicar el CTA invoca postClockIn', async () => {
+      setupMocks({ entries: [] })
+      renderWidget()
+      fireEvent.click(screen.getByText('dashboard.fichaje.clockInButton'))
+      await waitFor(() => expect(mockPostClockIn).toHaveBeenCalledWith('user-1'))
     })
   })
 
-  describe('tabla de fichajes', () => {
-    it('renderiza la tabla cuando hay entries para el día', () => {
+  describe('timeline con pares cerrados', () => {
+    it('renderiza eventos entrada y salida', () => {
       setupMocks({
-        entries: [
-          makeEntry('in', 8, 30),
-          makeEntry('out', 14, 0),
-        ],
+        entries: [makeEntry('in', 8, 30), makeEntry('out', 14, 0)],
       })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByRole('table')).toBeTruthy()
+      renderWidget()
+      const entradas = screen.getAllByText('dashboard.fichaje.entrada')
+      const salidas = screen.getAllByText('dashboard.fichaje.salida')
+      expect(entradas.length).toBeGreaterThan(0)
+      expect(salidas.length).toBeGreaterThan(0)
     })
 
-    it('muestra las cabeceras de columna', () => {
+    it('muestra el botón Fichar entrada cuando el último par está cerrado', () => {
       setupMocks({
-        entries: [
-          makeEntry('in', 8, 30),
-          makeEntry('out', 14, 0),
-        ],
+        entries: [makeEntry('in', 8, 30), makeEntry('out', 14, 0)],
       })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByText('dashboard.fichaje.entrada')).toBeTruthy()
-      expect(screen.getByText('dashboard.fichaje.salida')).toBeTruthy()
-      expect(screen.getByText('dashboard.fichaje.columnHoras')).toBeTruthy()
+      renderWidget()
+      expect(screen.getByText('dashboard.fichaje.clockInButton')).toBeTruthy()
+    })
+  })
+
+  describe('timeline con par abierto', () => {
+    it('muestra "inProgress" sobre el último evento de entrada abierto', () => {
+      setupMocks({ entries: [makeEntry('in', 8, 30)] })
+      renderWidget()
+      expect(screen.getByText('states.inProgress')).toBeTruthy()
     })
 
-    it('muestra la fila total cuando hay pares completos', () => {
-      setupMocks({
-        entries: [
-          makeEntry('in', 8, 30),
-          makeEntry('out', 14, 0),
-        ],
-      })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByText('dashboard.fichaje.total')).toBeTruthy()
+    it('muestra el botón Fichar salida', () => {
+      setupMocks({ entries: [makeEntry('in', 8, 30)] })
+      renderWidget()
+      expect(screen.getByText('dashboard.fichaje.clockOutButton')).toBeTruthy()
     })
 
-    it('muestra "inProgress" para entradas sin salida cuando es hoy', () => {
-      // Entry 'in' with no 'out' for today = open pair (salida: null)
-      setupMocks({
-        entries: [makeEntry('in', 8, 30)],
-      })
-      render(<DailyFichajesWidget />)
-      expect(screen.getByText('dashboard.fichaje.inProgress')).toBeTruthy()
-    })
-
-    it('muestra el botón de editar para cada par', () => {
-      setupMocks({
-        entries: [
-          makeEntry('in', 8, 30),
-          makeEntry('out', 14, 0),
-        ],
-      })
-      render(<DailyFichajesWidget />)
-      const editBtn = screen.getByTitle('dashboard.fichaje.requestModification')
-      expect(editBtn).toBeTruthy()
+    it('clicar Fichar salida invoca postClockOut', async () => {
+      setupMocks({ entries: [makeEntry('in', 8, 30)] })
+      renderWidget()
+      fireEvent.click(screen.getByText('dashboard.fichaje.clockOutButton'))
+      await waitFor(() => expect(mockPostClockOut).toHaveBeenCalledWith('user-1'))
     })
   })
 
   describe('edición de fichaje', () => {
-    it('abre el formulario de edición al hacer clic en el botón de editar', () => {
+    it('abre el formulario inline al pulsar editar', () => {
       setupMocks({
-        entries: [
-          makeEntry('in', 9, 0),
-          makeEntry('out', 13, 30),
-        ],
+        entries: [makeEntry('in', 9, 0), makeEntry('out', 13, 30)],
       })
-      render(<DailyFichajesWidget />)
-      fireEvent.click(screen.getByTitle('dashboard.fichaje.requestModification'))
-      // Inputs de tiempo appear in editing mode
-      const timeInputs = screen.getAllByDisplayValue(/\d{2}:\d{2}/)
-      expect(timeInputs.length).toBeGreaterThan(0)
-    })
-
-    it('muestra botón de confirmar y cancelar en modo edición', () => {
-      setupMocks({
-        entries: [
-          makeEntry('in', 9, 0),
-          makeEntry('out', 13, 30),
-        ],
-      })
-      render(<DailyFichajesWidget />)
-      fireEvent.click(screen.getByTitle('dashboard.fichaje.requestModification'))
+      renderWidget()
+      const editButtons = screen.getAllByTitle('dashboard.fichaje.requestModification')
+      fireEvent.click(editButtons[0])
       expect(screen.getByText('dashboard.fichaje.submitModification')).toBeTruthy()
-      expect(screen.getByText('dashboard.cancel')).toBeTruthy()
+      expect(screen.getByText('actions.cancel')).toBeTruthy()
     })
 
-    it('cierra el formulario al hacer clic en cancelar', () => {
+    it('guarda la solicitud y muestra pendingApproval', () => {
       setupMocks({
-        entries: [
-          makeEntry('in', 9, 0),
-          makeEntry('out', 13, 30),
-        ],
+        entries: [makeEntry('in', 9, 0), makeEntry('out', 13, 30)],
       })
-      render(<DailyFichajesWidget />)
-      fireEvent.click(screen.getByTitle('dashboard.fichaje.requestModification'))
-      fireEvent.click(screen.getByText('dashboard.cancel'))
-      expect(screen.queryByText('dashboard.fichaje.submitModification')).toBeNull()
-      // Edit button should be back
-      expect(screen.getByTitle('dashboard.fichaje.requestModification')).toBeTruthy()
-    })
-
-    it('guarda la solicitud de modificación al confirmar', () => {
-      setupMocks({
-        entries: [
-          makeEntry('in', 9, 0),
-          makeEntry('out', 13, 30),
-        ],
-      })
-      render(<DailyFichajesWidget />)
-      fireEvent.click(screen.getByTitle('dashboard.fichaje.requestModification'))
-      fireEvent.click(screen.getByText('dashboard.fichaje.submitModification'))
-      // After submit, shows pending indicator
-      expect(screen.getByText('⏳')).toBeTruthy()
-    })
-
-    it('muestra el mensaje de pendingApproval tras guardar', () => {
-      setupMocks({
-        entries: [
-          makeEntry('in', 9, 0),
-          makeEntry('out', 13, 30),
-        ],
-      })
-      render(<DailyFichajesWidget />)
-      fireEvent.click(screen.getByTitle('dashboard.fichaje.requestModification'))
+      renderWidget()
+      const editButtons = screen.getAllByTitle('dashboard.fichaje.requestModification')
+      fireEvent.click(editButtons[0])
       fireEvent.click(screen.getByText('dashboard.fichaje.submitModification'))
       expect(screen.getByText('dashboard.fichaje.pendingApproval')).toBeTruthy()
     })
-  })
 
-  describe('navegación de semana', () => {
-    it('navega a la semana anterior al hacer clic en prevDay', () => {
-      setupMocks()
-      render(<DailyFichajesWidget />)
-      const prevBtn = screen.getByLabelText('dashboard.fichaje.prevDay')
-      fireEvent.click(prevBtn)
-      // After clicking prev, useDailyFichajes should have been called with a different date
-      expect(mockUseDailyFichajes).toHaveBeenCalled()
-    })
-
-    it('los días de la semana están renderizados (7 botones de día)', () => {
-      setupMocks()
-      render(<DailyFichajesWidget />)
-      // 7 day buttons in WeekDatePicker + prev/next = 9 total week-related buttons
-      // We check aria-pressed buttons (day buttons)
-      const dayButtons = screen.getAllByRole('button').filter(
-        (b) => b.hasAttribute('aria-pressed'),
-      )
-      expect(dayButtons.length).toBe(7)
+    it('cierra el formulario al cancelar', () => {
+      setupMocks({
+        entries: [makeEntry('in', 9, 0), makeEntry('out', 13, 30)],
+      })
+      renderWidget()
+      const editButtons = screen.getAllByTitle('dashboard.fichaje.requestModification')
+      fireEvent.click(editButtons[0])
+      fireEvent.click(screen.getByText('actions.cancel'))
+      expect(screen.queryByText('dashboard.fichaje.submitModification')).toBeNull()
     })
   })
 })

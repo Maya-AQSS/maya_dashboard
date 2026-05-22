@@ -159,7 +159,10 @@
     },
     "fichaje": {
       "notClockedIn": "No has fichado hoy.",
-      "clockInButton": "Fichar",
+      "clockInButton": "Fichar entrada",
+      "clockOutButton": "Fichar salida",
+      "clockingIn": "Fichando…",
+      "totalWorked": "Total trabajado",
       "clockedInAt": "Fichado a las {{time}}",
       "dailyTitle": "Fichajes del día",
       "prevDay": "Día anterior",
