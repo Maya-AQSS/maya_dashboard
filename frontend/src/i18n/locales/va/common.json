@@ -105,6 +105,27 @@
       "cityMinLength": "La població ha de tindre almenys {{count}} caràcters.",
       "cityHasLetters": "La població ha de tindre lletres (no pot ser només xifres).",
       "bioRequired": "La bio és obligatòria."
+    },
+    "academicContext": {
+      "loading": "Carregant context acadèmic…",
+      "loadErrorPrefix": "No s'ha pogut carregar el context acadèmic:",
+      "sectionAriaLabel": "Context acadèmic",
+      "unavailableBadge": "No disponible",
+      "blockUnavailable": "Dades acadèmiques temporalment no disponibles per a aquest bloc.",
+      "emptyState": "Sense assignacions",
+      "blocks": {
+        "studyTypes": "Tipus d'estudi",
+        "studies": "Estudis",
+        "modules": "Mòduls",
+        "teams": "Equips / Departaments"
+      },
+      "headers": {
+        "code": "Codi",
+        "name": "Nom",
+        "id": "ID",
+        "type": "Tipus",
+        "department": "Departament"
+      }
     }
   },
   "favorites": {

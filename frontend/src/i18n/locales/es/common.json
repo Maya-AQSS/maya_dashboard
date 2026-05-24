@@ -105,6 +105,27 @@
       "cityMinLength": "La población debe tener al menos {{count}} caracteres.",
       "cityHasLetters": "La población debe contener letras (no puede ser solo números).",
       "bioRequired": "La bio es obligatoria."
+    },
+    "academicContext": {
+      "loading": "Cargando contexto académico…",
+      "loadErrorPrefix": "No se pudo cargar el contexto académico:",
+      "sectionAriaLabel": "Contexto académico",
+      "unavailableBadge": "No disponible",
+      "blockUnavailable": "Datos académicos temporalmente no disponibles para este bloque.",
+      "emptyState": "Sin asignaciones",
+      "blocks": {
+        "studyTypes": "Tipos de estudio",
+        "studies": "Estudios",
+        "modules": "Módulos",
+        "teams": "Equipos / Departamentos"
+      },
+      "headers": {
+        "code": "Código",
+        "name": "Nombre",
+        "id": "ID",
+        "type": "Tipo",
+        "department": "Departamento"
+      }
     }
   },
   "favorites": {

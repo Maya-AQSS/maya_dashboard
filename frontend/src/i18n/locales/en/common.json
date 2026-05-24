@@ -105,6 +105,27 @@
       "cityMinLength": "City must have at least {{count}} characters.",
       "cityHasLetters": "City must contain letters (cannot be numbers only).",
       "bioRequired": "Bio is required."
+    },
+    "academicContext": {
+      "loading": "Loading academic context…",
+      "loadErrorPrefix": "Could not load academic context:",
+      "sectionAriaLabel": "Academic context",
+      "unavailableBadge": "Unavailable",
+      "blockUnavailable": "Academic data is temporarily unavailable for this block.",
+      "emptyState": "No assignments",
+      "blocks": {
+        "studyTypes": "Study types",
+        "studies": "Studies",
+        "modules": "Modules",
+        "teams": "Teams / Departments"
+      },
+      "headers": {
+        "code": "Code",
+        "name": "Name",
+        "id": "ID",
+        "type": "Type",
+        "department": "Department"
+      }
     }
   },
   "favorites": {

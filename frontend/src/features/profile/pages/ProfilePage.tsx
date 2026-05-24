@@ -118,6 +118,27 @@ function ProfilePage() {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const schema = useMemo(() => createProfileFormSchema(t), [t])
+  const academicContextTexts = useMemo(() => ({
+    loading: t('profile.academicContext.loading'),
+    loadErrorPrefix: t('profile.academicContext.loadErrorPrefix'),
+    sectionAriaLabel: t('profile.academicContext.sectionAriaLabel'),
+    blockLabels: {
+      study_types: t('profile.academicContext.blocks.studyTypes'),
+      studies: t('profile.academicContext.blocks.studies'),
+      modules: t('profile.academicContext.blocks.modules'),
+      teams: t('profile.academicContext.blocks.teams'),
+    },
+    unavailableBadge: t('profile.academicContext.unavailableBadge'),
+    blockUnavailable: t('profile.academicContext.blockUnavailable'),
+    emptyState: t('profile.academicContext.emptyState'),
+    headers: {
+      code: t('profile.academicContext.headers.code'),
+      name: t('profile.academicContext.headers.name'),
+      id: t('profile.academicContext.headers.id'),
+      type: t('profile.academicContext.headers.type'),
+      department: t('profile.academicContext.headers.department'),
+    },
+  }), [t])
 
   const {
     register,
@@ -294,6 +315,7 @@ function ProfilePage() {
             data={academicContext}
             isLoading={loadingAcademic}
             error={academicError instanceof Error ? academicError : null}
+            texts={academicContextTexts}
           />
 
           <PreferencesCard canUpdate={canUpdate} />
