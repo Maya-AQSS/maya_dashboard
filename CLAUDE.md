@@ -29,7 +29,7 @@ El dashboard autentica con Keycloak y puede redirigir a otras apps con un JWT de
 - Solo se permite redirect a dominios `*.localhost` (ver `isAllowedReturnUrl`)
 
 ## Paquetes compartidos
-Provienen del mono-repo `Maya-AQSS/maya-platform` y se distribuyen vía repos split
+Provienen del mono-repo `Maya-AQSS/maya_platform` y se distribuyen vía repos split
 (read-only) por paquete. Los servicios los consumen con Composer VCS y npm github:.
 
 - Backend: `maya/shared-*-laravel` (Composer, `https://github.com/Maya-AQSS/shared-*-laravel`, `^0.1`)
