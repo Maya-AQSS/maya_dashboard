@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@maya/shared-auth-react'
 import { Button } from '@maya/shared-ui-react'
@@ -390,15 +390,24 @@ function DailyFichajesWidget() {
   const pairs = pairEntries((entries as FichajeEntry[]) ?? [], selectedDate)
   const hasOpenPair = pairs.length > 0 && pairs[pairs.length - 1].salida === null
 
+  // Tick cada 60s para que el par abierto refresque el total sin recargar.
+  const [nowTick, setNowTick] = useState<number>(() => Date.now())
+  useEffect(() => {
+    if (!hasOpenPair) return
+    const id = window.setInterval(() => setNowTick(Date.now()), 60_000)
+    return () => window.clearInterval(id)
+  }, [hasOpenPair])
+
   const totalMs = pairs.reduce<number>((sum, p) => {
-    if (!p.salida) return sum
     const start = (p.entrada.timestamp instanceof Date
       ? p.entrada.timestamp
       : new Date(p.entrada.timestamp)).getTime()
-    const end = (p.salida.timestamp instanceof Date
-      ? p.salida.timestamp
-      : new Date(p.salida.timestamp)).getTime()
-    return sum + (end - start)
+    const end = p.salida
+      ? (p.salida.timestamp instanceof Date
+          ? p.salida.timestamp
+          : new Date(p.salida.timestamp)).getTime()
+      : nowTick
+    return sum + Math.max(0, end - start)
   }, 0)
 
   // ── Mutaciones clock-in / clock-out ─────────────────────────────────────
