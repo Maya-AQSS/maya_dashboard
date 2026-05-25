@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useAuth } from '@maya/shared-auth-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { apiGetJson } from '../../../api/http'
 
 type AlertColor = 'red' | 'amber' | 'blue' | 'green'

@@ -14,28 +14,28 @@ vi.mock('react-i18next', () => ({
   useTranslation: vi.fn(() => ({ t: (k: string) => k })),
 }))
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
   useOidcSession: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useKeycloakLocaleSync: vi.fn(),
   useLocale: vi.fn(),
 }))
 
-vi.mock('@maya/shared-layout-react', () => ({
+vi.mock('@ceedcv-maya/shared-layout-react', () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="app-layout">{children}</div>
   ),
 }))
 
-vi.mock('@maya/shared-sidebar-react', () => ({
+vi.mock('@ceedcv-maya/shared-sidebar-react', () => ({
   NotificationsBell: () => <div data-testid="notifications-bell" />,
   SidebarFavorites: () => <div data-testid="sidebar-favorites" />,
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
     <button onClick={onClick}>{children}</button>
   ),
@@ -81,7 +81,7 @@ vi.mock('./shared/pages/NotFoundPage', () => ({
 }))
 
 // --- Imports after mocks ---
-import { useOidcSession, useAuth } from '@maya/shared-auth-react'
+import { useOidcSession, useAuth } from '@ceedcv-maya/shared-auth-react'
 import App from './App'
 
 const mockUseOidcSession = vi.mocked(useOidcSession)

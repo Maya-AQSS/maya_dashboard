@@ -8,7 +8,7 @@ vi.mock('../auth/oidcAdapter', () => ({
 }))
 
 // Mock createApiClient so it returns a stub — we only test mapApiError here
-vi.mock('@maya/shared-auth-react', () => {
+vi.mock('@ceedcv-maya/shared-auth-react', () => {
   class ApiHttpError extends Error {
     status: number
     constructor(status: number, message = '') {

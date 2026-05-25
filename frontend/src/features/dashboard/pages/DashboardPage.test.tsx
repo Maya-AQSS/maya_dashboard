@@ -28,7 +28,7 @@ vi.mock('../widgets/registry', () => ({
   },
 }))
 
-vi.mock('@maya/shared-dashboard-react', () => ({
+vi.mock('@ceedcv-maya/shared-dashboard-react', () => ({
   DashboardSkeleton: ({ blocks }: { blocks: unknown[] }) => (
     <div data-testid="dashboard-skeleton">Loading skeleton {blocks.length}</div>
   ),
@@ -92,7 +92,7 @@ vi.mock('@maya/shared-dashboard-react', () => ({
   ),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   PageTitle: ({
     title,
     actions,
@@ -108,7 +108,7 @@ vi.mock('@maya/shared-ui-react', () => ({
   useToast: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -121,8 +121,8 @@ vi.mock('../../user-profile', () => ({
 }))
 
 import useDashboardLayout from '../../dashboard-layout/hooks/useDashboardLayout'
-import { useToast } from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useToast } from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import DashboardPage from './DashboardPage'
 
 const mockUseDashboardLayout = vi.mocked(useDashboardLayout)

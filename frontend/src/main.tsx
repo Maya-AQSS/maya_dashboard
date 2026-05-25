@@ -10,7 +10,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './index.css'
 import './i18n'
 import App from './App'
-import { AuthProvider } from '@maya/shared-auth-react'
+import { AuthProvider } from '@ceedcv-maya/shared-auth-react'
 import { oidcAuthService } from './auth/oidcAdapter'
 
 const queryClient = new QueryClient({

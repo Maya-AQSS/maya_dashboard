@@ -15,7 +15,7 @@ vi.mock('../../../api/http', () => ({
   },
 }))
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: () => ({ user: { sub: 'user-1' } }),
 }))
 

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react'
-import { createDataHook, createMutationHook, useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { createDataHook, createMutationHook, useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { getDashboardLayout, updateDashboardLayout } from '../api/dashboardLayoutApi'
 
 interface DashboardLayoutResponse {

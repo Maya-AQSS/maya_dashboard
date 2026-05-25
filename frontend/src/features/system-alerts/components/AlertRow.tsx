@@ -1,6 +1,6 @@
 import { useActionState } from 'react'
-import { Button } from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { Button } from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 
 export interface SystemAlert {
   id: string | number

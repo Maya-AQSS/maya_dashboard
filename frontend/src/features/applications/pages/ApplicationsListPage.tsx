@@ -11,9 +11,9 @@ import {
   TextInput,
   useTablePreferences,
   type ColumnDef,
-} from '@maya/shared-ui-react'
+} from '@ceedcv-maya/shared-ui-react'
 import useApplicationsData from '../hooks/useApplicationsData'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 
 type App = {
   id: string

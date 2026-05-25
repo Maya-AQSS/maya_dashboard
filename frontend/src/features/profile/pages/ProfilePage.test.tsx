@@ -8,11 +8,11 @@ vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(() => vi.fn()),
 }))
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -32,7 +32,7 @@ vi.mock('../../user-profile', () => ({
   }),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   Button: ({
     children,
     onClick,
@@ -107,8 +107,8 @@ vi.mock('@maya/shared-ui-react', () => ({
 }))
 
 // --- Imports after mocks ---
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useNavigate } from 'react-router-dom'
 import { updateProfile } from '../api/profileApi'
 import { updateMyLocale } from '../../../api/auth'

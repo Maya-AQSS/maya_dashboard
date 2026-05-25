@@ -1,4 +1,4 @@
-import { Button } from '@maya/shared-ui-react'
+import { Button } from '@ceedcv-maya/shared-ui-react'
 import { useTranslation } from 'react-i18next'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
 import type { AlertItem } from '../../alerts/hooks/useActiveSystemAlerts'

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * Estos tests mockean el wrapper local `../../../api/http` (donde vive el
- * cliente real basado en `@maya/shared-auth-react`). La auth (Bearer
+ * cliente real basado en `@ceedcv-maya/shared-auth-react`). La auth (Bearer
  * Keycloak) la inyecta el cliente automáticamente; el módulo
  * `favoritesApi` solo construye la URL relativa y traduce el error con
  * `mapApiError`.

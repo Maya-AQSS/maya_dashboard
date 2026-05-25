@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiGetJson } from '../../../api/http'
-import type { AcademicContext } from '@maya/shared-profile-react'
+import type { AcademicContext } from '@ceedcv-maya/shared-profile-react'
 
 /**
  * Carga el contexto académico del propio usuario logueado.

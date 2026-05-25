@@ -3,11 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -27,7 +27,7 @@ vi.mock('../../fichaje/api/clockInApi', () => ({
   postClockOut: vi.fn().mockResolvedValue({}),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   Button: ({
     children,
     onClick,
@@ -45,8 +45,8 @@ vi.mock('@maya/shared-ui-react', () => ({
   ),
 }))
 
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 import { postClockIn, postClockOut } from '../../fichaje/api/clockInApi'
 import DailyFichajesWidget from './DailyFichajesWidget'

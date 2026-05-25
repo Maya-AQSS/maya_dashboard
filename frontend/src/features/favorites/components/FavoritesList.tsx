@@ -1,6 +1,6 @@
 import { useState, useRef, type MouseEvent } from 'react'
-import { ConfirmDialog, FAVORITE_STAR_FILLED_CHAR } from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { ConfirmDialog, FAVORITE_STAR_FILLED_CHAR } from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useFavoritesContext } from '../context/FavoritesContext'
 
 interface Favorite {

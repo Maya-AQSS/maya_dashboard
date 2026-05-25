@@ -5,8 +5,8 @@ import {
   type CalendarEvent,
 } from '../../bookings/components/DashboardCalendar'
 import { BookingDetailsPopover } from '../../bookings/components/BookingDetailsPopover'
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useBookings } from '../../bookings/hooks/useBookings'
 import type { Booking } from '../../bookings/types/booking'
 
