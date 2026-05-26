@@ -17,10 +17,10 @@ import {
   DashboardSkeleton,
   WidgetGrid,
   type SkeletonBlock,
-} from '@maya/shared-dashboard-react'
+} from '@ceedcv-maya/shared-dashboard-react'
 import { WIDGET_REGISTRY } from '../widgets/registry'
-import { PageTitle, useToast } from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { PageTitle, useToast } from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 

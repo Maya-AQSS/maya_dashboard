@@ -66,7 +66,7 @@ export interface DashboardCalendarProps {
  *
  * Lives in `features/bookings/components/` for now: it's only used by the
  * bookings widget. If a second consumer appears it can be extracted to
- * `@maya/shared-dashboard-react` per the workspace "extract at ≥2 consumers"
+ * `@ceedcv-maya/shared-dashboard-react` per the workspace "extract at ≥2 consumers"
  * rule, behind a sub-export so siblings without react-big-calendar/date-fns
  * are not affected.
  */

@@ -13,7 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
  * The real QueryClientProvider is still needed for useQueryClient() inside
  * FavoritesProvider (used for optimistic updates).
  */
-vi.mock('@maya/shared-auth-react', () => {
+vi.mock('@ceedcv-maya/shared-auth-react', () => {
   return {
     useAuth: vi.fn(),
     /**
@@ -87,7 +87,7 @@ vi.mock('@maya/shared-auth-react', () => {
   }
 })
 
-vi.mock('@maya/shared-sidebar-react', () => ({
+vi.mock('@ceedcv-maya/shared-sidebar-react', () => ({
   notifyFavoritesChanged: vi.fn(),
 }))
 
@@ -97,8 +97,8 @@ vi.mock('../api/favoritesApi', () => ({
   removeFavorite: vi.fn(),
 }))
 
-import { useAuth } from '@maya/shared-auth-react'
-import { notifyFavoritesChanged } from '@maya/shared-sidebar-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { notifyFavoritesChanged } from '@ceedcv-maya/shared-sidebar-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 import { FavoritesProvider, useFavoritesContext } from './FavoritesContext'
 

@@ -1,12 +1,12 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { Route, Routes, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AppLayout } from '@maya/shared-layout-react'
-import { NotificationsBell, SidebarFavorites } from '@maya/shared-sidebar-react'
-import { useKeycloakLocaleSync } from '@maya/shared-i18n-react'
-import { useAuth, useOidcSession } from '@maya/shared-auth-react'
-import { useLogoutWithoutLoginPermission } from '@maya/shared-profile-react'
-import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@maya/shared-ui-react'
+import { AppLayout } from '@ceedcv-maya/shared-layout-react'
+import { NotificationsBell, SidebarFavorites } from '@ceedcv-maya/shared-sidebar-react'
+import { useKeycloakLocaleSync } from '@ceedcv-maya/shared-i18n-react'
+import { useAuth, useOidcSession } from '@ceedcv-maya/shared-auth-react'
+import { useLogoutWithoutLoginPermission } from '@ceedcv-maya/shared-profile-react'
+import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
 import { UserProfileProvider, useUserProfile } from './features/user-profile'
@@ -133,7 +133,7 @@ function AppWithLayout() {
 
 // Locale sync (Keycloak → i18n + cookie + `<html lang>`) lo cubre
 // `useKeycloakLocaleSync()` invocado desde `AppWithLayout`; el resto del
-// setup i18n vive en `src/i18n/index.ts` y `@maya/shared-i18n-react`.
+// setup i18n vive en `src/i18n/index.ts` y `@ceedcv-maya/shared-i18n-react`.
 // ToastProvider envuelve AppWithLayout para que `useToast` esté disponible.
 function AppProviders({ children }: { children: ReactNode }) {
   return (

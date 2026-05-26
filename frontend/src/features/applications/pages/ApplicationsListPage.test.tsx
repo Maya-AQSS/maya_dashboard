@@ -5,11 +5,11 @@ vi.mock('../hooks/useApplicationsData', () => ({
   default: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
-vi.mock('@maya/shared-ui-react', () => {
+vi.mock('@ceedcv-maya/shared-ui-react', () => {
   const ConfirmDialog = ({
     open,
     title,
@@ -132,7 +132,7 @@ vi.mock('@maya/shared-ui-react', () => {
 })
 
 import useApplicationsData from '../hooks/useApplicationsData'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import ApplicationsListPage from './ApplicationsListPage'
 
 const mockUseApplicationsData = vi.mocked(useApplicationsData)

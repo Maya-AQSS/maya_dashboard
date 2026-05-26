@@ -29,9 +29,13 @@ El dashboard autentica con Keycloak y puede redirigir a otras apps con un JWT de
 - Solo se permite redirect a dominios `*.localhost` (ver `isAllowedReturnUrl`)
 
 ## Paquetes compartidos
-- `maya-shared-auth-laravel`: middleware JWT/JWKS (Composer path en `../infra/packages/`)
-- `maya-shared-auth-react`: hooks/componentes Keycloak auth (npm file: en `../infra/packages/`)
-- Symlink `../packages → ../infra/packages` para compatibilidad
+Provienen del mono-repo `Maya-AQSS/maya_platform` y se distribuyen como
+paquetes públicos estándar:
+
+- Backend: `ceedcv-maya/shared-*-laravel` (Packagist, `^0.2`)
+- Frontend: `@ceedcv-maya/shared-*-react` (npm registry, `^0.2.0`)
+- Dev override local: copiar `backend/composer.local.dist.json` → `composer.local.json` (gitignored)
+- Doc completa: ver PM05 en `DOCUMENTATION/docs/src/desarrollo/`
 
 ## Guías importantes
 - `../maya_authorization/docs/src/new-app-guide.md` — requisitos para nuevas apps

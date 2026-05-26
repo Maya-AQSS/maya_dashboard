@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   Button: ({ children, onClick, disabled }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean }) => (
     <button onClick={onClick} disabled={disabled}>
       {children}
@@ -17,7 +17,7 @@ vi.mock('@maya/shared-ui-react', () => ({
   ),
 }))
 
-import { useLocale } from '@maya/shared-i18n-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertRow, type SystemAlert } from './AlertRow'
 
 const mockUseLocale = vi.mocked(useLocale)

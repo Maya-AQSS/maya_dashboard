@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { createDataHook, createMutationHook, useAuth } from '@maya/shared-auth-react'
-import { notifyFavoritesChanged } from '@maya/shared-sidebar-react'
+import { createDataHook, createMutationHook, useAuth } from '@ceedcv-maya/shared-auth-react'
+import { notifyFavoritesChanged } from '@ceedcv-maya/shared-sidebar-react'
 import { getFavorites, addFavorite, removeFavorite } from '../api/favoritesApi'
 
 interface Favorite {

@@ -5,7 +5,7 @@ vi.mock('../../alerts/hooks/useUserAlerts', () => ({
   useUserAlerts: vi.fn(),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   Button: ({
     children,
     onClick,

@@ -1,9 +1,9 @@
 /**
- * Inicialización del cliente OIDC (Keycloak vía @maya/shared-auth-react).
+ * Inicialización del cliente OIDC (Keycloak vía @ceedcv-maya/shared-auth-react).
  * Solo este archivo lee `import.meta.env.VITE_KEYCLOAK_*`; el resto de la app
  * consume el servicio resultante o los hooks (`useOidcSession`, `useAuth`) del paquete.
  */
-import { AuthService } from '@maya/shared-auth-react';
+import { AuthService } from '@ceedcv-maya/shared-auth-react';
 
 export const oidcAuthService = new AuthService({
   url: import.meta.env.VITE_KEYCLOAK_URL,

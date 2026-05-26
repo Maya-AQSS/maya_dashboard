@@ -43,7 +43,6 @@ services:
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/maya_infra/packages
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health/live || exit 1"]
       interval: 15s
@@ -103,7 +102,6 @@ services:
     command: []
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/maya_infra/packages
       - ../maya_infra/scripts:/maya_infra/scripts:ro
     networks:
       - maya_network
@@ -160,7 +158,6 @@ services:
     command: []
     volumes:
       - ./backend:/var/www/html
-      - ../maya_infra/packages:/var/maya_infra/packages
     networks:
       - maya_network
 
@@ -184,7 +181,6 @@ services:
         condition: service_healthy
     volumes:
       - ./frontend:/app
-      - ../maya_infra/packages:/maya_infra/packages
       - ../maya_infra/configs:/maya_infra/configs:ro
       - /app/node_modules
     ports:

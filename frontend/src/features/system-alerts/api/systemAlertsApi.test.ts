@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * Mockeamos el wrapper local `../../../api/http`. La auth Bearer la inyecta
- * el cliente real basado en `@maya/shared-auth-react`; el módulo bajo test
+ * el cliente real basado en `@ceedcv-maya/shared-auth-react`; el módulo bajo test
  * solo construye la URL + querystring y traduce el error con `mapApiError`.
  */
 vi.mock('../../../api/http', () => {

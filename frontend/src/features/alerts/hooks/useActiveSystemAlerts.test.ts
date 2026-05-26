@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
@@ -21,7 +21,7 @@ vi.mock('../../../api/http', () => {
   }
 })
 
-import { useAuth } from '@maya/shared-auth-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { apiGetJson } from '../../../api/http'
 import { useActiveSystemAlerts } from './useActiveSystemAlerts'
 

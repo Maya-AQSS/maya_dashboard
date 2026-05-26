@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   PageTitle: ({ title, subtitle }: { title: string; subtitle?: string }) => (
     <div>
       <h1>{title}</h1>
@@ -63,8 +63,8 @@ vi.mock('../hooks/useSystemAlerts', () => ({
   useSystemAlerts: vi.fn(),
 }))
 
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 import SystemAlertsPage from './SystemAlertsPage'
 

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuth, type AuthUser } from '@maya/shared-auth-react'
+import { useAuth, type AuthUser } from '@ceedcv-maya/shared-auth-react'
 import {
   Button,
   FieldLabel,
@@ -10,9 +10,9 @@ import {
   Select,
   TextArea,
   TextInput,
-} from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
-import { UserAcademicContext } from '@maya/shared-profile-react'
+} from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { UserAcademicContext } from '@ceedcv-maya/shared-profile-react'
 import { updateMyLocale } from '../../../api/auth'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'

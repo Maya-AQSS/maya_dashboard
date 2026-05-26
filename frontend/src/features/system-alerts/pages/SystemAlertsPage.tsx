@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useAuth } from '@maya/shared-auth-react'
-import { Checkbox, PageTitle, Select } from '@maya/shared-ui-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { Checkbox, PageTitle, Select } from '@ceedcv-maya/shared-ui-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useSystemAlerts } from '../hooks/useSystemAlerts'
 import { AlertRow, type SystemAlert } from '../components/AlertRow'
 

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
-vi.mock('@maya/shared-ui-react', () => ({
+vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   ConfirmDialog: ({
     open,
     onConfirm,
@@ -33,7 +33,7 @@ vi.mock('../context/FavoritesContext', () => ({
   useFavoritesContext: vi.fn(),
 }))
 
-import { useLocale } from '@maya/shared-i18n-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useFavoritesContext } from '../context/FavoritesContext'
 import FavoritesList from './FavoritesList'
 

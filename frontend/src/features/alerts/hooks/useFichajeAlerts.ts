@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@maya/shared-auth-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { postClockIn } from '../../fichaje/api/clockInApi'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 import type { AlertItem } from './useActiveSystemAlerts'

@@ -3,7 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 
 /**
  * El hook usa `createDataHook` + `createMutationHook` de
- * `@maya/shared-auth-react`, que internamente llaman a `useQuery` /
+ * `@ceedcv-maya/shared-auth-react`, que internamente llaman a `useQuery` /
  * `useMutation` de TanStack — y esa instancia de TanStack resuelve una
  * copia de React diferente a la del app (dual-react problem en monorepo).
  * Por eso mockeamos los factories: cada factory devuelve un hook simple
@@ -14,7 +14,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
  * `saveLayout`, `resetToDefault`). Para verificar la integración real
  * con cache se necesitaría un test e2e o un setup de dedupe de React.
  */
-vi.mock('@maya/shared-auth-react', () => {
+vi.mock('@ceedcv-maya/shared-auth-react', () => {
   // Estado mínimo de un query simulado: arranca llamando al fetcher y
   // expone { data, isLoading, error }. Re-fetch en cambio de queryKey
   // se ignora por simplicidad — los tests usan rerender mínimo.
@@ -65,7 +65,7 @@ vi.mock('@maya/shared-auth-react', () => {
   }
 })
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -74,8 +74,8 @@ vi.mock('../api/dashboardLayoutApi', () => ({
   updateDashboardLayout: vi.fn(),
 }))
 
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from './useDashboardLayout'
 import {
   getDashboardLayout,

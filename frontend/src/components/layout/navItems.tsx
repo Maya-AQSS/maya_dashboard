@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { NavItem } from '@maya/shared-layout-react'
-import { HomeIcon, GridIcon } from '@maya/shared-layout-react'
+import type { NavItem } from '@ceedcv-maya/shared-layout-react'
+import { HomeIcon, GridIcon } from '@ceedcv-maya/shared-layout-react'
 
 export function useNavItems(): NavItem[] {
   const { t } = useTranslation('common')

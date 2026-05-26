@@ -3,11 +3,11 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-vi.mock('@maya/shared-auth-react', () => ({
+vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('@maya/shared-i18n-react', () => ({
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
@@ -19,8 +19,8 @@ vi.mock('../../favorites/context/FavoritesContext', () => ({
   useFavoritesContext: vi.fn(),
 }))
 
-import { useAuth } from '@maya/shared-auth-react'
-import { useLocale } from '@maya/shared-i18n-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { getApplicationsData } from '../api/applicationsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 import useApplicationsData from './useApplicationsData'
