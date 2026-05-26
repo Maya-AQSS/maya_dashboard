@@ -4,3 +4,4 @@
 
 # Vitest coverage (Fase B test coverage tooling)
 coverage/
+package-lock.json
