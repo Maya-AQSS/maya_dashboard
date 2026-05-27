@@ -292,23 +292,5 @@
       "read": "Llegida",
       "unread": "No llegida"
     }
-  },
-  "filters": {
-    "search": "Cercar",
-    "severityLabel": "Severitat",
-    "dateFrom": "Des de",
-    "dateTo": "Fins a"
-  },
-  "pagination": {
-    "prev": "Anterior",
-    "next": "Següent"
-  },
-  "common": {
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "cancel": "Cancel·lar",
-    "save": "Desar",
-    "saving": "Desant…",
-    "create": "Crear"
   }
 }

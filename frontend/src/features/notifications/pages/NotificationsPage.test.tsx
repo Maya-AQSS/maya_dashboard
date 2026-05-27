@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { createElement } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -33,10 +33,16 @@ vi.mock('../hooks/useNotifications', () => ({
   useNotifications: vi.fn(),
 }))
 
+vi.mock('../api/notificationsApi', () => ({
+  getUnreadCount: vi.fn(),
+}))
+
 import { useNotifications } from '../hooks/useNotifications'
+import { getUnreadCount } from '../api/notificationsApi'
 import NotificationsPage from './NotificationsPage'
 
 const mockUseNotifications = vi.mocked(useNotifications)
+const mockGetUnreadCount = vi.mocked(getUnreadCount)
 
 const NOOP_ASYNC = vi.fn().mockResolvedValue(undefined)
 
@@ -64,6 +70,7 @@ function renderPage() {
 describe('NotificationsPage', () => {
   beforeEach(() => {
     mockUseNotifications.mockReturnValue(DEFAULT_RETURN)
+    mockGetUnreadCount.mockResolvedValue({ unread: 0 })
   })
 
   afterEach(() => {
@@ -127,26 +134,16 @@ describe('NotificationsPage', () => {
   })
 
   describe('botón marcar todas como leídas', () => {
-    it('aparece cuando hay notificaciones no leídas', () => {
-      const notif = {
-        id: 1, title: 'Aviso', app: 'maya_auth', type: 'user.invited',
-        recipient_id: 'uuid-1', body: null, channels: [], metadata: {},
-        read_at: null, created_at: '2026-05-27T10:00:00Z', message_id: null,
-      }
-      mockUseNotifications.mockReturnValue({ ...DEFAULT_RETURN, notifications: [notif as never] })
+    it('aparece cuando hay notificaciones no leídas', async () => {
+      mockGetUnreadCount.mockResolvedValue({ unread: 1 })
       renderPage()
-      expect(screen.getByText('notifications.markAllRead')).toBeTruthy()
+      await waitFor(() => expect(screen.getByText('notifications.markAllRead')).toBeTruthy())
     })
 
-    it('no aparece cuando todas están leídas', () => {
-      const notif = {
-        id: 1, title: 'Aviso', app: 'maya_auth', type: 'user.invited',
-        recipient_id: 'uuid-1', body: null, channels: [], metadata: {},
-        read_at: '2026-05-27T09:00:00Z', created_at: '2026-05-27T08:00:00Z', message_id: null,
-      }
-      mockUseNotifications.mockReturnValue({ ...DEFAULT_RETURN, notifications: [notif as never] })
+    it('no aparece cuando todas están leídas', async () => {
+      mockGetUnreadCount.mockResolvedValue({ unread: 0 })
       renderPage()
-      expect(screen.queryByText('notifications.markAllRead')).toBeNull()
+      await waitFor(() => expect(screen.queryByText('notifications.markAllRead')).toBeNull())
     })
   })
 })

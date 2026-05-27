@@ -18,7 +18,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 export default function NotificationDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const notifId = Number(id)
+  const notifId = id != null && /^\d+$/.test(id) ? Number(id) : undefined
   const navigate = useNavigate()
   const { t } = useLocale()
   const { toast } = useToast()
@@ -27,9 +27,9 @@ export default function NotificationDetailPage() {
   const { data: notification, isLoading, error } = useNotification(notifId)
 
   const markReadMutation = useMutation({
-    mutationFn: () => markNotificationRead(notifId),
+    mutationFn: () => markNotificationRead(notifId!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notification', notifId] })
+      queryClient.invalidateQueries({ queryKey: ['notification', notifId!] })
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       toast({ tone: 'success', title: t('notifications.markReadSuccess') })
     },

@@ -292,23 +292,5 @@
       "read": "Leída",
       "unread": "No leída"
     }
-  },
-  "filters": {
-    "search": "Buscar",
-    "severityLabel": "Severidad",
-    "dateFrom": "Desde",
-    "dateTo": "Hasta"
-  },
-  "pagination": {
-    "prev": "Anterior",
-    "next": "Siguiente"
-  },
-  "common": {
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "cancel": "Cancelar",
-    "save": "Guardar",
-    "saving": "Guardando…",
-    "create": "Crear"
   }
 }

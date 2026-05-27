@@ -48,35 +48,27 @@ class NotificationController extends Controller
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        return response()->json(
-            (new NotificationResource($this->notifications->find($recipientId, $notificationId)))->resolve($request),
-        );
+        return $this->okData(new NotificationResource($this->notifications->find($recipientId, $notificationId)));
     }
 
     public function markRead(Request $request, int $notificationId): JsonResponse
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        return response()->json(
-            (new NotificationResource($this->notifications->markRead($recipientId, $notificationId)))->resolve($request),
-        );
+        return $this->okData(new NotificationResource($this->notifications->markRead($recipientId, $notificationId)));
     }
 
     public function markAllRead(Request $request): JsonResponse
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        return response()->json([
-            'updated' => $this->notifications->markAllRead($recipientId),
-        ]);
+        return $this->okData(['updated' => $this->notifications->markAllRead($recipientId)]);
     }
 
     public function unreadCount(Request $request): JsonResponse
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        return response()->json([
-            'unread' => $this->notifications->unreadCount($recipientId),
-        ]);
+        return $this->okData(['unread' => $this->notifications->unreadCount($recipientId)]);
     }
 }

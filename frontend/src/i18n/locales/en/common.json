@@ -292,23 +292,5 @@
       "read": "Read",
       "unread": "Unread"
     }
-  },
-  "filters": {
-    "search": "Search",
-    "severityLabel": "Severity",
-    "dateFrom": "From",
-    "dateTo": "To"
-  },
-  "pagination": {
-    "prev": "Previous",
-    "next": "Next"
-  },
-  "common": {
-    "edit": "Edit",
-    "delete": "Delete",
-    "cancel": "Cancel",
-    "save": "Save",
-    "saving": "Saving…",
-    "create": "Create"
   }
 }

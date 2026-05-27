@@ -6,7 +6,8 @@ export function useNotification(id: number | undefined) {
   return useQuery<Notification, Error>({
     queryKey: ['notification', id],
     queryFn: () => getNotification(id!),
-    enabled: id != null,
+    enabled: id != null && !Number.isNaN(id),
+    staleTime: 60_000,
     retry: 1,
   })
 }

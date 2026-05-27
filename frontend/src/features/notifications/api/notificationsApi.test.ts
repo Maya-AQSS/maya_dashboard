@@ -33,6 +33,7 @@ import {
   getNotification,
   markNotificationRead,
   markAllNotificationsRead,
+  getUnreadCount,
 } from './notificationsApi'
 import { ApiHttpError, apiFetchJson, apiGetJson } from '../../../api/http'
 
@@ -43,18 +44,29 @@ describe('notificationsApi', () => {
 
   // ─── listNotifications ─────────────────────────────────────────────
   describe('listNotifications', () => {
-    it('GET al endpoint /notifications sin filtros', async () => {
-      const payload = { data: [], meta: {} }
-      vi.mocked(apiGetJson).mockResolvedValue(payload)
+    it('GET al endpoint /notifications sin filtros y transforma la respuesta plana', async () => {
+      const raw = {
+        data: [],
+        current_page: 1,
+        last_page: 1,
+        per_page: 25,
+        total: 0,
+        from: null,
+        to: null,
+      }
+      vi.mocked(apiGetJson).mockResolvedValue(raw)
 
       const result = await listNotifications()
 
       expect(apiGetJson).toHaveBeenCalledWith(expect.stringContaining('/notifications?'))
-      expect(result).toBe(payload)
+      expect(result).toEqual({
+        data: [],
+        meta: { current_page: 1, last_page: 1, per_page: 25, total: 0, from: null, to: null },
+      })
     })
 
     it('incluye unread_only=1 cuando se indica', async () => {
-      vi.mocked(apiGetJson).mockResolvedValue({ data: [], meta: {} })
+      vi.mocked(apiGetJson).mockResolvedValue({ data: [], current_page: 1, last_page: 1, per_page: 25, total: 0, from: null, to: null })
 
       await listNotifications({ unread_only: true })
 
@@ -62,7 +74,7 @@ describe('notificationsApi', () => {
     })
 
     it('incluye search en el querystring', async () => {
-      vi.mocked(apiGetJson).mockResolvedValue({ data: [], meta: {} })
+      vi.mocked(apiGetJson).mockResolvedValue({ data: [], current_page: 1, last_page: 1, per_page: 25, total: 0, from: null, to: null })
 
       await listNotifications({ search: 'aviso' })
 
@@ -91,9 +103,9 @@ describe('notificationsApi', () => {
 
   // ─── getNotification ───────────────────────────────────────────────
   describe('getNotification', () => {
-    it('GET al endpoint /notifications/{id}', async () => {
+    it('GET al endpoint /notifications/{id} y desenvuelve data', async () => {
       const notif = { id: 42, title: 'Aviso', app: 'maya_auth' }
-      vi.mocked(apiGetJson).mockResolvedValue(notif)
+      vi.mocked(apiGetJson).mockResolvedValue({ data: notif })
 
       const result = await getNotification(42)
 
@@ -110,14 +122,14 @@ describe('notificationsApi', () => {
 
   // ─── markNotificationRead ──────────────────────────────────────────
   describe('markNotificationRead', () => {
-    it('POST al endpoint /notifications/{id}/read', async () => {
-      const response = { id: 7, read_at: '2026-05-27T10:00:00Z' }
-      vi.mocked(apiFetchJson).mockResolvedValue(response)
+    it('POST al endpoint /notifications/{id}/read y desenvuelve data', async () => {
+      const notif = { id: 7, read_at: '2026-05-27T10:00:00Z' }
+      vi.mocked(apiFetchJson).mockResolvedValue({ data: notif })
 
       const result = await markNotificationRead(7)
 
       expect(apiFetchJson).toHaveBeenCalledWith('/notifications/7/read', { method: 'POST' })
-      expect(result).toBe(response)
+      expect(result).toBe(notif)
     })
 
     it('mapea 401 → notifications.errorUnauthorized', async () => {
@@ -129,13 +141,31 @@ describe('notificationsApi', () => {
 
   // ─── markAllNotificationsRead ──────────────────────────────────────
   describe('markAllNotificationsRead', () => {
-    it('POST al endpoint /notifications/mark-all-read', async () => {
-      vi.mocked(apiFetchJson).mockResolvedValue({ updated: 5 })
+    it('POST al endpoint /notifications/mark-all-read y desenvuelve data', async () => {
+      vi.mocked(apiFetchJson).mockResolvedValue({ data: { updated: 5 } })
 
       const result = await markAllNotificationsRead()
 
       expect(apiFetchJson).toHaveBeenCalledWith('/notifications/mark-all-read', { method: 'POST' })
       expect(result).toEqual({ updated: 5 })
+    })
+  })
+
+  // ─── getUnreadCount ────────────────────────────────────────────────
+  describe('getUnreadCount', () => {
+    it('GET al endpoint /notifications/unread-count y desenvuelve data', async () => {
+      vi.mocked(apiGetJson).mockResolvedValue({ data: { unread: 3 } })
+
+      const result = await getUnreadCount()
+
+      expect(apiGetJson).toHaveBeenCalledWith('/notifications/unread-count')
+      expect(result).toEqual({ unread: 3 })
+    })
+
+    it('mapea 401 → notifications.errorUnauthorized', async () => {
+      vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(401))
+
+      await expect(getUnreadCount()).rejects.toThrow('notifications.errorUnauthorized')
     })
   })
 })

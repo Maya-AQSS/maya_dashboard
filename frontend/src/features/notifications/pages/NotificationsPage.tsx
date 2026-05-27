@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   Badge,
   Button,
@@ -12,10 +13,12 @@ import {
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { getUnreadCount } from '../api/notificationsApi'
 import { useNotifications } from '../hooks/useNotifications'
 import type { Notification, NotificationListFilters } from '../types/notification'
 
 const PAGE_SIZE = 25
+const POLL_MS = 60_000
 
 export default function NotificationsPage() {
   const { t } = useLocale()
@@ -30,6 +33,12 @@ export default function NotificationsPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    }
+  }, [])
+
   const filters: NotificationListFilters = {
     page,
     per_page: PAGE_SIZE,
@@ -40,6 +49,14 @@ export default function NotificationsPage() {
   }
 
   const { notifications, meta, loading, error, onMarkRead, onMarkAllRead } = useNotifications(filters)
+
+  const { data: unreadData } = useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: getUnreadCount,
+    refetchInterval: POLL_MS,
+    staleTime: 30_000,
+  })
+  const unreadCount = unreadData?.unread ?? 0
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -91,7 +108,6 @@ export default function NotificationsPage() {
             {n.title}
           </span>
         ),
-        sortable: true,
         alwaysVisible: true,
       },
       {
@@ -153,8 +169,6 @@ export default function NotificationsPage() {
     </div>
   )
 
-  const unreadCount = notifications.filter((n) => !n.read_at).length
-
   return (
     <div className="max-w-[960px] mx-auto p-4 space-y-4">
       <div className="flex items-start justify-between gap-4">
@@ -197,7 +211,7 @@ export default function NotificationsPage() {
           currentPage={meta.current_page}
           totalPages={meta.last_page}
           onPageChange={setPage}
-          prevLabel={t('pagination.prev')}
+          prevLabel={t('pagination.previous')}
           nextLabel={t('pagination.next')}
         />
       )}
