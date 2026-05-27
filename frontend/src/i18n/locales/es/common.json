@@ -6,7 +6,10 @@
     "profileOf": "Datos personales de {{name}}",
     "menuOpen": "Abrir menú",
     "menuClose": "Cerrar menú",
-    "mobileNavigation": "Menú de navegación"
+    "mobileNavigation": "Menú de navegación",
+    "dashboard": "Panel principal",
+    "applications": "Aplicaciones",
+    "notifications": "Notificaciones"
   },
   "layout": {
     "skipToContent": "Saltar al contenido principal",
@@ -247,5 +250,65 @@
       "acknowledge": "Reconocer",
       "resolve": "Resolver"
     }
+  },
+  "notifications": {
+    "pageTitle": "Notificaciones",
+    "pageSubtitle": "Todas las notificaciones recibidas en el panel.",
+    "searchPlaceholder": "Buscar por título o cuerpo…",
+    "filterLabel": "Estado",
+    "filterAll": "Todas",
+    "filterUnread": "Solo no leídas",
+    "markAllRead": "Marcar todas como leídas",
+    "markAllReadSuccess": "Todas las notificaciones marcadas como leídas.",
+    "markAllReadError": "No se pudieron marcar todas como leídas.",
+    "markRead": "Marcar como leída",
+    "markingRead": "Marcando…",
+    "markReadSuccess": "Notificación marcada como leída.",
+    "markReadError": "No se pudo marcar como leída.",
+    "backToList": "Volver a la lista",
+    "loadError": "No se pudo cargar la notificación.",
+    "empty": "No hay notificaciones para los filtros seleccionados.",
+    "unread": "No leída",
+    "paginationInfo": "Mostrando {{from}}–{{to}} de {{total}}",
+    "errorLoad": "Error al cargar notificaciones.",
+    "errorUnauthorized": "No autorizado.",
+    "errorForbidden": "Acceso denegado.",
+    "errorNotFound": "Notificación no encontrada.",
+    "errorServer": "Servicio no disponible temporalmente.",
+    "errorNetwork": "Sin conexión al servidor.",
+    "fields": {
+      "title": "Título",
+      "app": "App",
+      "type": "Tipo",
+      "body": "Cuerpo",
+      "channels": "Canales",
+      "status": "Estado",
+      "createdAt": "Recibida",
+      "readAt": "Leída",
+      "messageId": "ID de mensaje",
+      "metadata": "Metadatos"
+    },
+    "status": {
+      "read": "Leída",
+      "unread": "No leída"
+    }
+  },
+  "filters": {
+    "search": "Buscar",
+    "severityLabel": "Severidad",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta"
+  },
+  "pagination": {
+    "prev": "Anterior",
+    "next": "Siguiente"
+  },
+  "common": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "create": "Crear"
   }
 }

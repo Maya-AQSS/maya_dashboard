@@ -6,7 +6,10 @@
     "profileOf": "Personal data of {{name}}",
     "menuOpen": "Open menu",
     "menuClose": "Close menu",
-    "mobileNavigation": "Navigation menu"
+    "mobileNavigation": "Navigation menu",
+    "dashboard": "Dashboard",
+    "applications": "Applications",
+    "notifications": "Notifications"
   },
   "layout": {
     "skipToContent": "Skip to main content",
@@ -247,5 +250,65 @@
       "acknowledge": "Acknowledge",
       "resolve": "Resolve"
     }
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "pageSubtitle": "All notifications received in the panel.",
+    "searchPlaceholder": "Search by title or body…",
+    "filterLabel": "Status",
+    "filterAll": "All",
+    "filterUnread": "Unread only",
+    "markAllRead": "Mark all as read",
+    "markAllReadSuccess": "All notifications marked as read.",
+    "markAllReadError": "Could not mark all as read.",
+    "markRead": "Mark as read",
+    "markingRead": "Marking…",
+    "markReadSuccess": "Notification marked as read.",
+    "markReadError": "Could not mark as read.",
+    "backToList": "Back to list",
+    "loadError": "Could not load the notification.",
+    "empty": "No notifications for the selected filters.",
+    "unread": "Unread",
+    "paginationInfo": "Showing {{from}}–{{to}} of {{total}}",
+    "errorLoad": "Error loading notifications.",
+    "errorUnauthorized": "Not authorized.",
+    "errorForbidden": "Access denied.",
+    "errorNotFound": "Notification not found.",
+    "errorServer": "Service temporarily unavailable.",
+    "errorNetwork": "No connection to the server.",
+    "fields": {
+      "title": "Title",
+      "app": "App",
+      "type": "Type",
+      "body": "Body",
+      "channels": "Channels",
+      "status": "Status",
+      "createdAt": "Received",
+      "readAt": "Read at",
+      "messageId": "Message ID",
+      "metadata": "Metadata"
+    },
+    "status": {
+      "read": "Read",
+      "unread": "Unread"
+    }
+  },
+  "filters": {
+    "search": "Search",
+    "severityLabel": "Severity",
+    "dateFrom": "From",
+    "dateTo": "To"
+  },
+  "pagination": {
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "common": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "create": "Create"
   }
 }

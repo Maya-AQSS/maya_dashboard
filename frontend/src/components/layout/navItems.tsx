@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { NavItem } from '@ceedcv-maya/shared-layout-react'
-import { HomeIcon, GridIcon } from '@ceedcv-maya/shared-layout-react'
+import { HomeIcon, GridIcon, BellIcon } from '@ceedcv-maya/shared-layout-react'
 
 export function useNavItems(): NavItem[] {
   const { t } = useTranslation('common')
@@ -9,6 +9,7 @@ export function useNavItems(): NavItem[] {
     () => [
       { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon, path: '/' },
       { id: 'applications', label: t('nav.applications'), icon: GridIcon, path: '/applications' },
+      { id: 'notifications', label: t('nav.notifications'), icon: BellIcon, path: '/notifications' },
     ],
     [t],
   )

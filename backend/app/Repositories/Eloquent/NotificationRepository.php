@@ -16,8 +16,18 @@ final class NotificationRepository implements NotificationRepositoryInterface
         bool $unreadOnly,
         ?string $type,
         int $perPage,
+        ?string $app = null,
+        ?string $search = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        string $sortBy = 'created_at',
+        string $sortDir = 'desc',
     ): LengthAwarePaginator {
-        $query = Notification::forRecipient($recipientId)->orderByDesc('created_at');
+        $allowedSortColumns = ['created_at', 'read_at'];
+        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'created_at';
+        $direction = $sortDir === 'asc' ? 'asc' : 'desc';
+
+        $query = Notification::forRecipient($recipientId)->orderBy($column, $direction);
 
         if ($unreadOnly) {
             $query->unread();
@@ -25,6 +35,25 @@ final class NotificationRepository implements NotificationRepositoryInterface
 
         if ($type !== null && $type !== '') {
             $query->where('type', $type);
+        }
+
+        if ($app !== null && $app !== '') {
+            $query->where('app', $app);
+        }
+
+        if ($search !== null && $search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('title ilike ?', ["%{$search}%"])
+                  ->orWhereRaw('body ilike ?', ["%{$search}%"]);
+            });
+        }
+
+        if ($dateFrom !== null) {
+            $query->where('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo !== null) {
+            $query->where('created_at', '<=', $dateTo . ' 23:59:59');
         }
 
         return $query->paginate($perPage);

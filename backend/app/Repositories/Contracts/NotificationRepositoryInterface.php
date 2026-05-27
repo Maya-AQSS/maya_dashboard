@@ -19,6 +19,12 @@ interface NotificationRepositoryInterface
         bool $unreadOnly,
         ?string $type,
         int $perPage,
+        ?string $app = null,
+        ?string $search = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        string $sortBy = 'created_at',
+        string $sortDir = 'desc',
     ): LengthAwarePaginator;
 
     /**

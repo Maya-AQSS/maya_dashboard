@@ -6,7 +6,10 @@
     "profileOf": "Dades personals de {{name}}",
     "menuOpen": "Obrir menú",
     "menuClose": "Tancar menú",
-    "mobileNavigation": "Menú de navegació"
+    "mobileNavigation": "Menú de navegació",
+    "dashboard": "Panell principal",
+    "applications": "Aplicacions",
+    "notifications": "Notificacions"
   },
   "layout": {
     "skipToContent": "Anar al contingut principal",
@@ -247,5 +250,65 @@
       "acknowledge": "Reconéixer",
       "resolve": "Resoldre"
     }
+  },
+  "notifications": {
+    "pageTitle": "Notificacions",
+    "pageSubtitle": "Totes les notificacions rebudes al panell.",
+    "searchPlaceholder": "Cercar per títol o cos…",
+    "filterLabel": "Estat",
+    "filterAll": "Totes",
+    "filterUnread": "Només no llegides",
+    "markAllRead": "Marcar totes com llegides",
+    "markAllReadSuccess": "Totes les notificacions marcades com llegides.",
+    "markAllReadError": "No s'han pogut marcar totes com llegides.",
+    "markRead": "Marcar com llegida",
+    "markingRead": "Marcant…",
+    "markReadSuccess": "Notificació marcada com llegida.",
+    "markReadError": "No s'ha pogut marcar com llegida.",
+    "backToList": "Tornar a la llista",
+    "loadError": "No s'ha pogut carregar la notificació.",
+    "empty": "No hi ha notificacions per als filtres seleccionats.",
+    "unread": "No llegida",
+    "paginationInfo": "Mostrant {{from}}–{{to}} de {{total}}",
+    "errorLoad": "Error en carregar notificacions.",
+    "errorUnauthorized": "No autoritzat.",
+    "errorForbidden": "Accés denegat.",
+    "errorNotFound": "Notificació no trobada.",
+    "errorServer": "Servei no disponible temporalment.",
+    "errorNetwork": "Sense connexió al servidor.",
+    "fields": {
+      "title": "Títol",
+      "app": "App",
+      "type": "Tipus",
+      "body": "Cos",
+      "channels": "Canals",
+      "status": "Estat",
+      "createdAt": "Rebuda",
+      "readAt": "Llegida",
+      "messageId": "ID de missatge",
+      "metadata": "Metadades"
+    },
+    "status": {
+      "read": "Llegida",
+      "unread": "No llegida"
+    }
+  },
+  "filters": {
+    "search": "Cercar",
+    "severityLabel": "Severitat",
+    "dateFrom": "Des de",
+    "dateTo": "Fins a"
+  },
+  "pagination": {
+    "prev": "Anterior",
+    "next": "Següent"
+  },
+  "common": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancel·lar",
+    "save": "Desar",
+    "saving": "Desant…",
+    "create": "Crear"
   }
 }

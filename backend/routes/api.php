@@ -48,6 +48,7 @@ Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
 Route::middleware('auth.keycloak')->prefix('v1/notifications')->group(function () {
     Route::get('/',                [NotificationController::class, 'index']);
     Route::get('/unread-count',    [NotificationController::class, 'unreadCount']);
+    Route::get('/{id}',            [NotificationController::class, 'show']);
     Route::post('/mark-all-read',  [NotificationController::class, 'markAllRead']);
     Route::post('/{id}/read',      [NotificationController::class, 'markRead']);
 });

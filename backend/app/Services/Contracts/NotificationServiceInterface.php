@@ -17,7 +17,15 @@ interface NotificationServiceInterface
         bool $unreadOnly,
         ?string $type,
         int $perPage,
+        ?string $app = null,
+        ?string $search = null,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        string $sortBy = 'created_at',
+        string $sortDir = 'desc',
     ): PaginatedDto;
+
+    public function find(string $recipientId, int $notificationId): NotificationDto;
 
     public function markRead(string $recipientId, int $notificationId): NotificationDto;
 

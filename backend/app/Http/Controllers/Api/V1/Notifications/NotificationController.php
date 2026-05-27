@@ -26,17 +26,31 @@ class NotificationController extends Controller
     {
         $recipientId = (string) $this->resolveKeycloakUser($request)->id;
 
-        $perPage = (int) ($request->validated('per_page') ?? 25);
-        $type = $request->validated('type') ?: null;
+        $perPage = max(1, (int) ($request->validated('per_page') ?? 25));
 
         $page = $this->notifications->paginate(
             $recipientId,
             (bool) ($request->validated('unread_only') ?? false),
-            $type,
-            $perPage > 0 ? $perPage : 25,
+            $request->validated('type') ?: null,
+            $perPage,
+            $request->validated('app') ?: null,
+            $request->validated('search') ?: null,
+            $request->validated('date_from') ?: null,
+            $request->validated('date_to') ?: null,
+            $request->validated('sort_by') ?: 'created_at',
+            $request->validated('sort_dir') ?: 'desc',
         );
 
         return $this->paginated($page, NotificationResource::class, $request);
+    }
+
+    public function show(Request $request, int $notificationId): JsonResponse
+    {
+        $recipientId = (string) $this->resolveKeycloakUser($request)->id;
+
+        return response()->json(
+            (new NotificationResource($this->notifications->find($recipientId, $notificationId)))->resolve($request),
+        );
     }
 
     public function markRead(Request $request, int $notificationId): JsonResponse
