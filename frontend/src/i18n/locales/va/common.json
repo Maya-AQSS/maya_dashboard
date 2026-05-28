@@ -109,8 +109,29 @@
       "cityRequired": "La població és obligatòria.",
       "cityMinLength": "La població ha de tindre almenys {{count}} caràcters.",
       "cityHasLetters": "La població ha de tindre lletres (no pot ser només xifres).",
-      "bioRequired": "La bio és obligatòria."
+      "bioRequired": "La bio és obligatòria.",
+      "personalEmailInvalid": "Introduïx un correu electrònic vàlid.",
+      "ibanTooLong": "L'IBAN no pot superar 34 caràcters.",
+      "carRegistrationFormat": "La matrícula ha de tindre 4 números i 3 lletres (ex: 1234ABC)."
     },
+    "employeeData": "Dades laborals",
+    "positionType": "Tipus de plaça",
+    "supervisor": "Responsable",
+    "mentor": "Mentor/a",
+    "departments": "Departaments",
+    "workTeams": "Equips",
+    "adminData": "Administració interna",
+    "keys": "Estat de claus",
+    "dateKeysHandover": "Data lliurament claus",
+    "dateKeysReturn": "Data devolució claus",
+    "idCardRfid": "Targeta RFID",
+    "iban": "IBAN",
+    "personalEmail": "Correu personal",
+    "vehicles": "Vehicles",
+    "carRegistration1": "Matrícula principal",
+    "carRegistration2": "Matrícula secundària",
+    "carRegistration3": "Matrícula terciària",
+    "noData": "Sense dades",
     "academicContext": {
       "loading": "Carregant context acadèmic…",
       "loadErrorPrefix": "No s'ha pogut carregar el context acadèmic:",
@@ -258,6 +279,9 @@
     "high": "Alta",
     "medium": "Mitjana",
     "low": "Baixa"
+  },
+  "values": {
+    "optional": "(opcional)"
   },
   "actions": {
     "edit": "Editar",

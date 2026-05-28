@@ -205,3 +205,51 @@ export const emptyProfileForm: ProfileFormInput = {
   city: '',
   bio: '',
 }
+
+const CAR_REGISTRATION_REGEX = /^[0-9]{4}[A-Z]{3}$/
+
+export function createEmployeeFormSchema(t: Translator) {
+  return z.object({
+    personal_email: z
+      .string()
+      .transform((s) => s.trim())
+      .refine((s) => s === '' || EMAIL_REGEX.test(s), {
+        message: t('profile.validation.personalEmailInvalid'),
+      }),
+    iban: z
+      .string()
+      .transform((s) => s.trim())
+      .refine((s) => s === '' || s.length <= 34, {
+        message: t('profile.validation.ibanTooLong'),
+      }),
+    car_registration_number_1: z
+      .string()
+      .transform((s) => s.trim().toUpperCase())
+      .refine((s) => s === '' || CAR_REGISTRATION_REGEX.test(s), {
+        message: t('profile.validation.carRegistrationFormat'),
+      }),
+    car_registration_number_2: z
+      .string()
+      .transform((s) => s.trim().toUpperCase())
+      .refine((s) => s === '' || CAR_REGISTRATION_REGEX.test(s), {
+        message: t('profile.validation.carRegistrationFormat'),
+      }),
+    car_registration_number_3: z
+      .string()
+      .transform((s) => s.trim().toUpperCase())
+      .refine((s) => s === '' || CAR_REGISTRATION_REGEX.test(s), {
+        message: t('profile.validation.carRegistrationFormat'),
+      }),
+  })
+}
+
+const _employeeSchemaShape = createEmployeeFormSchema((k) => k)
+export type EmployeeFormInput = z.infer<typeof _employeeSchemaShape>
+
+export const emptyEmployeeForm: EmployeeFormInput = {
+  personal_email: '',
+  iban: '',
+  car_registration_number_1: '',
+  car_registration_number_2: '',
+  car_registration_number_3: '',
+}

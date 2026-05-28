@@ -109,8 +109,29 @@
       "cityRequired": "La población es obligatoria.",
       "cityMinLength": "La población debe tener al menos {{count}} caracteres.",
       "cityHasLetters": "La población debe contener letras (no puede ser solo números).",
-      "bioRequired": "La bio es obligatoria."
+      "bioRequired": "La bio es obligatoria.",
+      "personalEmailInvalid": "Introduce un email válido.",
+      "ibanTooLong": "El IBAN no puede superar 34 caracteres.",
+      "carRegistrationFormat": "La matrícula debe tener 4 números y 3 letras (ej: 1234ABC)."
     },
+    "employeeData": "Datos laborales",
+    "positionType": "Tipo de plaza",
+    "supervisor": "Responsable",
+    "mentor": "Mentor/a",
+    "departments": "Departamentos",
+    "workTeams": "Equipos",
+    "adminData": "Administración interna",
+    "keys": "Estado de llaves",
+    "dateKeysHandover": "Fecha entrega llaves",
+    "dateKeysReturn": "Fecha devolución llaves",
+    "idCardRfid": "Tarjeta RFID",
+    "iban": "IBAN",
+    "personalEmail": "Email personal",
+    "vehicles": "Vehículos",
+    "carRegistration1": "Matrícula principal",
+    "carRegistration2": "Matrícula secundaria",
+    "carRegistration3": "Matrícula terciaria",
+    "noData": "Sin datos",
     "academicContext": {
       "loading": "Cargando contexto académico…",
       "loadErrorPrefix": "No se pudo cargar el contexto académico:",
@@ -258,6 +279,9 @@
     "high": "Alta",
     "medium": "Media",
     "low": "Baja"
+  },
+  "values": {
+    "optional": "(opcional)"
   },
   "actions": {
     "edit": "Editar",

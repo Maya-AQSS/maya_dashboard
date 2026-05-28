@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,7 +8,6 @@ import {
   FieldLabel,
   PageTitle,
   Select,
-  TextArea,
   TextInput,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
@@ -17,11 +16,12 @@ import { updateMyLocale } from '../../../api/auth'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { useMyAcademicContext } from '../api/academicContextApi'
+import { useMyEmployeeData } from '../api/employeeApi'
 import { updateProfile } from '../api/profileApi'
 import {
-  createProfileFormSchema,
-  emptyProfileForm,
-  type ProfileFormInput,
+  createEmployeeFormSchema,
+  emptyEmployeeForm,
+  type EmployeeFormInput,
 } from '../lib/profileSchema'
 
 interface ProfileUser extends AuthUser {
@@ -31,61 +31,42 @@ interface ProfileUser extends AuthUser {
   phone?: string
   role?: string
   dni?: string
-  street?: string
-  addressNumber?: string
-  addressFloor?: string
-  addressDoor?: string
-  postalCode?: string
-  city?: string
-  bio?: string
 }
 
-type ProfileFieldProps = {
-  name: keyof ProfileFormInput
+type EmployeeFieldProps = {
+  name: keyof EmployeeFormInput
   label: string
-  type?: 'text' | 'email' | 'tel' | 'url' | 'number' | 'textarea'
-  register: UseFormRegister<ProfileFormInput>
-  errors: FieldErrors<ProfileFormInput>
+  type?: 'text' | 'email' | 'tel'
+  register: UseFormRegister<EmployeeFormInput>
+  errors: FieldErrors<EmployeeFormInput>
   placeholder?: string
-  inputMode?: 'numeric'
-  pattern?: string
   optionalLabel?: string
-  rows?: number
 }
 
-function ProfileField({
+function EmployeeField({
   name,
   label,
   type = 'text',
   register,
   errors,
   placeholder,
-  inputMode,
-  pattern,
   optionalLabel,
-  rows,
-}: ProfileFieldProps) {
-  const id = `profile-${name}`
+}: EmployeeFieldProps) {
+  const id = `employee-${name}`
   const displayLabel = optionalLabel ? `${label} ${optionalLabel}` : label
   const error = errors[name]?.message as string | undefined
 
   return (
     <div className="flex flex-col gap-1">
       <FieldLabel htmlFor={id}>{displayLabel}</FieldLabel>
-      {type === 'textarea' ? (
-        <TextArea id={id} fieldSize="comfortable" rows={rows ?? 3} {...register(name)} />
-      ) : (
-        <TextInput
-          id={id}
-          type={type}
-          fieldSize="comfortable"
-          placeholder={placeholder}
-          inputMode={inputMode}
-          pattern={pattern}
-          error={!!error}
-          {...register(name)}
-        />
-      )}
+      <TextInput
+        id={id}
+        type={type}
+        fieldSize="comfortable"
+        placeholder={placeholder}
+        error={!!error}
+        {...register(name)}
+      />
       {error && (
         <span className="text-xs text-danger dark:text-danger" role="alert">
           {error}
@@ -95,15 +76,62 @@ function ProfileField({
   )
 }
 
-function ProfileSection({ title, children }: { title: string; children: React.ReactNode }) {
+function ProfileSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="mb-6 p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card last:mb-0">
+    <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
       <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
         {title}
       </h4>
       {children}
     </div>
   )
+}
+
+function ProfileDl({ children }: { children: ReactNode }) {
+  return <dl className="m-0 flex flex-col gap-3">{children}</dl>
+}
+
+function ProfileRow({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-1 sm:gap-3 items-baseline">
+      <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{label}</dt>
+      <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{value || '—'}</dd>
+    </div>
+  )
+}
+
+function TeamBadgeList({ items }: { items: Array<{ name: string; code?: string }> }) {
+  if (!items.length) return <span className="text-sm text-text-secondary dark:text-text-dark-secondary">—</span>
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span
+          key={item.code ?? item.name}
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-ui-border dark:bg-ui-dark-border text-text-primary dark:text-text-dark-primary"
+        >
+          {item.code && <span className="opacity-60">{item.code}</span>}
+          {item.name}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+const POSITION_TYPE_LABELS: Record<string, string> = {
+  AJC: 'Adjudicaciones julio carrera',
+  AJT: 'Adjudicaciones julio interino',
+  AS: 'Adjudicaciones septiembre',
+  PRM: 'Definitiva',
+  CMS: 'Comisión servicios',
+  CES: 'Específica',
+  ESPJ: 'Puesto específico',
+  SUP: 'Suprimida',
+}
+
+const KEYS_LABELS: Record<string, string> = {
+  HO: 'Entregadas',
+  RT: 'Devueltas',
+  PN: 'Pendiente de devolución',
 }
 
 function ProfilePage() {
@@ -117,7 +145,7 @@ function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const schema = useMemo(() => createProfileFormSchema(t), [t])
+  const schema = useMemo(() => createEmployeeFormSchema(t), [t])
   const academicContextTexts = useMemo(() => ({
     loading: t('profile.academicContext.loading'),
     loadErrorPrefix: t('profile.academicContext.loadErrorPrefix'),
@@ -145,11 +173,25 @@ function ProfilePage() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<ProfileFormInput>({
-    defaultValues: emptyProfileForm,
+  } = useForm<EmployeeFormInput>({
+    defaultValues: emptyEmployeeForm,
     mode: 'onChange',
     resolver: zodResolver(schema),
   })
+
+  const { data: academicContext, isLoading: loadingAcademic, error: academicError } =
+    useMyAcademicContext()
+
+  const { data: employeeData } = useMyEmployeeData()
+
+  const departments = useMemo(
+    () => (academicContext?.teams ?? []).filter((t) => t.is_department),
+    [academicContext],
+  )
+  const workTeams = useMemo(
+    () => (academicContext?.teams ?? []).filter((t) => !t.is_department),
+    [academicContext],
+  )
 
   if (!user) {
     return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
@@ -169,20 +211,11 @@ function ProfilePage() {
   const handleEdit = () => {
     if (!canUpdate) return
     reset({
-      name: user.name ?? '',
-      surname: user.surname ?? '',
-      username: user.username ?? '',
-      email: user.email ?? '',
-      phone: user.phone ?? '',
-      role: user.role ?? '',
-      dni: user.dni ?? '',
-      street: user.street ?? '',
-      addressNumber: user.addressNumber ?? '',
-      addressFloor: user.addressFloor ?? '',
-      addressDoor: user.addressDoor ?? '',
-      postalCode: user.postalCode ?? '',
-      city: user.city ?? '',
-      bio: user.bio ?? '',
+      personal_email: employeeData?.personal_email ?? '',
+      iban: employeeData?.iban ?? '',
+      car_registration_number_1: employeeData?.car_registration_number_1 ?? '',
+      car_registration_number_2: employeeData?.car_registration_number_2 ?? '',
+      car_registration_number_3: employeeData?.car_registration_number_3 ?? '',
     })
     setSaveError(null)
     setIsEditing(true)
@@ -197,7 +230,7 @@ function ProfilePage() {
     if (!canUpdate) return
     setSaveError(null)
     try {
-      const updatedUser = await updateProfile({ id: user.id, ...values })
+      const updatedUser = await updateProfile(values)
 
       if (!updatedUser) {
         setSaveError(t('profile.saveError'))
@@ -212,9 +245,6 @@ function ProfilePage() {
   })
 
   const saving = isSubmitting
-
-  const { data: academicContext, isLoading: loadingAcademic, error: academicError } =
-    useMyAcademicContext()
 
   return (
     <>
@@ -239,77 +269,62 @@ function ProfilePage() {
 
       {!isEditing ? (
         <section className="max-w-[600px] mx-auto flex flex-col gap-4 sm:gap-6">
-          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
-            <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.basicData')}</h4>
-            <dl className="m-0 flex flex-col gap-3">
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.name')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.name ?? '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.surname')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.surname ?? '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.dni')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.dni || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('auth.email')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.email ?? '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.phone')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.phone || '—'}</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
-            <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.address')}</h4>
-            <dl className="m-0 flex flex-col gap-3">
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.street')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.street || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressNumber')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.addressNumber || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressFloor')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.addressFloor || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.addressDoor')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.addressDoor || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.postalCode')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.postalCode || '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.city')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.city || '—'}</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
-            <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">{t('profile.account')}</h4>
-            <dl className="m-0 flex flex-col gap-3">
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.username')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.username ?? '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.role')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{user.role ?? '—'}</dd>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-1 sm:gap-3 items-baseline">
-                <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{t('profile.bio')}</dt>
-                <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary whitespace-pre-wrap leading-normal">{user.bio || '—'}</dd>
-              </div>
-            </dl>
-          </div>
+          {/* Datos básicos */}
+          <ProfileSection title={t('profile.basicData')}>
+            <ProfileDl>
+              <ProfileRow label={t('auth.name')} value={user.name} />
+              <ProfileRow label={t('auth.surname')} value={user.surname} />
+              <ProfileRow label={t('profile.dni')} value={user.dni} />
+              <ProfileRow label={t('auth.email')} value={user.email} />
+              <ProfileRow label={t('profile.phone')} value={user.phone} />
+            </ProfileDl>
+          </ProfileSection>
+
+          {/* Datos laborales */}
+          <ProfileSection title={t('profile.employeeData')}>
+            <ProfileDl>
+              <ProfileRow
+                label={t('profile.positionType')}
+                value={employeeData?.position_type ? (POSITION_TYPE_LABELS[employeeData.position_type] ?? employeeData.position_type) : null}
+              />
+              <ProfileRow label={t('profile.supervisor')} value={employeeData?.supervisor_name} />
+              <ProfileRow label={t('profile.mentor')} value={employeeData?.mentor_name} />
+              <ProfileRow label={t('profile.personalEmail')} value={employeeData?.personal_email} />
+            </ProfileDl>
+          </ProfileSection>
+
+          {/* Departamentos */}
+          <ProfileSection title={t('profile.departments')}>
+            <TeamBadgeList items={departments.map((d) => ({ name: d.name, code: d.code }))} />
+          </ProfileSection>
+
+          {/* Equipos */}
+          <ProfileSection title={t('profile.workTeams')}>
+            <TeamBadgeList items={workTeams.map((d) => ({ name: d.name, code: d.code }))} />
+          </ProfileSection>
+
+          {/* Administración interna */}
+          <ProfileSection title={t('profile.adminData')}>
+            <ProfileDl>
+              <ProfileRow label={t('profile.idCardRfid')} value={employeeData?.id_card_rfid} />
+              <ProfileRow
+                label={t('profile.keys')}
+                value={employeeData?.keys ? (KEYS_LABELS[employeeData.keys] ?? employeeData.keys) : null}
+              />
+              <ProfileRow label={t('profile.dateKeysHandover')} value={employeeData?.date_keys_handover} />
+              <ProfileRow label={t('profile.dateKeysReturn')} value={employeeData?.date_keys_return} />
+              <ProfileRow label={t('profile.iban')} value={employeeData?.iban} />
+            </ProfileDl>
+          </ProfileSection>
+
+          {/* Vehículos */}
+          <ProfileSection title={t('profile.vehicles')}>
+            <ProfileDl>
+              <ProfileRow label={t('profile.carRegistration1')} value={employeeData?.car_registration_number_1} />
+              <ProfileRow label={t('profile.carRegistration2')} value={employeeData?.car_registration_number_2} />
+              <ProfileRow label={t('profile.carRegistration3')} value={employeeData?.car_registration_number_3} />
+            </ProfileDl>
+          </ProfileSection>
 
           <UserAcademicContext
             data={academicContext}
@@ -328,38 +343,64 @@ function ProfilePage() {
             </p>
           )}
           <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              void onSubmit()
-            }}
+            onSubmit={(e) => void onSubmit(e)}
           >
             <div className="flex flex-col gap-4 mb-5">
-              <ProfileSection title={t('profile.basicData')}>
+              {/* Email personal */}
+              <ProfileSection title={t('profile.personalEmail')}>
                 <div className="flex flex-col gap-4">
-                  <ProfileField name="name" label={t('auth.name')} register={register} errors={errors} />
-                  <ProfileField name="surname" label={t('auth.surname')} register={register} errors={errors} />
-                  <ProfileField name="dni" label={t('profile.dni')} register={register} errors={errors} placeholder={t('profile.placeholderDni')} />
-                  <ProfileField name="email" label={t('auth.email')} type="email" register={register} errors={errors} />
-                  <ProfileField name="phone" label={t('profile.phone')} type="tel" register={register} errors={errors} />
+                  <EmployeeField
+                    name="personal_email"
+                    label={t('profile.personalEmail')}
+                    type="email"
+                    register={register}
+                    errors={errors}
+                    optionalLabel={t('values.optional')}
+                  />
                 </div>
               </ProfileSection>
 
-              <ProfileSection title={t('profile.address')}>
+              {/* IBAN */}
+              <ProfileSection title={t('profile.iban')}>
                 <div className="flex flex-col gap-4">
-                  <ProfileField name="street" label={t('profile.street')} register={register} errors={errors} />
-                  <ProfileField name="addressNumber" label={t('profile.addressNumber')} register={register} errors={errors} inputMode="numeric" pattern="[0-9]*" />
-                  <ProfileField name="addressFloor" label={t('profile.addressFloor')} register={register} errors={errors} optionalLabel={t('values.optional')} inputMode="numeric" pattern="[0-9]*" />
-                  <ProfileField name="addressDoor" label={t('profile.addressDoor')} register={register} errors={errors} optionalLabel={t('values.optional')} inputMode="numeric" pattern="[0-9]*" />
-                  <ProfileField name="postalCode" label={t('profile.postalCode')} register={register} errors={errors} placeholder={t('profile.placeholderPostalCode')} />
-                  <ProfileField name="city" label={t('profile.city')} register={register} errors={errors} />
+                  <EmployeeField
+                    name="iban"
+                    label={t('profile.iban')}
+                    register={register}
+                    errors={errors}
+                    placeholder="ES76 2077 0024 0031 0257 5701"
+                    optionalLabel={t('values.optional')}
+                  />
                 </div>
               </ProfileSection>
 
-              <ProfileSection title={t('profile.account')}>
+              {/* Vehículos */}
+              <ProfileSection title={t('profile.vehicles')}>
                 <div className="flex flex-col gap-4">
-                  <ProfileField name="username" label={t('profile.username')} register={register} errors={errors} />
-                  <ProfileField name="role" label={t('profile.role')} register={register} errors={errors} />
-                  <ProfileField name="bio" label={t('profile.bio')} type="textarea" register={register} errors={errors} rows={3} />
+                  <EmployeeField
+                    name="car_registration_number_1"
+                    label={t('profile.carRegistration1')}
+                    register={register}
+                    errors={errors}
+                    placeholder="1234ABC"
+                    optionalLabel={t('values.optional')}
+                  />
+                  <EmployeeField
+                    name="car_registration_number_2"
+                    label={t('profile.carRegistration2')}
+                    register={register}
+                    errors={errors}
+                    placeholder="1234ABC"
+                    optionalLabel={t('values.optional')}
+                  />
+                  <EmployeeField
+                    name="car_registration_number_3"
+                    label={t('profile.carRegistration3')}
+                    register={register}
+                    errors={errors}
+                    placeholder="1234ABC"
+                    optionalLabel={t('values.optional')}
+                  />
                 </div>
               </ProfileSection>
             </div>
@@ -369,7 +410,7 @@ function ProfilePage() {
                 {t('actions.cancel')}
               </Button>
               <Button type="submit" variant="primary" size="sm" disabled={saving} loading={saving} className="w-full sm:w-auto">
-                {saving ? t('status.saving') : t('profile.save')}
+                {saving ? t('actions.saving') : t('profile.save')}
               </Button>
             </div>
           </form>
@@ -410,7 +451,7 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
       <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
         {t('userMenu.preferences') || 'Preferencias'}
       </h4>
-      <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-2 sm:gap-3 items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-2 sm:gap-3 items-center">
         <FieldLabel htmlFor="profile-locale-select">
           {t('profile.language') || 'Idioma'}
         </FieldLabel>

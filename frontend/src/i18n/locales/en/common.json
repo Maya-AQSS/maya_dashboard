@@ -109,8 +109,29 @@
       "cityRequired": "City is required.",
       "cityMinLength": "City must have at least {{count}} characters.",
       "cityHasLetters": "City must contain letters (cannot be numbers only).",
-      "bioRequired": "Bio is required."
+      "bioRequired": "Bio is required.",
+      "personalEmailInvalid": "Enter a valid email address.",
+      "ibanTooLong": "IBAN cannot exceed 34 characters.",
+      "carRegistrationFormat": "Registration must have 4 digits and 3 letters (e.g. 1234ABC)."
     },
+    "employeeData": "Work data",
+    "positionType": "Position type",
+    "supervisor": "Supervisor",
+    "mentor": "Mentor",
+    "departments": "Departments",
+    "workTeams": "Teams",
+    "adminData": "Internal administration",
+    "keys": "Keys status",
+    "dateKeysHandover": "Keys handover date",
+    "dateKeysReturn": "Keys return date",
+    "idCardRfid": "RFID card",
+    "iban": "IBAN",
+    "personalEmail": "Personal email",
+    "vehicles": "Vehicles",
+    "carRegistration1": "Main registration",
+    "carRegistration2": "Secondary registration",
+    "carRegistration3": "Third registration",
+    "noData": "No data",
     "academicContext": {
       "loading": "Loading academic context…",
       "loadErrorPrefix": "Could not load academic context:",
@@ -258,6 +279,9 @@
     "high": "High",
     "medium": "Medium",
     "low": "Low"
+  },
+  "values": {
+    "optional": "(optional)"
   },
   "actions": {
     "edit": "Edit",
