@@ -9,7 +9,9 @@
     "mobileNavigation": "Menú de navegació",
     "dashboard": "Panell principal",
     "applications": "Aplicacions",
-    "notifications": "Notificacions"
+    "notifications": "Notificacions",
+    "alerts": "Alertes del sistema",
+    "panelAlerts": "Alertes"
   },
   "layout": {
     "skipToContent": "Anar al contingut principal",
@@ -249,6 +251,84 @@
       "adHoc": "ad-hoc",
       "acknowledge": "Reconéixer",
       "resolve": "Resoldre"
+    }
+  },
+  "severity": {
+    "critical": "Crítica",
+    "high": "Alta",
+    "medium": "Mitjana",
+    "low": "Baixa"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancel·lar",
+    "save": "Guardar",
+    "create": "Crear",
+    "saving": "Guardant…"
+  },
+  "panelAlerts": {
+    "pageTitle": "Alertes del panell",
+    "pageSubtitle": "Gestiona les alertes visibles al widget del panell principal i les regles que les generen automàticament.",
+    "newAlert": "Nova alerta",
+    "newRule": "Nova regla",
+    "tabAlerts": "Alertes",
+    "tabRules": "Regles",
+    "editAlert": "Editar alerta",
+    "editRule": "Editar regla",
+    "empty": "No hi ha alertes per als filtres seleccionats.",
+    "rulesEmpty": "No hi ha regles configurades.",
+    "searchLabel": "Cercar",
+    "searchPlaceholder": "Cercar per text…",
+    "severityAll": "Totes les severitats",
+    "includeExpired": "Incloure expirades",
+    "activeOnly": "Només actives",
+    "allAlerts": "Totes",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "confirmDelete": "Segur que vols eliminar esta alerta?",
+    "deleteSuccess": "Alerta eliminada correctament.",
+    "deleteError": "No s'ha pogut eliminar l'alerta.",
+    "updateSuccess": "Desat correctament.",
+    "createSuccess": "Creat correctament.",
+    "errorSave": "No s'ha pogut desar.",
+    "addCondition": "Afegir condició",
+    "source": {
+      "manual": "Manual",
+      "rule": "Regla"
+    },
+    "fields": {
+      "text": "Text de l'alerta",
+      "severity": "Severitat",
+      "visibleFrom": "Visible des de",
+      "visibleUntil": "Visible fins",
+      "source": "Origen",
+      "ruleName": "Nom de la regla",
+      "description": "Descripció",
+      "eventType": "Tipus d'esdeveniment",
+      "customEventType": "Tipus d'esdeveniment personalitzat",
+      "customEventTypePlaceholder": "Ex: usuari.accio",
+      "conditions": "Condicions",
+      "conditionKey": "Camp",
+      "conditionValue": "Valor",
+      "conditionsHint": "Les condicions s'apliquen sobre el payload de l'esdeveniment. Si no hi ha condicions, la regla s'aplica a tots els esdeveniments del tipus indicat.",
+      "alertText": "Text de l'alerta",
+      "alertTextPlaceholder": "Text que veurà l'usuari…",
+      "actionLabel": "Etiqueta del botó",
+      "actionLabelPlaceholder": "Ex: Veure detall",
+      "actionUrl": "URL del botó",
+      "visibleDurationHours": "Duració visible (hores)",
+      "visibleDurationHoursPlaceholder": "Ex: 24",
+      "maxFrequencyMinutes": "Freqüència mínima (minuts)",
+      "isActive": "Regla activa",
+      "lastTriggeredAt": "Última activació"
+    },
+    "validation": {
+      "nameRequired": "El nom és obligatori.",
+      "eventTypeRequired": "El tipus d'esdeveniment és obligatori.",
+      "alertTextRequired": "El text de l'alerta és obligatori.",
+      "textRequired": "El text de l'alerta és obligatori.",
+      "visibleFromRequired": "La data d'inici és obligatòria."
     }
   },
   "notifications": {

@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
 use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
+use App\Http\Controllers\Api\V1\PanelAlerts\PanelAlertController;
+use App\Http\Controllers\Api\V1\PanelAlerts\PanelAlertRuleController;
 use Illuminate\Support\Facades\Route;
 use Maya\Profile\Controllers\MeController;
 use Maya\Profile\Routing\AcademicContextRoutes;
@@ -69,6 +71,28 @@ Route::middleware(['auth.keycloak', 'permission:alerts.manage'])->prefix('v1/ale
     Route::put('/{id}',     [AlertRuleController::class, 'update']);
     Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);
 });
+
+// Panel Alerts (user-created alerts for dashboard widget)
+Route::middleware('auth.keycloak')->prefix('v1/panel-alerts')->group(function () {
+    Route::get('/active', [PanelAlertController::class, 'activeForWidget']); // widget, no permission needed
+    Route::middleware('permission:dashboard.panel_alerts.manage')->group(function () {
+        Route::get('/',        [PanelAlertController::class, 'index']);
+        Route::post('/',       [PanelAlertController::class, 'store']);
+        Route::get('/{id}',    [PanelAlertController::class, 'show'])->whereNumber('id');
+        Route::put('/{id}',    [PanelAlertController::class, 'update'])->whereNumber('id');
+        Route::delete('/{id}', [PanelAlertController::class, 'destroy'])->whereNumber('id');
+    });
+});
+
+Route::middleware(['auth.keycloak', 'permission:dashboard.panel_alerts.manage'])
+    ->prefix('v1/panel-alert-rules')
+    ->group(function () {
+        Route::get('/',        [PanelAlertRuleController::class, 'index']);
+        Route::post('/',       [PanelAlertRuleController::class, 'store']);
+        Route::get('/{id}',    [PanelAlertRuleController::class, 'show'])->whereNumber('id');
+        Route::put('/{id}',    [PanelAlertRuleController::class, 'update'])->whereNumber('id');
+        Route::delete('/{id}', [PanelAlertRuleController::class, 'destroy'])->whereNumber('id');
+    });
 
 Route::prefix('v1/health')->controller(HealthCheckController::class)->group(function () {
     Route::get('/',      'index');

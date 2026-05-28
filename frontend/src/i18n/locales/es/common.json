@@ -9,7 +9,9 @@
     "mobileNavigation": "Menú de navegación",
     "dashboard": "Panel principal",
     "applications": "Aplicaciones",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "alerts": "Alertas del sistema",
+    "panelAlerts": "Alertas"
   },
   "layout": {
     "skipToContent": "Saltar al contenido principal",
@@ -249,6 +251,84 @@
       "adHoc": "ad-hoc",
       "acknowledge": "Reconocer",
       "resolve": "Resolver"
+    }
+  },
+  "severity": {
+    "critical": "Crítica",
+    "high": "Alta",
+    "medium": "Media",
+    "low": "Baja"
+  },
+  "actions": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "create": "Crear",
+    "saving": "Guardando…"
+  },
+  "panelAlerts": {
+    "pageTitle": "Alertas del panel",
+    "pageSubtitle": "Gestiona las alertas visibles en el widget del panel principal y las reglas que las generan automáticamente.",
+    "newAlert": "Nueva alerta",
+    "newRule": "Nueva regla",
+    "tabAlerts": "Alertas",
+    "tabRules": "Reglas",
+    "editAlert": "Editar alerta",
+    "editRule": "Editar regla",
+    "empty": "No hay alertas para los filtros seleccionados.",
+    "rulesEmpty": "No hay reglas configuradas.",
+    "searchLabel": "Buscar",
+    "searchPlaceholder": "Buscar por texto…",
+    "severityAll": "Todas las severidades",
+    "includeExpired": "Incluir expiradas",
+    "activeOnly": "Solo activas",
+    "allAlerts": "Todas",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "confirmDelete": "¿Seguro que quieres eliminar esta alerta?",
+    "deleteSuccess": "Alerta eliminada correctamente.",
+    "deleteError": "No se pudo eliminar la alerta.",
+    "updateSuccess": "Guardado correctamente.",
+    "createSuccess": "Creado correctamente.",
+    "errorSave": "No se pudo guardar.",
+    "addCondition": "Añadir condición",
+    "source": {
+      "manual": "Manual",
+      "rule": "Regla"
+    },
+    "fields": {
+      "text": "Texto de la alerta",
+      "severity": "Severidad",
+      "visibleFrom": "Visible desde",
+      "visibleUntil": "Visible hasta",
+      "source": "Origen",
+      "ruleName": "Nombre de la regla",
+      "description": "Descripción",
+      "eventType": "Tipo de evento",
+      "customEventType": "Tipo de evento personalizado",
+      "customEventTypePlaceholder": "Ej: usuario.accion",
+      "conditions": "Condiciones",
+      "conditionKey": "Campo",
+      "conditionValue": "Valor",
+      "conditionsHint": "Las condiciones se aplican sobre el payload del evento. Si no hay condiciones, la regla se aplica a todos los eventos del tipo indicado.",
+      "alertText": "Texto de la alerta",
+      "alertTextPlaceholder": "Texto que verá el usuario…",
+      "actionLabel": "Etiqueta del botón",
+      "actionLabelPlaceholder": "Ej: Ver detalle",
+      "actionUrl": "URL del botón",
+      "visibleDurationHours": "Duración visible (horas)",
+      "visibleDurationHoursPlaceholder": "Ej: 24",
+      "maxFrequencyMinutes": "Frecuencia mínima (minutos)",
+      "isActive": "Regla activa",
+      "lastTriggeredAt": "Última activación"
+    },
+    "validation": {
+      "nameRequired": "El nombre es obligatorio.",
+      "eventTypeRequired": "El tipo de evento es obligatorio.",
+      "alertTextRequired": "El texto de la alerta es obligatorio.",
+      "textRequired": "El texto de la alerta es obligatorio.",
+      "visibleFromRequired": "La fecha de inicio es obligatoria."
     }
   },
   "notifications": {

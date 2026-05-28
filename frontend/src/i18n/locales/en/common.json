@@ -9,7 +9,9 @@
     "mobileNavigation": "Navigation menu",
     "dashboard": "Dashboard",
     "applications": "Applications",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "alerts": "System alerts",
+    "panelAlerts": "Alerts"
   },
   "layout": {
     "skipToContent": "Skip to main content",
@@ -249,6 +251,84 @@
       "adHoc": "ad-hoc",
       "acknowledge": "Acknowledge",
       "resolve": "Resolve"
+    }
+  },
+  "severity": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "saving": "Saving…"
+  },
+  "panelAlerts": {
+    "pageTitle": "Panel alerts",
+    "pageSubtitle": "Manage alerts visible in the main dashboard widget and the rules that generate them automatically.",
+    "newAlert": "New alert",
+    "newRule": "New rule",
+    "tabAlerts": "Alerts",
+    "tabRules": "Rules",
+    "editAlert": "Edit alert",
+    "editRule": "Edit rule",
+    "empty": "No alerts for the selected filters.",
+    "rulesEmpty": "No rules configured.",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by text…",
+    "severityAll": "All severities",
+    "includeExpired": "Include expired",
+    "activeOnly": "Active only",
+    "allAlerts": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "confirmDelete": "Are you sure you want to delete this alert?",
+    "deleteSuccess": "Alert deleted successfully.",
+    "deleteError": "Could not delete the alert.",
+    "updateSuccess": "Saved successfully.",
+    "createSuccess": "Created successfully.",
+    "errorSave": "Could not save.",
+    "addCondition": "Add condition",
+    "source": {
+      "manual": "Manual",
+      "rule": "Rule"
+    },
+    "fields": {
+      "text": "Alert text",
+      "severity": "Severity",
+      "visibleFrom": "Visible from",
+      "visibleUntil": "Visible until",
+      "source": "Source",
+      "ruleName": "Rule name",
+      "description": "Description",
+      "eventType": "Event type",
+      "customEventType": "Custom event type",
+      "customEventTypePlaceholder": "E.g.: user.action",
+      "conditions": "Conditions",
+      "conditionKey": "Field",
+      "conditionValue": "Value",
+      "conditionsHint": "Conditions are applied to the event payload. If no conditions are set, the rule applies to all events of the specified type.",
+      "alertText": "Alert text",
+      "alertTextPlaceholder": "Text the user will see…",
+      "actionLabel": "Button label",
+      "actionLabelPlaceholder": "E.g.: View detail",
+      "actionUrl": "Button URL",
+      "visibleDurationHours": "Visible duration (hours)",
+      "visibleDurationHoursPlaceholder": "E.g.: 24",
+      "maxFrequencyMinutes": "Minimum frequency (minutes)",
+      "isActive": "Rule active",
+      "lastTriggeredAt": "Last triggered"
+    },
+    "validation": {
+      "nameRequired": "Name is required.",
+      "eventTypeRequired": "Event type is required.",
+      "alertTextRequired": "Alert text is required.",
+      "textRequired": "Alert text is required.",
+      "visibleFromRequired": "Start date is required."
     }
   },
   "notifications": {

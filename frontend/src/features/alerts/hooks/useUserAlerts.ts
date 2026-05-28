@@ -1,8 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useActiveSystemAlerts } from './useActiveSystemAlerts'
+import { useQuery } from '@tanstack/react-query'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useFichajeAlerts } from './useFichajeAlerts'
+import { getActivePanelAlerts } from '../../panel-alerts/api/panelAlertsApi'
+import type { PanelAlert } from '../../panel-alerts/types/panelAlert'
+import type { AlertItem } from './useActiveSystemAlerts'
 
-export type { AlertItem } from './useActiveSystemAlerts'
+export type { AlertItem }
+
+function panelSeverityToColor(sev: string): 'red' | 'amber' | 'blue' {
+  if (sev === 'critical' || sev === 'high') return 'red'
+  if (sev === 'medium') return 'amber'
+  return 'blue'
+}
 
 const DISMISSED_KEY = 'maya:dismissed-alerts'
 const DISMISSED_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
@@ -35,9 +45,29 @@ function saveDismissed(ids: Set<string>): void {
 }
 
 export function useUserAlerts() {
-  const { alerts: systemAlerts, loading } = useActiveSystemAlerts()
+  const { token, user } = useAuth()
   const { alerts: fichajeAlerts, clockIn } = useFichajeAlerts()
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed)
+
+  const { data: rawPanelAlerts = [], isPending: loading } = useQuery<PanelAlert[]>({
+    queryKey: ['panel-alerts-active', user?.sub],
+    queryFn: getActivePanelAlerts,
+    enabled: !!token,
+    staleTime: 60_000,
+    retry: 1,
+  })
+
+  const panelAlerts = useMemo<AlertItem[]>(
+    () => rawPanelAlerts.map((a) => ({
+      id: `panel:${a.id}`,
+      color: panelSeverityToColor(a.severity),
+      text: a.text,
+      actionLabel: a.action_label,
+      actionUrl: a.action_url ?? undefined,
+      canDismiss: true,
+    })),
+    [rawPanelAlerts],
+  )
 
   useEffect(() => {
     saveDismissed(dismissed)
@@ -48,8 +78,8 @@ export function useUserAlerts() {
   }, [])
 
   const alerts = useMemo(
-    () => [...fichajeAlerts, ...systemAlerts].filter((a) => !dismissed.has(a.id)),
-    [fichajeAlerts, systemAlerts, dismissed],
+    () => [...fichajeAlerts, ...panelAlerts].filter((a) => !dismissed.has(a.id)),
+    [fichajeAlerts, panelAlerts, dismissed],
   )
 
   return { alerts, loading, dismiss, clockIn }

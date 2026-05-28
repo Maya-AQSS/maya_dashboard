@@ -10,6 +10,8 @@ use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Repositories\Contracts\AttendanceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRuleRepositoryInterface;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Repositories\Eloquent\AlertRepository;
@@ -18,6 +20,8 @@ use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\AttendanceRepository;
 use App\Repositories\Eloquent\BookingRepository;
 use App\Repositories\Eloquent\NotificationRepository;
+use App\Repositories\Eloquent\PanelAlertRepository;
+use App\Repositories\Eloquent\PanelAlertRuleRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
 use Maya\Profile\Migrations as ProfileMigrations;
@@ -35,11 +39,15 @@ use App\Services\Contracts\AttendanceServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
+use App\Services\Contracts\PanelAlertRuleServiceInterface;
+use App\Services\Contracts\PanelAlertServiceInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use App\Services\Dashboard\ApplicationService;
 use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
+use App\Services\PanelAlerts\PanelAlertRuleService;
+use App\Services\PanelAlerts\PanelAlertService;
 use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
@@ -71,6 +79,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AlertServiceInterface::class, AlertService::class);
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
         $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
+
+        // Panel Alerts (user-created alerts for dashboard widget).
+        $this->app->singleton(PanelAlertRepositoryInterface::class, PanelAlertRepository::class);
+        $this->app->singleton(PanelAlertRuleRepositoryInterface::class, PanelAlertRuleRepository::class);
+        $this->app->singleton(PanelAlertServiceInterface::class, PanelAlertService::class);
+        $this->app->singleton(PanelAlertRuleServiceInterface::class, PanelAlertRuleService::class);
 
         // Odoo-sourced widgets (read-only via postgres_fdw).
         $this->app->singleton(AttendanceRepositoryInterface::class, AttendanceRepository::class);
