@@ -4,24 +4,32 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\Alerts;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\DTOs\AlertFilterDto;
+use Maya\Http\Http\Requests\PaginatedFilterRequest;
 
-class ListAlertsRequest extends FormRequest
+class ListAlertsRequest extends PaginatedFilterRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
-     * @return array<string, mixed>
+     * @return array<string, list<mixed>>
      */
-    public function rules(): array
+    protected function filterRules(): array
     {
         return [
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'severity' => ['nullable', 'string', 'in:critical,high,medium,low'],
+            'severity'    => ['nullable', 'string', 'in:critical,high,medium,low'],
             'active_only' => ['nullable', 'boolean'],
         ];
+    }
+
+    public function toFilterDto(): AlertFilterDto
+    {
+        return new AlertFilterDto(
+            severity: $this->input('severity') ?: null,
+            activeOnly: (bool) $this->input('active_only', true),
+            page: $this->getPage(),
+            perPage: $this->getPerPage() > 0 ? $this->getPerPage() : 25,
+            sortBy: $this->getSortBy() ?? 'created_at',
+            sortDir: $this->getSortDir(),
+            search: $this->input('search') ?: null,
+        );
     }
 }

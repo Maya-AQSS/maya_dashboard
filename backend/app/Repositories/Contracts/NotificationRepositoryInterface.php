@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\NotificationFilterDto;
 use App\Models\Notification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -14,18 +15,7 @@ interface NotificationRepositoryInterface
      *
      * @return LengthAwarePaginator<Notification>
      */
-    public function paginateForRecipient(
-        string $recipientId,
-        bool $unreadOnly,
-        ?string $type,
-        int $perPage,
-        ?string $app = null,
-        ?string $search = null,
-        ?string $dateFrom = null,
-        ?string $dateTo = null,
-        string $sortBy = 'created_at',
-        string $sortDir = 'desc',
-    ): LengthAwarePaginator;
+    public function paginateForRecipient(string $recipientId, NotificationFilterDto $filter): LengthAwarePaginator;
 
     /**
      * Localiza una notificación del destinatario o lanza 404.

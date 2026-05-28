@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Contracts;
 
 use App\DTOs\NotificationDto;
+use App\DTOs\NotificationFilterDto;
 use Maya\Http\Pagination\PaginatedDto;
 
 interface NotificationServiceInterface
@@ -12,18 +13,7 @@ interface NotificationServiceInterface
     /**
      * @return PaginatedDto<NotificationDto>
      */
-    public function paginate(
-        string $recipientId,
-        bool $unreadOnly,
-        ?string $type,
-        int $perPage,
-        ?string $app = null,
-        ?string $search = null,
-        ?string $dateFrom = null,
-        ?string $dateTo = null,
-        string $sortBy = 'created_at',
-        string $sortDir = 'desc',
-    ): PaginatedDto;
+    public function paginate(string $recipientId, NotificationFilterDto $filter): PaginatedDto;
 
     public function find(string $recipientId, int $notificationId): NotificationDto;
 

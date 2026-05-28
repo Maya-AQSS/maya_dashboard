@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Contracts;
 
 use App\DTOs\AlertRuleDto;
+use App\DTOs\AlertRuleFilterDto;
 use Maya\Http\Pagination\PaginatedDto;
 
 interface AlertRuleServiceInterface
@@ -12,7 +13,7 @@ interface AlertRuleServiceInterface
     /**
      * @return PaginatedDto<AlertRuleDto>
      */
-    public function list(int $perPage = 100): PaginatedDto;
+    public function paginate(AlertRuleFilterDto $filter): PaginatedDto;
 
     /**
      * @param  array<string, mixed>  $attributes

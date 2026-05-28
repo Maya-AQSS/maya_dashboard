@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\AlertRuleFilterDto;
 use App\Models\AlertRule;
 use Generator;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -13,7 +14,7 @@ interface AlertRuleRepositoryInterface
     /**
      * @return LengthAwarePaginator<AlertRule>
      */
-    public function paginateOrderedBySlug(int $perPage = 100): LengthAwarePaginator;
+    public function paginate(AlertRuleFilterDto $filter): LengthAwarePaginator;
 
     public function findOrFail(int $ruleId): AlertRule;
 

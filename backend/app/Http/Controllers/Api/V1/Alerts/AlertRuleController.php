@@ -23,9 +23,7 @@ class AlertRuleController extends Controller
 
     public function index(ListAlertRulesRequest $request): JsonResponse
     {
-        $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
-
-        $page = $this->rules->list($perPage);
+        $page = $this->rules->paginate($request->toFilterDto());
 
         return $this->paginated($page, AlertRuleResource::class, $request);
     }

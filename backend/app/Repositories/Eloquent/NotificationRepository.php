@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\NotificationFilterDto;
 use App\Models\Notification;
 use App\Models\User;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
@@ -11,52 +12,42 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class NotificationRepository implements NotificationRepositoryInterface
 {
-    public function paginateForRecipient(
-        string $recipientId,
-        bool $unreadOnly,
-        ?string $type,
-        int $perPage,
-        ?string $app = null,
-        ?string $search = null,
-        ?string $dateFrom = null,
-        ?string $dateTo = null,
-        string $sortBy = 'created_at',
-        string $sortDir = 'desc',
-    ): LengthAwarePaginator {
+    public function paginateForRecipient(string $recipientId, NotificationFilterDto $filter): LengthAwarePaginator
+    {
         $allowedSortColumns = ['created_at', 'read_at'];
-        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'created_at';
-        $direction = $sortDir === 'asc' ? 'asc' : 'desc';
+        $column = in_array($filter->sortBy, $allowedSortColumns, true) ? $filter->sortBy : 'created_at';
+        $direction = $filter->sortDir === 'asc' ? 'asc' : 'desc';
 
         $query = Notification::forRecipient($recipientId)->orderBy($column, $direction);
 
-        if ($unreadOnly) {
+        if ($filter->unreadOnly) {
             $query->unread();
         }
 
-        if ($type !== null && $type !== '') {
-            $query->where('type', $type);
+        if ($filter->type !== null && $filter->type !== '') {
+            $query->where('type', $filter->type);
         }
 
-        if ($app !== null && $app !== '') {
-            $query->where('app', $app);
+        if ($filter->app !== null && $filter->app !== '') {
+            $query->where('app', $filter->app);
         }
 
-        if ($search !== null && $search !== '') {
-            $query->where(function ($q) use ($search) {
-                $q->whereRaw('title ilike ?', ["%{$search}%"])
-                  ->orWhereRaw('body ilike ?', ["%{$search}%"]);
+        if ($filter->search !== null && $filter->search !== '') {
+            $query->where(function ($q) use ($filter): void {
+                $q->whereRaw('title ilike ?', ['%' . $filter->search . '%'])
+                  ->orWhereRaw('body ilike ?', ['%' . $filter->search . '%']);
             });
         }
 
-        if ($dateFrom !== null) {
-            $query->where('created_at', '>=', $dateFrom);
+        if ($filter->dateFrom !== null) {
+            $query->where('created_at', '>=', $filter->dateFrom);
         }
 
-        if ($dateTo !== null) {
-            $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+        if ($filter->dateTo !== null) {
+            $query->where('created_at', '<=', $filter->dateTo . ' 23:59:59');
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($filter->perPage, page: $filter->page);
     }
 
     public function findForRecipientOrFail(string $recipientId, int $notificationId): Notification

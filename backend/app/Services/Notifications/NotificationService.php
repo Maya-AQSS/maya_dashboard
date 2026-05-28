@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\DTOs\NotificationDto;
+use App\DTOs\NotificationFilterDto;
 use App\Models\Notification;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationServiceInterface;
@@ -19,22 +20,9 @@ final class NotificationService implements NotificationServiceInterface
     /**
      * @return PaginatedDto<NotificationDto>
      */
-    public function paginate(
-        string $recipientId,
-        bool $unreadOnly,
-        ?string $type,
-        int $perPage,
-        ?string $app = null,
-        ?string $search = null,
-        ?string $dateFrom = null,
-        ?string $dateTo = null,
-        string $sortBy = 'created_at',
-        string $sortDir = 'desc',
-    ): PaginatedDto {
-        $paginator = $this->notifications->paginateForRecipient(
-            $recipientId, $unreadOnly, $type, $perPage,
-            $app, $search, $dateFrom, $dateTo, $sortBy, $sortDir,
-        );
+    public function paginate(string $recipientId, NotificationFilterDto $filter): PaginatedDto
+    {
+        $paginator = $this->notifications->paginateForRecipient($recipientId, $filter);
 
         return PaginatedDto::fromPaginator(
             $paginator,

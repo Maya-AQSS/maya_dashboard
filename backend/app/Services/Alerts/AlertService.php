@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Alerts;
 
 use App\DTOs\AlertDto;
+use App\DTOs\AlertFilterDto;
 use App\Models\Alert;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Services\Contracts\AlertServiceInterface;
@@ -19,9 +20,9 @@ final class AlertService implements AlertServiceInterface
     /**
      * @return PaginatedDto<AlertDto>
      */
-    public function paginate(bool $activeOnly, ?string $severity, int $perPage): PaginatedDto
+    public function paginate(AlertFilterDto $filter): PaginatedDto
     {
-        $paginator = $this->alerts->paginate($activeOnly, $severity, $perPage);
+        $paginator = $this->alerts->paginate($filter);
 
         return PaginatedDto::fromPaginator(
             $paginator,

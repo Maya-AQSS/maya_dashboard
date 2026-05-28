@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\AlertFilterDto;
 use App\Models\Alert;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class AlertRepository implements AlertRepositoryInterface
 {
-    public function paginate(bool $activeOnly, ?string $severity, int $perPage): LengthAwarePaginator
+    public function paginate(AlertFilterDto $filter): LengthAwarePaginator
     {
         $query = Alert::query()->with('rule')->orderByDesc('created_at');
 
-        if ($activeOnly) {
+        if ($filter->activeOnly) {
             $query->active();
         }
 
-        if ($severity !== null && $severity !== '') {
-            $query->where('severity', $severity);
+        if ($filter->severity !== null && $filter->severity !== '') {
+            $query->where('severity', $filter->severity);
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($filter->perPage, page: $filter->page);
     }
 
     public function findOrFail(int $alertId): Alert

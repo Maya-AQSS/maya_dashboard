@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Alerts;
 
 use App\DTOs\AlertRuleDto;
+use App\DTOs\AlertRuleFilterDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
@@ -19,10 +20,10 @@ final class AlertRuleService implements AlertRuleServiceInterface
     /**
      * @return PaginatedDto<AlertRuleDto>
      */
-    public function list(int $perPage = 100): PaginatedDto
+    public function paginate(AlertRuleFilterDto $filter): PaginatedDto
     {
         return PaginatedDto::fromPaginator(
-            $this->rules->paginateOrderedBySlug($perPage),
+            $this->rules->paginate($filter),
             fn (AlertRule $r): AlertRuleDto => AlertRuleDto::fromModel($r),
         );
     }

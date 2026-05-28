@@ -24,11 +24,7 @@ class AlertController extends Controller
 
     public function index(ListAlertsRequest $request): JsonResponse
     {
-        $perPage = (int) ($request->validated('per_page') ?? 25);
-        $severity = $request->validated('severity') ?: null;
-        $active = (bool) ($request->validated('active_only') ?? true);
-
-        $page = $this->alerts->paginate($active, $severity, $perPage > 0 ? $perPage : 25);
+        $page = $this->alerts->paginate($request->toFilterDto());
 
         return $this->paginated($page, AlertResource::class, $request);
     }

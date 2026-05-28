@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\AlertRuleFilterDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use DateTimeInterface;
@@ -12,9 +13,26 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class AlertRuleRepository implements AlertRuleRepositoryInterface
 {
-    public function paginateOrderedBySlug(int $perPage = 100): LengthAwarePaginator
+    public function paginate(AlertRuleFilterDto $filter): LengthAwarePaginator
     {
-        return AlertRule::query()->orderBy('slug')->paginate($perPage);
+        $allowedSortColumns = ['slug', 'name', 'severity', 'created_at', 'last_evaluated_at'];
+        $column = in_array($filter->sortBy, $allowedSortColumns, true) ? $filter->sortBy : 'slug';
+        $direction = $filter->sortDir === 'asc' ? 'asc' : 'desc';
+
+        $query = AlertRule::query()->orderBy($column, $direction);
+
+        if ($filter->enabled !== null) {
+            $query->where('enabled', $filter->enabled);
+        }
+
+        if ($filter->search !== null && $filter->search !== '') {
+            $query->where(function ($q) use ($filter): void {
+                $q->whereRaw('name ilike ?', ['%' . $filter->search . '%'])
+                  ->orWhereRaw('slug ilike ?', ['%' . $filter->search . '%']);
+            });
+        }
+
+        return $query->paginate($filter->perPage, page: $filter->page);
     }
 
     public function findOrFail(int $ruleId): AlertRule
