@@ -25,7 +25,7 @@ use App\Repositories\Eloquent\PanelAlertRuleRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
 use Maya\Profile\Migrations as ProfileMigrations;
-use Maya\Profile\Repositories\Resolvers\FdwAcademicResolver;
+use App\Repositories\Resolvers\DashboardProfileResolver;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
@@ -97,7 +97,7 @@ class AppServiceProvider extends ServiceProvider
         // module_ids/team_ids/teams enriquecidos desde las FDW locales (mismas
         // vistas que el resto de apps Maya proyectan localmente — sin
         // dependencias cruzadas en runtime).
-        $this->app->singleton(UserProfileResolverInterface::class, FdwAcademicResolver::class);
+        $this->app->singleton(UserProfileResolverInterface::class, DashboardProfileResolver::class);
     }
 
     public function boot(): void

@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { apiGetJson } from '../../../api/http'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useMemo } from 'react'
 
 export interface EmployeeData {
   personal_email: string | null
@@ -16,14 +16,23 @@ export interface EmployeeData {
   car_registration_number_3: string | null
 }
 
-export function useMyEmployeeData() {
-  return useQuery<EmployeeData>({
-    queryKey: ['me', 'employee'],
-    queryFn: async () => {
-      const body = await apiGetJson<{ data: EmployeeData }>('me/employee')
-      return body.data
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  })
+interface AuthUserWithEmployee {
+  employee?: EmployeeData | null
+}
+
+/**
+ * Extrae los datos del empleado desde el perfil autenticado (`/me`).
+ * El resolver `DashboardProfileResolver` los inyecta bajo la clave `employee`
+ * al enriquecer el JWT con la FDW `employee_profiles`.
+ */
+export function useMyEmployeeData(): { data: EmployeeData | null } {
+  const { user } = useAuth()
+
+  const data = useMemo(() => {
+    const raw = (user as AuthUserWithEmployee | null)?.employee
+    if (!raw) return null
+    return raw
+  }, [user])
+
+  return { data }
 }
