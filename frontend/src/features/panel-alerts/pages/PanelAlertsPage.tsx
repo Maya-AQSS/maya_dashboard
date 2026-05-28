@@ -329,19 +329,20 @@ export default function PanelAlertsPage() {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <PageTitle title={t('panelAlerts.pageTitle')} subtitle={t('panelAlerts.pageSubtitle')} />
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => {
-            if (activeTab === 'alerts') { setEditAlert(null); setShowAlertForm(true) }
-            else { setEditRule(null); setShowRuleForm(true) }
-          }}
-        >
-          {activeTab === 'alerts' ? t('panelAlerts.newAlert') : t('panelAlerts.newRule')}
-        </Button>
-      </div>
+      <PageTitle
+        title={t('panelAlerts.pageTitle')}
+        subtitle={t('panelAlerts.pageSubtitle')}
+        actions={
+          <Button
+            onClick={() => {
+              if (activeTab === 'alerts') { setEditAlert(null); setShowAlertForm(true) }
+              else { setEditRule(null); setShowRuleForm(true) }
+            }}
+          >
+            + {t('actions.create')}
+          </Button>
+        }
+      />
 
       {/* Tab bar */}
       <div className="flex gap-1 mb-4 border-b border-ui-border dark:border-ui-dark-border">
