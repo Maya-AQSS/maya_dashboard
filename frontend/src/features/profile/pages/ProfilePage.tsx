@@ -399,7 +399,7 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
     try {
       await updateMyLocale(next)
     } catch (error) {
-      console.warn('[profile] updateMyLocale failed (no bloqueante)', error)
+      // removed debug log
     } finally {
       setSavingLocale(false)
     }

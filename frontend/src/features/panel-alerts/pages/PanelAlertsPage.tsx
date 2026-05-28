@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Badge,
   Button,
@@ -36,14 +37,23 @@ const SEVERITY_BADGE: Record<Severity, 'danger' | 'warning' | 'info' | 'neutral'
 }
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handleEsc)
+    return () => document.removeEventListener('keydown', handleEsc)
+  }, [onClose])
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="panel-alert-modal-title"
     >
       <div className="w-full max-w-xl rounded-2xl bg-ui-card dark:bg-ui-dark-card border border-ui-border dark:border-ui-dark-border shadow-xl p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-text-primary dark:text-text-dark-primary">{title}</h2>
+          <h2 id="panel-alert-modal-title" className="text-base font-semibold text-text-primary dark:text-text-dark-primary">{title}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -61,15 +71,31 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 export default function PanelAlertsPage() {
   const { t } = useLocale()
   const { toast } = useToast()
-  const [activeTab, setActiveTab] = useState<Tab>('alerts')
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // ── Alerts tab state ──────────────────────────────────────────
-  const [alertPage, setAlertPage] = useState(1)
-  const [alertSearchInput, setAlertSearchInput] = useState('')
-  const [alertSearch, setAlertSearch] = useState('')
-  const [alertSeverity, setAlertSeverity] = useState<Severity | ''>('')
-  const [includeExpired, setIncludeExpired] = useState(false)
+  // ── URL-synced filter state ───────────────────────────────────
+  const activeTab = (searchParams.get('tab') as Tab | null) ?? 'alerts'
+  const alertPage = Number(searchParams.get('page') ?? '1')
+  const alertSearch = searchParams.get('search') ?? ''
+  const alertSeverity = (searchParams.get('severity') as Severity | '') ?? ''
+  const includeExpired = searchParams.get('expired') === '1'
+
+  // ── Local UI state (debounce input only) ─────────────────────
+  const [alertSearchInput, setAlertSearchInput] = useState(alertSearch)
   const alertDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const setActiveTab = (tab: Tab) => {
+    setSearchParams((prev) => { prev.set('tab', tab); prev.delete('page'); return prev }, { replace: true })
+  }
+  const setAlertPage = (page: number) => {
+    setSearchParams((prev) => { prev.set('page', String(page)); return prev }, { replace: true })
+  }
+  const setAlertSeverity = (severity: Severity | '') => {
+    setSearchParams((prev) => { severity ? prev.set('severity', severity) : prev.delete('severity'); prev.delete('page'); return prev }, { replace: true })
+  }
+  const setIncludeExpired = (value: boolean) => {
+    setSearchParams((prev) => { value ? prev.set('expired', '1') : prev.delete('expired'); prev.delete('page'); return prev }, { replace: true })
+  }
 
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
     useTablePreferences({ storageKey: 'maya:dashboard:panel-alerts-table' })
@@ -260,7 +286,9 @@ export default function PanelAlertsPage() {
     const v = e.target.value
     setAlertSearchInput(v)
     if (alertDebounceRef.current) clearTimeout(alertDebounceRef.current)
-    alertDebounceRef.current = setTimeout(() => { setAlertSearch(v); setAlertPage(1) }, 400)
+    alertDebounceRef.current = setTimeout(() => {
+      setSearchParams((prev) => { v ? prev.set('search', v) : prev.delete('search'); prev.delete('page'); return prev }, { replace: true })
+    }, 400)
   }
 
   const handleAlertSubmit = async (data: CreatePanelAlertInput) => {
@@ -354,7 +382,8 @@ export default function PanelAlertsPage() {
             emptyMessage={t('panelAlerts.empty')}
             filtersActiveCount={alertFiltersActive}
             onClearFilters={() => {
-              setAlertSearchInput(''); setAlertSearch(''); setAlertSeverity(''); setIncludeExpired(false); setAlertPage(1)
+              setAlertSearchInput('')
+              setSearchParams((prev) => { prev.delete('search'); prev.delete('severity'); prev.delete('expired'); prev.delete('page'); return prev }, { replace: true })
             }}
             filtersPanel={
               <>
@@ -371,7 +400,7 @@ export default function PanelAlertsPage() {
                   <Select
                     fieldSize="sm"
                     value={alertSeverity}
-                    onChange={(e) => { setAlertSeverity(e.target.value as Severity | ''); setAlertPage(1) }}
+                    onChange={(e) => { setAlertSeverity(e.target.value as Severity | '') }}
                   >
                     <option value="">{t('panelAlerts.severityAll')}</option>
                     <option value="critical">{t('severity.critical')}</option>
@@ -384,7 +413,7 @@ export default function PanelAlertsPage() {
                   <Select
                     fieldSize="sm"
                     value={includeExpired ? '1' : '0'}
-                    onChange={(e) => { setIncludeExpired(e.target.value === '1'); setAlertPage(1) }}
+                    onChange={(e) => { setIncludeExpired(e.target.value === '1') }}
                   >
                     <option value="0">{t('panelAlerts.activeOnly')}</option>
                     <option value="1">{t('panelAlerts.allAlerts')}</option>
