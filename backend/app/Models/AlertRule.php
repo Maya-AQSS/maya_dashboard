@@ -20,6 +20,7 @@ class AlertRule extends Model
     protected $fillable = [
         'slug', 'name', 'description', 'query_sql', 'severity',
         'schedule_cron', 'enabled', 'context_template', 'last_evaluated_at',
+        'created_by_id',
     ];
 
     protected static function booted(): void

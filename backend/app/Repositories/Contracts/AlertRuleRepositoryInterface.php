@@ -51,4 +51,9 @@ interface AlertRuleRepositoryInterface
      * @return array<string, true>
      */
     public function validSlugLookup(): array;
+
+    /**
+     * Finds a rule by its slug. Returns null if not found.
+     */
+    public function findBySlug(string $slug): ?AlertRule;
 }

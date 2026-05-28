@@ -80,4 +80,9 @@ final class AlertRuleRepository implements AlertRuleRepositoryInterface
     {
         return AlertRule::query()->pluck('slug')->flip()->all();
     }
+
+    public function findBySlug(string $slug): ?AlertRule
+    {
+        return AlertRule::query()->where('slug', $slug)->first();
+    }
 }

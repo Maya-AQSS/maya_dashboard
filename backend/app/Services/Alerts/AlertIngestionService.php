@@ -11,6 +11,9 @@ use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertIngestionServiceInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
+use Maya\Messaging\Publishers\NotificationPublisher;
+use Throwable;
 
 class AlertIngestionService implements AlertIngestionServiceInterface
 {
@@ -19,6 +22,7 @@ class AlertIngestionService implements AlertIngestionServiceInterface
     public function __construct(
         private readonly AlertRepositoryInterface $alertRepo,
         private readonly AlertRuleRepositoryInterface $ruleRepo,
+        private readonly NotificationPublisher $notificationPublisher,
     ) {}
 
     public function ingest(array $payload, string $messageId): void
@@ -47,5 +51,46 @@ class AlertIngestionService implements AlertIngestionServiceInterface
                 ? Date::parse($dto->createdAt)
                 : now(),
         ]);
+
+        $this->notifyRuleCreator($ruleSlug, $dto);
+    }
+
+    private function notifyRuleCreator(?string $ruleSlug, IncomingAlertPayload $dto): void
+    {
+        if ($ruleSlug === null) {
+            return;
+        }
+
+        try {
+            $rule = $this->ruleRepo->findBySlug($ruleSlug);
+
+            if ($rule === null) {
+                return;
+            }
+
+            $creatorId = $rule->created_by_id;
+
+            if (! is_string($creatorId) || $creatorId === '') {
+                return;
+            }
+
+            $this->notificationPublisher->send(
+                type: 'alert.fired',
+                recipientId: $creatorId,
+                title: "Alerta disparada: {$dto->title}",
+                body: "La regla \"{$rule->name}\" ha detectado " . ($dto->context['matched_rows'] ?? 'N') . " filas. Severidad: {$dto->severity}",
+                channels: ['app'],
+                metadata: [
+                    'rule_slug' => $dto->ruleSlug,
+                    'severity'  => $dto->severity,
+                    'source'    => $dto->source,
+                ],
+            );
+        } catch (Throwable $e) {
+            Log::warning('alert.notify_rule_creator_failed', [
+                'rule_slug' => $ruleSlug,
+                'error'     => $e->getMessage(),
+            ]);
+        }
     }
 }
