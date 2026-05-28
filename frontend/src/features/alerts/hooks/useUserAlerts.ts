@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useFichajeAlerts } from './useFichajeAlerts'
 import { getActivePanelAlerts } from '../../panel-alerts/api/panelAlertsApi'
+import { useSystemAlerts } from '../../system-alerts/hooks/useSystemAlerts'
 import type { PanelAlert } from '../../panel-alerts/types/panelAlert'
+import type { SystemAlert } from '../../system-alerts/components/AlertRow'
 import type { AlertItem } from './useActiveSystemAlerts'
 
 export type { AlertItem }
@@ -57,6 +59,8 @@ export function useUserAlerts() {
     retry: 1,
   })
 
+  const { alerts: rawSystemAlerts } = useSystemAlerts({ token: token ?? undefined, activeOnly: true })
+
   const panelAlerts = useMemo<AlertItem[]>(
     () => rawPanelAlerts.map((a) => ({
       id: `panel:${a.id}`,
@@ -69,6 +73,18 @@ export function useUserAlerts() {
     [rawPanelAlerts],
   )
 
+  const systemAlerts = useMemo<AlertItem[]>(
+    () => (rawSystemAlerts as SystemAlert[])
+      .filter((a) => !a.resolved_at)
+      .map((a) => ({
+        id: `system:${a.id}`,
+        color: panelSeverityToColor(a.severity),
+        text: a.title,
+        canDismiss: true,
+      })),
+    [rawSystemAlerts],
+  )
+
   useEffect(() => {
     saveDismissed(dismissed)
   }, [dismissed])
@@ -78,8 +94,8 @@ export function useUserAlerts() {
   }, [])
 
   const alerts = useMemo(
-    () => [...fichajeAlerts, ...panelAlerts].filter((a) => !dismissed.has(a.id)),
-    [fichajeAlerts, panelAlerts, dismissed],
+    () => [...fichajeAlerts, ...systemAlerts, ...panelAlerts].filter((a) => !dismissed.has(a.id)),
+    [fichajeAlerts, systemAlerts, panelAlerts, dismissed],
   )
 
   return { alerts, loading, dismiss, clockIn }
