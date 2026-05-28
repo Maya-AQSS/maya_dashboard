@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\DTOs\IncomingNotificationPayload;
+use App\Events\NotificationCreated;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use Illuminate\Support\Facades\Cache;
@@ -38,7 +39,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             return false;
         }
 
-        $this->repo->upsertByMessageId($messageId, [
+        $notification = $this->repo->upsertByMessageId($messageId, [
             'app' => $dto->app,
             'type' => $dto->type,
             'recipient_id' => $recipientId,
@@ -50,6 +51,11 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
                 ? Date::parse($dto->createdAt)
                 : now(),
         ]);
+
+        event(new NotificationCreated(
+            notification: $notification->toArray(),
+            userId: $notification->recipient_id,
+        ));
 
         return true;
     }
