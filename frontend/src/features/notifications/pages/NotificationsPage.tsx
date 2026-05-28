@@ -5,10 +5,12 @@ import {
   Badge,
   Button,
   DataTable,
+  FilterField,
   PageTitle,
   Pagination,
-  SearchInput,
   Select,
+  TextInput,
+  useTablePreferences,
   useToast,
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
@@ -17,7 +19,6 @@ import { getUnreadCount } from '../api/notificationsApi'
 import { useNotifications } from '../hooks/useNotifications'
 import type { Notification, NotificationListFilters } from '../types/notification'
 
-const PAGE_SIZE = 25
 const POLL_MS = 60_000
 
 export default function NotificationsPage() {
@@ -26,12 +27,13 @@ export default function NotificationsPage() {
   const { toast } = useToast()
 
   const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [search, setSearch] = useState('')
   const [unreadOnly, setUnreadOnly] = useState(false)
-  const [sortBy, setSortBy] = useState<NotificationListFilters['sort_by']>('created_at')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
+    useTablePreferences({ storageKey: 'maya:dashboard:notifications-table' })
 
   useEffect(() => {
     return () => {
@@ -41,11 +43,11 @@ export default function NotificationsPage() {
 
   const filters: NotificationListFilters = {
     page,
-    per_page: PAGE_SIZE,
+    per_page: pageSize,
     search: search || undefined,
     unread_only: unreadOnly || undefined,
-    sort_by: sortBy,
-    sort_dir: sortDir,
+    sort_by: (sortBy?.columnId as NotificationListFilters['sort_by']) ?? 'created_at',
+    sort_dir: sortBy?.direction ?? 'desc',
   }
 
   const { notifications, meta, loading, error, onMarkRead, onMarkAllRead } = useNotifications(filters)
@@ -77,16 +79,15 @@ export default function NotificationsPage() {
     }
   }
 
-  const handleSortChange = (col: string | null) => {
-    if (!col) return
-    if (col === sortBy) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortBy(col as NotificationListFilters['sort_by'])
-      setSortDir('desc')
-    }
+  const clearFilters = () => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    setSearchInput('')
+    setSearch('')
+    setUnreadOnly(false)
     setPage(1)
   }
+
+  const filtersActiveCount = [search, unreadOnly ? 'unread' : ''].filter(Boolean).length
 
   const columns: ColumnDef<Notification>[] = useMemo(
     () => [
@@ -141,37 +142,12 @@ export default function NotificationsPage() {
     [t],
   )
 
-  const filtersPanel = (
-    <div className="flex flex-wrap gap-3 items-end">
-      <div className="flex-1 min-w-[200px]">
-        <SearchInput
-          value={searchInput}
-          onChange={handleSearchChange}
-          placeholder={t('notifications.searchPlaceholder')}
-        />
-      </div>
-      <div className="min-w-[160px]">
-        <label className="mb-1 block text-xs font-semibold text-text-secondary dark:text-text-dark-secondary">
-          {t('notifications.filterLabel')}
-        </label>
-        <Select
-          fieldSize="md"
-          value={unreadOnly ? 'unread' : 'all'}
-          onChange={(e) => {
-            setUnreadOnly(e.target.value === 'unread')
-            setPage(1)
-          }}
-        >
-          <option value="all">{t('notifications.filterAll')}</option>
-          <option value="unread">{t('notifications.filterUnread')}</option>
-        </Select>
-      </div>
-    </div>
-  )
+  const totalPages = meta?.last_page ?? 1
+  const safeCurrentPage = meta?.current_page ?? page
 
   return (
-    <div className="max-w-[960px] mx-auto p-4 space-y-4">
-      <div className="flex items-start justify-between gap-4">
+    <>
+      <div className="flex items-start justify-between gap-4 mb-4">
         <PageTitle
           title={t('notifications.pageTitle')}
           subtitle={t('notifications.pageSubtitle')}
@@ -184,47 +160,120 @@ export default function NotificationsPage() {
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="mb-4 text-sm text-danger">
           {error}
         </p>
       )}
 
-      <DataTable
-        columns={columns}
-        rows={notifications}
-        loading={loading}
-        rowKey={(n) => n.id}
-        sortBy={sortBy ?? null}
-        onSortChange={handleSortChange}
-        pageSize={PAGE_SIZE}
-        onPageSizeChange={() => undefined}
-        emptyMessage={t('notifications.empty')}
-        filtersPanel={filtersPanel}
-        onRowClick={(n) => {
-          if (!n.read_at) onMarkRead(n.id).catch(() => undefined)
-          navigate(`/notifications/${n.id}`)
-        }}
-      />
-
-      {meta && meta.last_page > 1 && (
-        <Pagination
-          currentPage={meta.current_page}
-          totalPages={meta.last_page}
-          onPageChange={setPage}
-          prevLabel={t('pagination.previous')}
-          nextLabel={t('pagination.next')}
-        />
-      )}
-
-      {meta && meta.from != null && meta.to != null && (
-        <p className="text-xs text-text-muted dark:text-text-dark-muted text-right">
-          {t('notifications.paginationInfo', {
-            from: meta.from,
-            to: meta.to,
-            total: meta.total,
+      <div className="space-y-4">
+        <DataTable
+          columns={columns}
+          rows={notifications}
+          loading={loading}
+          rowKey={(n) => n.id}
+          hiddenColumnIds={hiddenIds}
+          onToggleHiddenColumn={toggleHidden}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setPage(1)
+          }}
+          defaultView="cards"
+          viewStorageKey="maya:dashboard:notifications-table"
+          emptyMessage={t('notifications.empty')}
+          filtersActiveCount={filtersActiveCount}
+          onClearFilters={clearFilters}
+          filtersStorageKey="maya:dashboard:notifications-table"
+          onRowClick={(n) => {
+            if (!n.read_at) onMarkRead(n.id).catch(() => undefined)
+            navigate(`/notifications/${n.id}`)
+          }}
+          cardRender={(n) => (
+            <div className="flex items-start gap-3 flex-1">
+              <span
+                className={`mt-1.5 w-2 h-2 shrink-0 rounded-full ${n.read_at ? 'opacity-0' : 'bg-info'}`}
+                aria-hidden
+              />
+              <div className="flex-1 min-w-0">
+                <p
+                  className={`text-sm truncate ${
+                    n.read_at
+                      ? 'text-text-secondary dark:text-text-dark-secondary'
+                      : 'font-semibold text-text-primary dark:text-text-dark-primary'
+                  }`}
+                >
+                  {n.title}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="neutral" size="sm">{n.app}</Badge>
+                  <span className="text-xs text-text-muted dark:text-text-dark-muted truncate">{n.type}</span>
+                </div>
+                <p className="text-xs text-text-muted dark:text-text-dark-muted mt-1">
+                  {new Date(n.created_at).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          )}
+          flipCardRender={(n) => ({
+            back: (
+              <p className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4">
+                {n.body || '—'}
+              </p>
+            ),
+            backAction: !n.read_at ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMarkRead(n.id).catch(() => undefined)
+                }}
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium transition bg-transparent border border-ui-border dark:border-ui-dark-border text-text-secondary dark:text-text-dark-secondary hover:bg-ui-body dark:hover:bg-ui-dark-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info/40"
+              >
+                {t('notifications.markRead')}
+              </button>
+            ) : undefined,
           })}
-        </p>
-      )}
-    </div>
+          filtersPanel={
+            <>
+              <FilterField label={t('notifications.searchPlaceholder')}>
+                <TextInput
+                  fieldSize="sm"
+                  type="search"
+                  placeholder={t('notifications.searchPlaceholder')}
+                  value={searchInput}
+                  onChange={handleSearchChange}
+                />
+              </FilterField>
+              <FilterField label={t('notifications.filterLabel')}>
+                <Select
+                  fieldSize="sm"
+                  value={unreadOnly ? 'unread' : 'all'}
+                  onChange={(e) => {
+                    setUnreadOnly(e.target.value === 'unread')
+                    setPage(1)
+                  }}
+                >
+                  <option value="all">{t('notifications.filterAll')}</option>
+                  <option value="unread">{t('notifications.filterUnread')}</option>
+                </Select>
+              </FilterField>
+            </>
+          }
+        />
+
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onChange={setPage}
+          info={
+            meta?.from != null && meta?.to != null
+              ? t('notifications.paginationInfo', { from: meta.from, to: meta.to, total: meta.total })
+              : undefined
+          }
+        />
+      </div>
+    </>
   )
 }

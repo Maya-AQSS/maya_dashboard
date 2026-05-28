@@ -20,12 +20,21 @@ vi.mock('@ceedcv-maya/shared-ui-react', () => ({
       {rows.map((r: unknown, i: number) => <div key={i} data-testid="notif-row">{JSON.stringify(r)}</div>)}
     </div>
   ),
+  FilterField: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PageTitle: ({ title }: { title: string }) => <h1>{title}</h1>,
   Pagination: () => null,
-  SearchInput: ({ onChange }: { onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
+  Select: ({ children }: { children: React.ReactNode }) => <select>{children}</select>,
+  TextInput: ({ onChange }: { onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
     <input onChange={onChange} />
   ),
-  Select: ({ children }: { children: React.ReactNode }) => <select>{children}</select>,
+  useTablePreferences: () => ({
+    hiddenIds: new Set<string>(),
+    toggleHidden: vi.fn(),
+    sortBy: null,
+    setSortBy: vi.fn(),
+    pageSize: 25,
+    setPageSize: vi.fn(),
+  }),
   useToast: () => ({ toast: vi.fn() }),
 }))
 
