@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Application\ListFavoriteApplicationsRequest;
 use App\Http\Requests\Api\FavoriteStoreRequest;
 use App\Http\Resources\UserFavoriteApplicationResource;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
@@ -22,11 +23,10 @@ class UserFavoriteApplicationController extends Controller
         private readonly UserFavoriteApplicationServiceInterface $favorites,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(ListFavoriteApplicationsRequest $request): JsonResponse
     {
         $user = $this->resolveKeycloakUser($request);
-        $perPage = (int) $request->query('per_page', 100);
-        $perPage = max(1, min($perPage, 200));
+        $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
 
         $page = $this->favorites->list($user, $perPage);
 

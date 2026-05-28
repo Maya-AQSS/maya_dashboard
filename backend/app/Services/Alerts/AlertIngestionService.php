@@ -9,9 +9,8 @@ use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertIngestionServiceInterface;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Date;
 
 class AlertIngestionService implements AlertIngestionServiceInterface
 {
@@ -24,10 +23,7 @@ class AlertIngestionService implements AlertIngestionServiceInterface
 
     public function ingest(array $payload, string $messageId): void
     {
-        Validator::make(
-            ['message_id' => $messageId],
-            ['message_id' => 'required|uuid'],
-        )->validate();
+        IncomingAlertPayload::assertValidMessageId($messageId);
 
         $dto = IncomingAlertPayload::fromArray($payload);
 
@@ -48,7 +44,7 @@ class AlertIngestionService implements AlertIngestionServiceInterface
             'source' => $dto->source,
             'context' => $dto->context,
             'created_at' => $dto->createdAt !== null
-                ? Carbon::parse($dto->createdAt)
+                ? Date::parse($dto->createdAt)
                 : now(),
         ]);
     }

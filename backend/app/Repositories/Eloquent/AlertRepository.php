@@ -44,6 +44,10 @@ final class AlertRepository implements AlertRepositoryInterface
 
     public function resolve(Alert $alert, string $userId): Alert
     {
+        if ($alert->resolved_at !== null) {
+            throw new \DomainException('Alert already resolved');
+        }
+
         $alert->update([
             'resolved_at' => now(),
             'resolved_by' => $userId,

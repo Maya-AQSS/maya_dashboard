@@ -14,7 +14,18 @@ class Alert extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'message_id',
+        'rule_slug',
+        'severity',
+        'title',
+        'source',
+        'context',
+        'acknowledged_at',
+        'acknowledged_by',
+        'resolved_at',
+        'resolved_by',
+    ];
 
     protected function casts(): array
     {
@@ -31,7 +42,7 @@ class Alert extends Model
         return $this->belongsTo(AlertRule::class, 'rule_slug', 'slug');
     }
 
-    public function scopeActive($query)
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereNull('resolved_at');
     }

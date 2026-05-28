@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Observers\PanelAlertObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([PanelAlertObserver::class])]
 class PanelAlert extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'text',
         'severity',

@@ -187,3 +187,39 @@ it('fails when banned token is hidden in line comment', function () {
 
     expect($errors)->not->toBeEmpty();
 });
+
+// ─── new banned tokens (CRIT-1 hardening) ────────────────────────────────────
+
+it('fails when query contains UNION', function () {
+    $errors = validateQuery('SELECT id FROM alerts UNION SELECT id FROM notifications');
+
+    expect($errors)->not->toBeEmpty();
+    expect($errors[0])->toContain('UNION');
+});
+
+it('fails when query contains UNION in lowercase', function () {
+    $errors = validateQuery('SELECT id FROM alerts union SELECT id FROM notifications');
+
+    expect($errors)->not->toBeEmpty();
+});
+
+it('fails when query contains INTERSECT', function () {
+    $errors = validateQuery('SELECT id FROM alerts INTERSECT SELECT id FROM notifications');
+
+    expect($errors)->not->toBeEmpty();
+    expect($errors[0])->toContain('INTERSECT');
+});
+
+it('fails when query contains EXCEPT', function () {
+    $errors = validateQuery('SELECT id FROM alerts EXCEPT SELECT id FROM notifications');
+
+    expect($errors)->not->toBeEmpty();
+    expect($errors[0])->toContain('EXCEPT');
+});
+
+it('fails when query contains INTO', function () {
+    $errors = validateQuery('SELECT id INTO outfile FROM alerts');
+
+    expect($errors)->not->toBeEmpty();
+    expect($errors[0])->toContain('INTO');
+});

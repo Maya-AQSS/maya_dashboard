@@ -13,7 +13,17 @@ class Notification extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'message_id',
+        'app',
+        'type',
+        'recipient_id',
+        'title',
+        'body',
+        'channels',
+        'metadata',
+        'read_at',
+    ];
 
     protected function casts(): array
     {
@@ -25,12 +35,12 @@ class Notification extends Model
         ];
     }
 
-    public function scopeForRecipient($query, string $recipientId)
+    public function scopeForRecipient(\Illuminate\Database\Eloquent\Builder $query, string $recipientId): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('recipient_id', $recipientId);
     }
 
-    public function scopeUnread($query)
+    public function scopeUnread(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->whereNull('read_at');
     }

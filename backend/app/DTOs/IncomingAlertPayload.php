@@ -33,4 +33,20 @@ readonly class IncomingAlertPayload
     {
         return new self($data);
     }
+
+    /**
+     * Validates that the AMQP message ID is a well-formed UUID.
+     * Kept in the DTO layer so the Service remains free of Validator imports.
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function assertValidMessageId(string $messageId): void
+    {
+        $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+        if ($messageId === '' || preg_match($pattern, $messageId) !== 1) {
+            throw new \InvalidArgumentException(
+                sprintf('Invalid message_id (must be UUID): "%s"', $messageId),
+            );
+        }
+    }
 }

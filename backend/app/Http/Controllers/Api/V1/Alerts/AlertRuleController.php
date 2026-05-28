@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Alerts;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Alerts\ListAlertRulesRequest;
 use App\Http\Requests\Api\Alerts\StoreAlertRuleRequest;
 use App\Http\Requests\Api\Alerts\UpdateAlertRuleRequest;
 use App\Http\Resources\AlertRuleResource;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class AlertRuleController extends Controller
@@ -21,10 +21,9 @@ class AlertRuleController extends Controller
         private readonly AlertRuleServiceInterface $rules,
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(ListAlertRulesRequest $request): JsonResponse
     {
-        $perPage = (int) $request->query('per_page', 100);
-        $perPage = max(1, min($perPage, 200));
+        $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
 
         $page = $this->rules->list($perPage);
 

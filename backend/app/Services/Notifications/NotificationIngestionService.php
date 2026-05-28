@@ -7,13 +7,14 @@ namespace App\Services\Notifications;
 use App\DTOs\IncomingNotificationPayload;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 
 class NotificationIngestionService implements NotificationIngestionServiceInterface
 {
-    /** In-memory cache of known user IDs for the lifetime of this consumer process. */
-    private array $knownUserIds = [];
+    /** TTL in seconds for the user-exists cache entry. */
+    private const USER_CACHE_TTL = 300;
 
     public function __construct(
         private readonly NotificationRepositoryInterface $repo,
@@ -21,7 +22,16 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
 
     public function ingest(array $payload, string $messageId): bool
     {
-        $dto = IncomingNotificationPayload::fromArray($payload);
+        try {
+            $dto = IncomingNotificationPayload::fromArray($payload);
+        } catch (\InvalidArgumentException $e) {
+            Log::warning('NotificationIngestionService: dropping malformed payload (non-retryable)', [
+                'error' => $e->getMessage(),
+                'keys' => array_keys($payload),
+            ]);
+
+            return false; // indica mensaje no-recuperable al consumer
+        }
 
         $recipientId = $this->resolveRecipientId($dto->recipientKeycloakId);
         if ($recipientId === null) {
@@ -37,7 +47,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             'channels' => $dto->channels,
             'metadata' => $dto->metadata,
             'created_at' => $dto->createdAt !== null
-                ? Carbon::parse($dto->createdAt)
+                ? Date::parse($dto->createdAt)
                 : now(),
         ]);
 
@@ -50,17 +60,17 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             return null;
         }
 
-        if (isset($this->knownUserIds[$keycloakId])) {
-            return $keycloakId;
-        }
+        $cacheKey = 'notification_user_exists:' . $keycloakId;
 
-        if (! $this->repo->userExists($keycloakId)) {
+        $exists = Cache::remember($cacheKey, self::USER_CACHE_TTL, function () use ($keycloakId): bool {
+            return $this->repo->userExists($keycloakId);
+        });
+
+        if (! $exists) {
             Log::warning('Notification skipped: recipient not found in users.', ['keycloak_id' => $keycloakId]);
 
             return null;
         }
-
-        $this->knownUserIds[$keycloakId] = true;
 
         return $keycloakId;
     }

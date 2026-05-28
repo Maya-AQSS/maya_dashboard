@@ -33,6 +33,10 @@ class SafeAlertQuery implements ValidationRule
         // Write / DDL
         'INSERT', 'UPDATE', 'DELETE', 'DROP', 'TRUNCATE', 'CREATE', 'ALTER',
         'GRANT', 'REVOKE', 'COPY',
+        // Set operators (potential data-exfiltration via UNION/INTERSECT/EXCEPT)
+        'UNION', 'INTERSECT', 'EXCEPT',
+        // Output redirection
+        'INTO',
         // Execution / locking
         'EXECUTE', 'CALL', 'PERFORM', 'LOCK',
         // Filesystem / network

@@ -45,6 +45,14 @@ final readonly class AttendanceDto
             return $value->format(\DateTimeInterface::ATOM);
         }
 
-        return (new \DateTimeImmutable((string) $value))->format(\DateTimeInterface::ATOM);
+        try {
+            return (new \DateTimeImmutable((string) $value))->format(\DateTimeInterface::ATOM);
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException(
+                sprintf('AttendanceDto: invalid datetime value "%s": %s', $value, $e->getMessage()),
+                0,
+                $e,
+            );
+        }
     }
 }

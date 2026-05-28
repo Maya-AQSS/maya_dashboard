@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -24,6 +25,10 @@ class EnsureRouteUserMatchesToken
 
         $jwtUser = $request->attributes->get('jwt_user');
         if ($jwtUser === null) {
+            if (! app()->environment('testing')) {
+                Log::warning('EnsureRouteUserMatchesToken: jwt_user is null', ['route' => $request->path()]);
+            }
+
             // JWT middleware bypassed (e.g. in tests) — skip ownership check.
             return $next($request);
         }
