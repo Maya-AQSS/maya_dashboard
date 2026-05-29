@@ -34,9 +34,17 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             return false; // indica mensaje no-recuperable al consumer
         }
 
-        $recipientId = $this->resolveRecipientId($dto->recipientKeycloakId);
-        if ($recipientId === null) {
-            return false;
+        // scope=dashboard puede no llevar recipient (alertas globales). Para el
+        // resto (user, both) el recipient es obligatorio y debe existir en BD.
+        $isDashboardOnly = $dto->scope === 'dashboard';
+
+        if ($isDashboardOnly && $dto->recipientKeycloakId === '') {
+            $recipientId = null;
+        } else {
+            $recipientId = $this->resolveRecipientId($dto->recipientKeycloakId);
+            if ($recipientId === null) {
+                return false;
+            }
         }
 
         $notification = $this->repo->upsertByMessageId($messageId, [
@@ -50,12 +58,19 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             'created_at' => $dto->createdAt !== null
                 ? Date::parse($dto->createdAt)
                 : now(),
+            'is_critical' => $dto->isCritical,
+            'scope' => $dto->scope,
         ]);
 
-        event(new NotificationCreated(
-            notification: $notification->toArray(),
-            userId: $notification->recipient_id,
-        ));
+        // El broadcast personal solo tiene sentido cuando hay recipient. Las
+        // notificaciones de scope=dashboard se sirven vía polling al widget de
+        // alertas críticas del dashboard.
+        if ($notification->recipient_id !== null) {
+            event(new NotificationCreated(
+                notification: $notification->toArray(),
+                userId: $notification->recipient_id,
+            ));
+        }
 
         return true;
     }
