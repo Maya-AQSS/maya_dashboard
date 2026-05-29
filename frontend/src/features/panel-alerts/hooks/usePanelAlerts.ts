@@ -14,7 +14,9 @@ import type {
 } from '../types/panelAlert'
 
 /**
- * @deprecated Replaced by useCriticalAlerts() — eliminate after verifying callers.
+ * CRUD manager for user-pinned panel alerts (admin page). Distinct from
+ * useCriticalAlerts, which only reads system-generated critical notifications
+ * (scope='dashboard', is_critical=true) for the dashboard widget feed.
  */
 export function usePanelAlerts(filters: PanelAlertFilters = {}) {
   const queryClient = useQueryClient()

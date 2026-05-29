@@ -1,9 +1,7 @@
 import { Button } from '@ceedcv-maya/shared-ui-react'
 import { useTranslation } from 'react-i18next'
-import { useCriticalAlerts } from '../../notifications/hooks/useCriticalAlerts'
-import type { CriticalAlertItem } from '../../notifications/hooks/useCriticalAlerts'
-
-export type AlertItem = CriticalAlertItem
+import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
+import type { AlertItem } from '../../alerts/hooks/useActiveSystemAlerts'
 
 const COLOR_CLASSES = {
   amber: 'bg-warning-light dark:bg-warning-dark/20 border-warning/20 dark:border-warning/50 text-warning-dark dark:text-warning',
@@ -101,16 +99,16 @@ function MegaphoneIllustration({ size = 64 }: { size?: number }) {
  */
 function UserAlertsWidget() {
   const { t } = useTranslation('common')
-  const { alerts, loading, error } = useCriticalAlerts()
+  const { alerts, loading, dismiss, clockIn } = useUserAlerts()
 
-  const severityToColor = (severity: string): 'red' | 'amber' | 'blue' => {
-    if (severity === 'critical' || severity === 'high') return 'red'
-    if (severity === 'medium') return 'amber'
-    return 'blue'
-  }
-
-  const handleAction = (alert: CriticalAlertItem) => {
-    if (!alert.body) return
+  const handleAction = (alert: AlertItem) => {
+    if (alert.actionKind === 'clockIn') {
+      clockIn()
+      return
+    }
+    if (alert.actionUrl) {
+      window.location.assign(alert.actionUrl)
+    }
   }
 
   return (
@@ -176,20 +174,29 @@ function UserAlertsWidget() {
         {!loading && alerts.length > 0 && (
           <div className="flex flex-col gap-2">
             {alerts.map((alert) => {
-              const color = severityToColor(alert.severity)
-              const colorCls = COLOR_CLASSES[color] ?? COLOR_CLASSES.blue
-              const btnCls = BUTTON_CLASSES[color] ?? BUTTON_CLASSES.blue
+              const colorCls = COLOR_CLASSES[alert.color] ?? COLOR_CLASSES.blue
+              const btnCls = BUTTON_CLASSES[alert.color] ?? BUTTON_CLASSES.blue
               return (
                 <div
                   key={alert.id}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorCls}`}
                 >
-                  <span className="flex-1">{alert.title}</span>
-                  {alert.canDismiss !== false && (
+                  <span className="flex-1">{alert.text}</span>
+                  {alert.actionLabel && (
                     <Button
                       variant="unstyled"
                       size="xs"
                       onClick={() => handleAction(alert)}
+                      className={`shrink-0 px-2 py-0.5 rounded text-xs font-medium transition ${btnCls}`}
+                    >
+                      {alert.actionLabel}
+                    </Button>
+                  )}
+                  {alert.canDismiss !== false && (
+                    <Button
+                      variant="unstyled"
+                      size="xs"
+                      onClick={() => dismiss(alert.id)}
                       aria-label={t('dashboard.userAlerts.dismissAria')}
                       title={t('dashboard.userAlerts.dismissTitle')}
                       className={`shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-sm transition ${btnCls}`}
