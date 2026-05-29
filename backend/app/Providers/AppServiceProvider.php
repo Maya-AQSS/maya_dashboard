@@ -52,6 +52,7 @@ use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
 use Maya\Profile\Repositories\Contracts\UserProfileResolverInterface;
 
@@ -117,6 +118,14 @@ class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(ProfileMigrations::academicCatalogs());
         $this->loadMigrationsFrom(ProfileMigrations::teams());
         $this->loadMigrationsFrom(ProfileMigrations::userPermissions());
+
+        // Broadcasting auth endpoint protegido por JWT y bajo prefijo /api/v1 para
+        // consistencia con el resto de la API. Anula el `/broadcasting/auth` que
+        // Laravel registra por defecto con middleware `web` (basado en sesión).
+        Broadcast::routes([
+            'prefix' => 'api/v1',
+            'middleware' => ['api', 'auth.keycloak'],
+        ]);
 
         // Guard JWT stateless: resuelve el usuario desde el atributo 'jwt_user'
         // que JwtMiddleware deposita en el request tras validar el token.

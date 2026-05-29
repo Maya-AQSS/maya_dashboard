@@ -9,6 +9,7 @@ import { useLogoutWithoutLoginPermission } from '@ceedcv-maya/shared-profile-rea
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
+import { useRealtimeNotifications } from './features/notifications/hooks/useRealtimeNotifications'
 import { UserProfileProvider, useUserProfile } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
 import { DASHBOARD_PERMISSIONS } from './permissions'
@@ -104,6 +105,7 @@ function AppWithLayout() {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   useKeycloakLocaleSync()
+  useRealtimeNotifications({ userId: (user?.sub as string | undefined) ?? null })
 
   const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
   const userEmail = (user?.email as string | undefined) ?? undefined

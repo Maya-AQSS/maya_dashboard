@@ -16,6 +16,7 @@
         "ceedcv-maya/shared-platform-laravel": "^0.4",
         "ceedcv-maya/shared-profile-laravel": "^0.4",
         "laravel/framework": "^13.0",
+        "laravel/reverb": "^1.6",
         "laravel/tinker": "^3.0",
         "predis/predis": "^3.4",
         "pusher/pusher-php-server": "*",
