@@ -46,6 +46,9 @@ function saveDismissed(ids: Set<string>): void {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify(entry))
 }
 
+/**
+ * @deprecated Replaced by useCriticalAlerts() — eliminate after verifying callers.
+ */
 export function useUserAlerts() {
   const { token, user } = useAuth()
   const { alerts: fichajeAlerts, clockIn } = useFichajeAlerts()

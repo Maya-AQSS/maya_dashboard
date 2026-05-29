@@ -47,6 +47,22 @@ final class NotificationRepository implements NotificationRepositoryInterface
             $query->where('created_at', '<=', $filter->dateTo . ' 23:59:59');
         }
 
+        if ($filter->scope !== null && $filter->scope !== '') {
+            $query->where('scope', $filter->scope);
+        }
+
+        if ($filter->isCritical !== null) {
+            $query->where('is_critical', $filter->isCritical);
+        }
+
+        if ($filter->acknowledged !== null) {
+            if ($filter->acknowledged) {
+                $query->whereNotNull('acknowledged_at');
+            } else {
+                $query->whereNull('acknowledged_at');
+            }
+        }
+
         return $query->paginate($filter->perPage, page: $filter->page);
     }
 
@@ -84,5 +100,29 @@ final class NotificationRepository implements NotificationRepositoryInterface
     public function userExists(string $keycloakId): bool
     {
         return User::query()->where('id', $keycloakId)->exists();
+    }
+
+    public function acknowledge(Notification $notification, string $userId): Notification
+    {
+        if ($notification->acknowledged_at === null) {
+            $notification->update([
+                'acknowledged_at' => now(),
+                'acknowledged_by' => $userId,
+            ]);
+        }
+
+        return $notification->refresh();
+    }
+
+    public function resolve(Notification $notification, string $userId): Notification
+    {
+        if ($notification->resolved_at === null) {
+            $notification->update([
+                'resolved_at' => now(),
+                'resolved_by' => $userId,
+            ]);
+        }
+
+        return $notification->refresh();
     }
 }

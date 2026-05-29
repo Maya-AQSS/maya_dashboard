@@ -53,6 +53,8 @@ Route::middleware('auth.keycloak')->prefix('v1/notifications')->group(function (
     Route::get('/{id}',            [NotificationController::class, 'show'])->whereNumber('id');
     Route::post('/mark-all-read',  [NotificationController::class, 'markAllRead']);
     Route::post('/{id}/read',      [NotificationController::class, 'markRead'])->whereNumber('id');
+    Route::post('/{id}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('id');
+    Route::post('/{id}/resolve',   [NotificationController::class, 'resolve'])->whereNumber('id');
 });
 
 // Alerts (system-wide, visible to ops roles)

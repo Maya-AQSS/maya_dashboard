@@ -53,4 +53,20 @@ final class NotificationService implements NotificationServiceInterface
     {
         return $this->notifications->unreadCountForRecipient($recipientId);
     }
+
+    public function acknowledge(string $recipientId, int $notificationId, string $userId): NotificationDto
+    {
+        return NotificationDto::fromModel($this->notifications->acknowledge(
+            $this->notifications->findForRecipientOrFail($recipientId, $notificationId),
+            $userId,
+        ));
+    }
+
+    public function resolve(string $recipientId, int $notificationId, string $userId): NotificationDto
+    {
+        return NotificationDto::fromModel($this->notifications->resolve(
+            $this->notifications->findForRecipientOrFail($recipientId, $notificationId),
+            $userId,
+        ));
+    }
 }

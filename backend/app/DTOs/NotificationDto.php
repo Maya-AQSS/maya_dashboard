@@ -24,6 +24,12 @@ final readonly class NotificationDto
         public array $metadata,
         public ?string $readAt,
         public string $createdAt,
+        public bool $isCritical = false,
+        public ?string $scope = null,
+        public ?string $acknowledgedAt = null,
+        public ?string $acknowledgedBy = null,
+        public ?string $resolvedAt = null,
+        public ?string $resolvedBy = null,
     ) {}
 
     public static function fromModel(Notification $m): self
@@ -40,6 +46,12 @@ final readonly class NotificationDto
             metadata: is_array($m->metadata) ? $m->metadata : [],
             readAt: $m->read_at?->toIso8601String(),
             createdAt: $m->created_at?->toIso8601String() ?? '',
+            isCritical: (bool) $m->is_critical,
+            scope: $m->scope,
+            acknowledgedAt: $m->acknowledged_at?->toIso8601String(),
+            acknowledgedBy: $m->acknowledged_by,
+            resolvedAt: $m->resolved_at?->toIso8601String(),
+            resolvedBy: $m->resolved_by,
         );
     }
 }

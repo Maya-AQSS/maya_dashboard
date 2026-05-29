@@ -23,6 +23,9 @@ export async function listNotifications(filters: NotificationListFilters = {}): 
   if (filters.date_to) qs.set('date_to', filters.date_to)
   if (filters.sort_by) qs.set('sort_by', filters.sort_by)
   if (filters.sort_dir) qs.set('sort_dir', filters.sort_dir)
+  if (filters.scope) qs.set('scope', filters.scope)
+  if (filters.is_critical != null) qs.set('is_critical', filters.is_critical ? '1' : '0')
+  if (filters.acknowledged != null) qs.set('acknowledged', filters.acknowledged ? '1' : '0')
 
   try {
     const raw = await apiGetJson<FlatPaginatedResponse>(`/notifications?${qs}`)
@@ -73,6 +76,22 @@ export async function getUnreadCount(): Promise<{ unread: number }> {
   try {
     const raw = await apiGetJson<{ data: { unread: number } }>('/notifications/unread-count')
     return raw.data
+  } catch (err) {
+    throw mapApiError(err, 'notifications')
+  }
+}
+
+export async function acknowledgeNotification(id: number): Promise<void> {
+  try {
+    await apiFetchJson(`/notifications/${id}/acknowledge`, { method: 'POST' })
+  } catch (err) {
+    throw mapApiError(err, 'notifications')
+  }
+}
+
+export async function resolveNotification(id: number): Promise<void> {
+  try {
+    await apiFetchJson(`/notifications/${id}/resolve`, { method: 'POST' })
   } catch (err) {
     throw mapApiError(err, 'notifications')
   }

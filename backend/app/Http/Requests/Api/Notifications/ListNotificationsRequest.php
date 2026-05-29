@@ -21,6 +21,9 @@ class ListNotificationsRequest extends PaginatedFilterRequest
             'date_from'   => ['nullable', 'date'],
             'date_to'     => ['nullable', 'date'],
             'sort_by'     => ['nullable', 'string', 'in:created_at,read_at'],
+            'scope'       => ['nullable', 'string', 'in:user,dashboard,both'],
+            'is_critical' => ['nullable', 'boolean'],
+            'acknowledged' => ['nullable', 'boolean'],
         ];
     }
 
@@ -32,6 +35,9 @@ class ListNotificationsRequest extends PaginatedFilterRequest
             unreadOnly: (bool) $this->input('unread_only', false),
             dateFrom: $this->input('date_from') ?: null,
             dateTo: $this->input('date_to') ?: null,
+            scope: $this->input('scope') ?: null,
+            isCritical: $this->input('is_critical') !== null ? (bool) $this->input('is_critical') : null,
+            acknowledged: $this->input('acknowledged') !== null ? (bool) $this->input('acknowledged') : null,
             page: $this->getPage(),
             perPage: $this->getPerPage() > 0 ? $this->getPerPage() : 25,
             sortBy: $this->getSortBy() ?? 'created_at',

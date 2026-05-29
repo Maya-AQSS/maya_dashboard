@@ -13,6 +13,9 @@ import type {
   UpdatePanelAlertInput,
 } from '../types/panelAlert'
 
+/**
+ * @deprecated Replaced by useCriticalAlerts() — eliminate after verifying callers.
+ */
 export function usePanelAlerts(filters: PanelAlertFilters = {}) {
   const queryClient = useQueryClient()
   const queryKey = ['panel-alerts', filters] as const
