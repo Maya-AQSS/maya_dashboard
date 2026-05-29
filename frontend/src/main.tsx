@@ -13,6 +13,9 @@ import App from './App'
 import { AuthProvider } from '@ceedcv-maya/shared-auth-react'
 import { NotificationProvider } from '@ceedcv-maya/shared-sidebar-react'
 import { oidcAuthService } from './auth/oidcAdapter'
+import { bootstrapRealtime } from './lib/realtimeBootstrap'
+
+bootstrapRealtime()
 
 window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason)
