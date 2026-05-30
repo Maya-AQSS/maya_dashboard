@@ -14,13 +14,13 @@ services:
       APP_KEY: ${APP_KEY:-}
       APP_URL: ${APP_URL}
       DB_CONNECTION: pgsql
-      DB_HOST: maya_infra_postgres
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
-      REDIS_HOST: maya_redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
       KEYCLOAK_URL: ${KEYCLOAK_URL:-http://maya_auth_keycloak:8080}
@@ -37,7 +37,7 @@ services:
       MAYA_MESSAGING_APP: maya-dashboard
       LOG_STACK: "daily,rabbit"
       LOG_RABBIT_LEVEL: warning
-      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
@@ -83,13 +83,13 @@ services:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
       DB_CONNECTION: pgsql
-      DB_HOST: maya_infra_postgres
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
-      REDIS_HOST: maya_redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
@@ -98,7 +98,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
       MAYA_MESSAGING_APP: maya-dashboard
-      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
@@ -130,13 +130,13 @@ services:
       APP_ENV: ${APP_ENV:-local}
       APP_KEY: ${APP_KEY:-}
       DB_CONNECTION: pgsql
-      DB_HOST: maya_infra_postgres
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       CACHE_STORE: redis
-      REDIS_HOST: maya_redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
       RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
@@ -146,7 +146,7 @@ services:
       MAYA_MESSAGING_APP: maya-dashboard
       LOG_STACK: "daily,rabbit"
       LOG_RABBIT_LEVEL: warning
-      LOG_MGMT_DB_HOST: maya_infra_postgres
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
       LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
       LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
       LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
@@ -187,12 +187,12 @@ services:
       APP_URL: ${APP_URL}
       BROADCAST_CONNECTION: reverb
       DB_CONNECTION: pgsql
-      DB_HOST: maya_infra_postgres
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
       DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
       DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
-      REDIS_HOST: maya_redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
       REDIS_PORT: 6379
       REVERB_APP_ID: ${REVERB_APP_ID:-maya-dashboard}
@@ -289,4 +289,4 @@ services:
 networks:
   maya_network:
     external: true
-    name: maya_network
+    name: ${MAYA_NETWORK_NAME:-maya_network}
