@@ -58,4 +58,20 @@ class NotificationController extends Controller
 
         return $this->okData(['unread' => $this->notifications->unreadCount($recipientId)]);
     }
+
+    public function acknowledge(Request $request, int $notificationId): JsonResponse
+    {
+        $user = $this->resolveKeycloakUser($request);
+        $recipientId = (string) $user->id;
+
+        return $this->okData(new NotificationResource($this->notifications->acknowledge($recipientId, $notificationId, $recipientId)));
+    }
+
+    public function resolve(Request $request, int $notificationId): JsonResponse
+    {
+        $user = $this->resolveKeycloakUser($request);
+        $recipientId = (string) $user->id;
+
+        return $this->okData(new NotificationResource($this->notifications->resolve($recipientId, $notificationId, $recipientId)));
+    }
 }

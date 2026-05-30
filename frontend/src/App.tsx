@@ -6,6 +6,7 @@ import { NotificationsBell, SidebarFavorites } from '@ceedcv-maya/shared-sidebar
 import { useKeycloakLocaleSync } from '@ceedcv-maya/shared-i18n-react'
 import { useAuth, useOidcSession } from '@ceedcv-maya/shared-auth-react'
 import { useLogoutWithoutLoginPermission } from '@ceedcv-maya/shared-profile-react'
+import { useRealtimeNotifications } from '@ceedcv-maya/shared-realtime-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
@@ -104,6 +105,7 @@ function AppWithLayout() {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   useKeycloakLocaleSync()
+  useRealtimeNotifications({ userId: (user?.sub as string | undefined) ?? null })
 
   const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
   const userEmail = (user?.email as string | undefined) ?? undefined

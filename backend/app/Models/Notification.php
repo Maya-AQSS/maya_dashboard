@@ -23,6 +23,12 @@ class Notification extends Model
         'channels',
         'metadata',
         'read_at',
+        'is_critical',
+        'scope',
+        'acknowledged_at',
+        'acknowledged_by',
+        'resolved_at',
+        'resolved_by',
     ];
 
     protected function casts(): array
@@ -32,6 +38,9 @@ class Notification extends Model
             'metadata' => 'array',
             'created_at' => 'datetime',
             'read_at' => 'datetime',
+            'is_critical' => 'boolean',
+            'acknowledged_at' => 'datetime',
+            'resolved_at' => 'datetime',
         ];
     }
 

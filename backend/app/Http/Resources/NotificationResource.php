@@ -33,6 +33,12 @@ class NotificationResource extends JsonResource
             'metadata' => $dto->metadata,
             'read_at' => $dto->readAt,
             'created_at' => $dto->createdAt,
+            'is_critical' => $dto->isCritical,
+            'scope' => $dto->scope,
+            'acknowledged_at' => $dto->acknowledgedAt,
+            'acknowledged_by' => $dto->acknowledgedBy,
+            'resolved_at' => $dto->resolvedAt,
+            'resolved_by' => $dto->resolvedBy,
         ];
     }
 }

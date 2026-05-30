@@ -10,6 +10,12 @@ export interface Notification {
   metadata: Record<string, unknown>
   read_at: string | null
   created_at: string
+  is_critical: boolean
+  scope: 'user' | 'dashboard' | 'both' | null
+  acknowledged_at: string | null
+  acknowledged_by: string | null
+  resolved_at: string | null
+  resolved_by: string | null
 }
 
 export interface NotificationListFilters {
@@ -23,6 +29,9 @@ export interface NotificationListFilters {
   date_to?: string
   sort_by?: 'created_at' | 'read_at'
   sort_dir?: 'asc' | 'desc'
+  scope?: 'user' | 'dashboard' | 'both'
+  is_critical?: boolean
+  acknowledged?: boolean
 }
 
 export interface PaginationMeta {

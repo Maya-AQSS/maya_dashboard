@@ -13,6 +13,11 @@ import type {
   UpdatePanelAlertInput,
 } from '../types/panelAlert'
 
+/**
+ * CRUD manager for user-pinned panel alerts (admin page). Distinct from
+ * useCriticalAlerts, which only reads system-generated critical notifications
+ * (scope='dashboard', is_critical=true) for the dashboard widget feed.
+ */
 export function usePanelAlerts(filters: PanelAlertFilters = {}) {
   const queryClient = useQueryClient()
   const queryKey = ['panel-alerts', filters] as const

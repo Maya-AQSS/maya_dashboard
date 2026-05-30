@@ -3,9 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useFichajeAlerts } from './useFichajeAlerts'
 import { getActivePanelAlerts } from '../../panel-alerts/api/panelAlertsApi'
-import { useSystemAlerts } from '../../system-alerts/hooks/useSystemAlerts'
+import { useCriticalAlerts } from '../../notifications/hooks/useCriticalAlerts'
 import type { PanelAlert } from '../../panel-alerts/types/panelAlert'
-import type { SystemAlert } from '../../system-alerts/components/AlertRow'
 import type { AlertItem } from './useActiveSystemAlerts'
 
 export type { AlertItem }
@@ -34,8 +33,7 @@ function loadDismissed(): Set<string> {
       return new Set()
     }
     return new Set(entry.ids)
-  } catch (err) {
-    // removed debug log
+  } catch {
     localStorage.removeItem(DISMISSED_KEY)
     return new Set()
   }
@@ -46,12 +44,22 @@ function saveDismissed(ids: Set<string>): void {
   localStorage.setItem(DISMISSED_KEY, JSON.stringify(entry))
 }
 
+/**
+ * Orchestrator for the dashboard user-alerts widget. Combines three sources:
+ *   - clock-in reminders (useFichajeAlerts) — local domain
+ *   - critical notifications (useCriticalAlerts) — system-generated, scope=dashboard
+ *   - user-pinned panel alerts (panel-alerts API)
+ *
+ * Critical notifications previously came from /api/v1/alerts via useSystemAlerts;
+ * after the unification (Phase 2) they live in the same notifications table with
+ * is_critical=true, scope='dashboard'.
+ */
 export function useUserAlerts() {
   const { token, user } = useAuth()
   const { alerts: fichajeAlerts, clockIn } = useFichajeAlerts()
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed)
 
-  const { data: rawPanelAlerts = [], isPending: loading } = useQuery<PanelAlert[]>({
+  const { data: rawPanelAlerts = [], isPending: loadingPanel } = useQuery<PanelAlert[]>({
     queryKey: ['panel-alerts-active', user?.sub],
     queryFn: getActivePanelAlerts,
     enabled: !!token,
@@ -59,7 +67,7 @@ export function useUserAlerts() {
     retry: 1,
   })
 
-  const { alerts: rawSystemAlerts } = useSystemAlerts({ token: token ?? undefined, activeOnly: true })
+  const { alerts: rawCriticalAlerts, loading: loadingCritical } = useCriticalAlerts()
 
   const panelAlerts = useMemo<AlertItem[]>(
     () => rawPanelAlerts.map((a) => ({
@@ -73,16 +81,14 @@ export function useUserAlerts() {
     [rawPanelAlerts],
   )
 
-  const systemAlerts = useMemo<AlertItem[]>(
-    () => (rawSystemAlerts as SystemAlert[])
-      .filter((a) => !a.resolved_at)
-      .map((a) => ({
-        id: `system:${a.id}`,
-        color: panelSeverityToColor(a.severity),
-        text: a.title,
-        canDismiss: true,
-      })),
-    [rawSystemAlerts],
+  const criticalAlerts = useMemo<AlertItem[]>(
+    () => rawCriticalAlerts.map((a) => ({
+      id: `notif:${a.id}`,
+      color: panelSeverityToColor(a.severity),
+      text: a.title,
+      canDismiss: true,
+    })),
+    [rawCriticalAlerts],
   )
 
   useEffect(() => {
@@ -90,13 +96,17 @@ export function useUserAlerts() {
   }, [dismissed])
 
   const dismiss = useCallback((id: string) => {
-    setDismissed((prev) => { const next = new Set(prev); next.add(id); return next })
+    setDismissed((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
   }, [])
 
   const alerts = useMemo(
-    () => [...fichajeAlerts, ...systemAlerts, ...panelAlerts].filter((a) => !dismissed.has(a.id)),
-    [fichajeAlerts, systemAlerts, panelAlerts, dismissed],
+    () => [...fichajeAlerts, ...criticalAlerts, ...panelAlerts].filter((a) => !dismissed.has(a.id)),
+    [fichajeAlerts, criticalAlerts, panelAlerts, dismissed],
   )
 
-  return { alerts, loading, dismiss, clockIn }
+  return { alerts, loading: loadingPanel || loadingCritical, dismiss, clockIn }
 }

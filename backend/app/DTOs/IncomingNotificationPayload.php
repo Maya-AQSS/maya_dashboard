@@ -23,6 +23,10 @@ readonly class IncomingNotificationPayload
 
     public ?string $createdAt;
 
+    public bool $isCritical;
+
+    public string $scope;
+
     /** @throws \InvalidArgumentException */
     private function __construct(array $data)
     {
@@ -45,6 +49,8 @@ readonly class IncomingNotificationPayload
         $this->channels = is_array($data['channels'] ?? null) ? $data['channels'] : ['app'];
         $this->metadata = is_array($data['metadata'] ?? null) ? $data['metadata'] : null;
         $this->createdAt = isset($data['created_at']) ? (string) $data['created_at'] : null;
+        $this->isCritical = (bool) ($data['is_critical'] ?? false);
+        $this->scope = (string) ($data['scope'] ?? 'user');
     }
 
     /** @throws \InvalidArgumentException */
