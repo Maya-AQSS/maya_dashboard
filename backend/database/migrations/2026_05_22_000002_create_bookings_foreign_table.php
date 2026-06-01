@@ -89,7 +89,7 @@ return new class extends Migration
 
     private function setupFdw(): void
     {
-        $host = (string) config('database.fdw.bookings.host', 'maya_infra_postgres');
+        $host = (string) config('database.fdw.bookings.host', env('DB_HOST', 'maya_infra_postgres'));
         $port = (string) config('database.fdw.bookings.port', '5432');
         $database = (string) config('database.fdw.bookings.database', 'odoo');
         $username = (string) config('database.fdw.bookings.username', 'maya');

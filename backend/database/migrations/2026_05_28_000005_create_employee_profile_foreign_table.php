@@ -87,7 +87,7 @@ return new class extends Migration
 
     private function setupFdw(): void
     {
-        $host     = (string) config('database.fdw.employee_profiles.host',     'maya_infra_postgres');
+        $host     = (string) config('database.fdw.employee_profiles.host',     env('DB_HOST', 'maya_infra_postgres'));
         $port     = (string) config('database.fdw.employee_profiles.port',     '5432');
         $database = (string) config('database.fdw.employee_profiles.database', 'odoo');
         $username = (string) config('database.fdw.employee_profiles.username', 'maya');
