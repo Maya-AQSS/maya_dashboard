@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
+import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import type { AlertCondition, CreatePanelAlertRuleInput, PanelAlertRule, Severity } from '../types/panelAlert'
 
@@ -206,13 +207,11 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
         <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
           {t('panelAlerts.fields.alertText')} <span className="text-danger">*</span>
         </label>
-        <textarea
-          className="w-full rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card text-text-primary dark:text-text-dark-primary px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-info/40"
-          rows={2}
-          value={alertText}
-          onChange={(e) => setAlertText(e.target.value)}
+        <MayaEditor
+          mode="lite"
+          initialContent={alertText}
+          onChange={setAlertText}
           placeholder={t('panelAlerts.fields.alertTextPlaceholder')}
-          required
         />
       </div>
 
