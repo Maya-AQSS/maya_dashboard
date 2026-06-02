@@ -34,7 +34,7 @@ export async function listPanelAlertRules(perPage = 100): Promise<PaginatedPanel
 export async function createPanelAlertRule(data: CreatePanelAlertRuleInput): Promise<PanelAlertRule> {
   const raw = await apiFetchJson<{ data: PanelAlertRule }>('/panel-alert-rules', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   })
   return raw.data
 }
@@ -42,7 +42,7 @@ export async function createPanelAlertRule(data: CreatePanelAlertRuleInput): Pro
 export async function updatePanelAlertRule(id: number, data: UpdatePanelAlertRuleInput): Promise<PanelAlertRule> {
   const raw = await apiFetchJson<{ data: PanelAlertRule }>(`/panel-alert-rules/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: data,
   })
   return raw.data
 }

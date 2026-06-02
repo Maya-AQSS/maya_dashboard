@@ -49,7 +49,7 @@ export async function getActivePanelAlerts(): Promise<PanelAlert[]> {
 export async function createPanelAlert(data: CreatePanelAlertInput): Promise<PanelAlert> {
   const raw = await apiFetchJson<{ data: PanelAlert }>('/panel-alerts', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: data,
   })
   return raw.data
 }
@@ -57,7 +57,7 @@ export async function createPanelAlert(data: CreatePanelAlertInput): Promise<Pan
 export async function updatePanelAlert(id: number, data: UpdatePanelAlertInput): Promise<PanelAlert> {
   const raw = await apiFetchJson<{ data: PanelAlert }>(`/panel-alerts/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: data,
   })
   return raw.data
 }
