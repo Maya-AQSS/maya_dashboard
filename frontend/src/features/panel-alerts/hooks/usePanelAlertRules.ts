@@ -12,8 +12,13 @@ import type {
   UpdatePanelAlertRuleInput,
 } from '../types/panelAlert'
 
-export function usePanelAlertRules() {
+type UsePanelAlertRulesOptions = {
+  enabled?: boolean
+}
+
+export function usePanelAlertRules(options: UsePanelAlertRulesOptions = {}) {
   const queryClient = useQueryClient()
+  const enabled = options.enabled ?? true
 
   const refresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: ['panel-alert-rules'] }),
@@ -23,6 +28,7 @@ export function usePanelAlertRules() {
   const query = useQuery<PaginatedPanelAlertRules, Error>({
     queryKey: ['panel-alert-rules'],
     queryFn: () => listPanelAlertRules(),
+    enabled,
     retry: 1,
     staleTime: 60_000,
   })

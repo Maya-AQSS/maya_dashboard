@@ -294,6 +294,7 @@
   "panelAlerts": {
     "pageTitle": "Panel alerts",
     "pageSubtitle": "Manage alerts visible in the main dashboard widget and the rules that generate them automatically.",
+    "noPermission": "You do not have permission to manage panel alerts.",
     "newAlert": "New alert",
     "newRule": "New rule",
     "tabAlerts": "Alerts",

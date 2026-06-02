@@ -18,9 +18,14 @@ import type {
  * useCriticalAlerts, which only reads system-generated critical notifications
  * (scope='dashboard', is_critical=true) for the dashboard widget feed.
  */
-export function usePanelAlerts(filters: PanelAlertFilters = {}) {
+type UsePanelAlertsOptions = {
+  enabled?: boolean
+}
+
+export function usePanelAlerts(filters: PanelAlertFilters = {}, options: UsePanelAlertsOptions = {}) {
   const queryClient = useQueryClient()
   const queryKey = ['panel-alerts', filters] as const
+  const enabled = options.enabled ?? true
 
   const refresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: ['panel-alerts'] }),
@@ -30,6 +35,7 @@ export function usePanelAlerts(filters: PanelAlertFilters = {}) {
   const query = useQuery<PaginatedPanelAlerts, Error>({
     queryKey,
     queryFn: () => listPanelAlerts(filters),
+    enabled,
     retry: 1,
     staleTime: 30_000,
   })

@@ -294,6 +294,7 @@
   "panelAlerts": {
     "pageTitle": "Alertas del panel",
     "pageSubtitle": "Gestiona las alertas visibles en el widget del panel principal y las reglas que las generan automáticamente.",
+    "noPermission": "No tienes permiso para gestionar las alertas del panel.",
     "newAlert": "Nueva alerta",
     "newRule": "Nueva regla",
     "tabAlerts": "Alertas",
