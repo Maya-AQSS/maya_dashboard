@@ -15,6 +15,8 @@ import {
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { getUnreadCount } from '../api/notificationsApi'
 import { useNotifications } from '../hooks/useNotifications'
 import type { Notification, NotificationListFilters } from '../types/notification'
@@ -25,6 +27,10 @@ export default function NotificationsPage() {
   const { t } = useLocale()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { hasPermission } = useUserProfile()
+
+  const canIndex = hasPermission(DASHBOARD_PERMISSIONS.notificationsIndex)
+  const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.notificationsUpdate)
 
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
@@ -50,12 +56,15 @@ export default function NotificationsPage() {
     sort_dir: sortBy?.direction ?? 'desc',
   }
 
-  const { notifications, meta, loading, error, onMarkRead, onMarkAllRead } = useNotifications(filters)
+  const { notifications, meta, loading, error, onMarkRead, onMarkAllRead } = useNotifications(filters, {
+    enabled: canIndex,
+  })
 
   const { data: unreadData } = useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: getUnreadCount,
-    refetchInterval: POLL_MS,
+    enabled: canIndex,
+    refetchInterval: canIndex ? POLL_MS : false,
     staleTime: 30_000,
   })
   const unreadCount = unreadData?.unread ?? 0
@@ -145,6 +154,17 @@ export default function NotificationsPage() {
   const totalPages = meta?.last_page ?? 1
   const safeCurrentPage = meta?.current_page ?? page
 
+  if (!canIndex) {
+    return (
+      <>
+        <PageTitle title={t('notifications.pageTitle')} />
+        <p className="text-text-primary dark:text-text-dark-primary" role="status">
+          {t('notifications.noPermission')}
+        </p>
+      </>
+    )
+  }
+
   return (
     <>
       <div className="flex items-start justify-between gap-4 mb-4">
@@ -152,7 +172,7 @@ export default function NotificationsPage() {
           title={t('notifications.pageTitle')}
           subtitle={t('notifications.pageSubtitle')}
         />
-        {unreadCount > 0 && (
+        {unreadCount > 0 && canUpdate && (
           <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
             {t('notifications.markAllRead')}
           </Button>
@@ -187,7 +207,7 @@ export default function NotificationsPage() {
           onClearFilters={clearFilters}
           filtersStorageKey="maya:dashboard:notifications-table"
           onRowClick={(n) => {
-            if (!n.read_at) onMarkRead(n.id).catch(() => undefined)
+            if (canUpdate && !n.read_at) onMarkRead(n.id).catch(() => undefined)
             navigate(`/notifications/${n.id}`)
           }}
           cardRender={(n) => (
@@ -222,7 +242,7 @@ export default function NotificationsPage() {
                 {n.body || '—'}
               </p>
             ),
-            backAction: !n.read_at ? (
+            backAction: canUpdate && !n.read_at ? (
               <button
                 type="button"
                 onClick={(e) => {

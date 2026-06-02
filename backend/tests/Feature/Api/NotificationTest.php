@@ -9,7 +9,10 @@ use Illuminate\Support\Str;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
+    $this->withoutMiddleware([
+        \Maya\Auth\Middleware\JwtMiddleware::class,
+        \Maya\Auth\Middleware\RequirePermissionMiddleware::class,
+    ]);
 
     $this->userId = (string) Str::uuid();
     $this->user   = User::forceCreate([

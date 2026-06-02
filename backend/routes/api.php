@@ -48,13 +48,13 @@ Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
 
 // Notifications (per authenticated user)
 Route::middleware('auth.keycloak')->prefix('v1/notifications')->group(function () {
-    Route::get('/',                [NotificationController::class, 'index']);
-    Route::get('/unread-count',    [NotificationController::class, 'unreadCount']);
-    Route::get('/{id}',            [NotificationController::class, 'show'])->whereNumber('id');
-    Route::post('/mark-all-read',  [NotificationController::class, 'markAllRead']);
-    Route::post('/{id}/read',      [NotificationController::class, 'markRead'])->whereNumber('id');
-    Route::post('/{id}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('id');
-    Route::post('/{id}/resolve',   [NotificationController::class, 'resolve'])->whereNumber('id');
+    Route::get('/',                [NotificationController::class, 'index'])->middleware('permission:dashboard.notifications.index');
+    Route::get('/unread-count',    [NotificationController::class, 'unreadCount'])->middleware('permission:dashboard.notifications.index');
+    Route::get('/{id}',            [NotificationController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.notifications.show');
+    Route::post('/mark-all-read',  [NotificationController::class, 'markAllRead'])->middleware('permission:dashboard.notifications.update');
+    Route::post('/{id}/read',      [NotificationController::class, 'markRead'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
+    Route::post('/{id}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
+    Route::post('/{id}/resolve',   [NotificationController::class, 'resolve'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
 });
 
 // Alerts (system-wide, visible to ops roles)

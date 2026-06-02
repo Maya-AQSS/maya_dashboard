@@ -17,6 +17,7 @@ function PanelAlertsIcon({ className }: { className?: string }) {
 export function useNavItems(): NavItem[] {
   const { t } = useTranslation('common')
   const { hasPermission } = useUserProfile()
+  const canViewNotifications = hasPermission(DASHBOARD_PERMISSIONS.notificationsIndex)
   const canViewPanelAlerts = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsIndex)
 
   return useMemo<NavItem[]>(
@@ -24,8 +25,11 @@ export function useNavItems(): NavItem[] {
       const items: NavItem[] = [
         { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon, path: '/' },
         { id: 'applications', label: t('nav.applications'), icon: GridIcon, path: '/applications' },
-        { id: 'notifications', label: t('nav.notifications'), icon: BellIcon, path: '/notifications' },
       ]
+
+      if (canViewNotifications) {
+        items.push({ id: 'notifications', label: t('nav.notifications'), icon: BellIcon, path: '/notifications' })
+      }
 
       if (canViewPanelAlerts) {
         items.push({
@@ -38,6 +42,6 @@ export function useNavItems(): NavItem[] {
 
       return items
     },
-    [canViewPanelAlerts, t],
+    [canViewNotifications, canViewPanelAlerts, t],
   )
 }

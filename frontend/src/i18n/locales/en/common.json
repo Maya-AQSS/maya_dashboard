@@ -373,6 +373,7 @@
     "backToList": "Back to list",
     "loadError": "Could not load the notification.",
     "empty": "No notifications for the selected filters.",
+    "noPermission": "You do not have permission to view notifications.",
     "unread": "Unread",
     "paginationInfo": "Showing {{from}}–{{to}} of {{total}}",
     "errorLoad": "Error loading notifications.",
