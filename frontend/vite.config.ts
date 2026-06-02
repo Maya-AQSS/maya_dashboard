@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { existsSync, symlinkSync, mkdirSync } from 'node:fs'
 
 const _require = createRequire(import.meta.url)
 const appRoot = fileURLToPath(new URL('.', import.meta.url))
@@ -33,7 +34,6 @@ function _resolvePkgDir(pkg: string): string | null {
   } catch { return null }
 }
 
-import { existsSync, symlinkSync, mkdirSync } from 'node:fs'
 function _ensureSharedNodeModulesSymlink(): void {
   if (!_sharedOverrideDir) return
   const consumerNodeModules = path.join(appRoot, 'node_modules')
@@ -51,7 +51,9 @@ function _ensureSharedNodeModulesSymlink(): void {
     try {
       mkdirSync(path.dirname(linkPath), { recursive: true })
       symlinkSync(consumerNodeModules, linkPath, 'dir')
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.warn(`[vite] Failed to symlink ${linkPath}:`, err)
+    }
   }
 }
 _ensureSharedNodeModulesSymlink()
