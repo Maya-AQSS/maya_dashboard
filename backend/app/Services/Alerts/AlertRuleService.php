@@ -28,6 +28,11 @@ final class AlertRuleService implements AlertRuleServiceInterface
         );
     }
 
+    public function find(int $ruleId): AlertRuleDto
+    {
+        return AlertRuleDto::fromModel($this->rules->findOrFail($ruleId));
+    }
+
     public function create(array $attributes): AlertRuleDto
     {
         return AlertRuleDto::fromModel($this->rules->create($attributes));

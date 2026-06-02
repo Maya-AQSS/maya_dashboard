@@ -11,6 +11,7 @@ use App\Http\Requests\Api\Alerts\UpdateAlertRuleRequest;
 use App\Http\Resources\AlertRuleResource;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class AlertRuleController extends Controller
@@ -26,6 +27,13 @@ class AlertRuleController extends Controller
         $page = $this->rules->paginate($request->toFilterDto());
 
         return $this->paginated($page, AlertRuleResource::class, $request);
+    }
+
+    public function show(Request $request, int $ruleId): JsonResponse
+    {
+        return response()->json(
+            (new AlertRuleResource($this->rules->find($ruleId)))->resolve($request),
+        );
     }
 
     public function store(StoreAlertRuleRequest $request): JsonResponse
