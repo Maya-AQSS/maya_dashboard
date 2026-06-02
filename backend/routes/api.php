@@ -66,9 +66,7 @@ Route::middleware('auth.keycloak')->prefix('v1/alerts')->group(function () {
 
 Route::middleware('auth.keycloak')->prefix('v1/alert-rules')->group(function () {
     Route::get('/', [AlertRuleController::class, 'index']);
-});
-
-Route::middleware(['auth.keycloak', 'permission:alerts.manage'])->prefix('v1/alert-rules')->group(function () {
+    Route::get('/{id}', [AlertRuleController::class, 'show'])->whereNumber('id');
     Route::post('/',        [AlertRuleController::class, 'store']);
     Route::put('/{id}',     [AlertRuleController::class, 'update']);
     Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);
@@ -77,24 +75,20 @@ Route::middleware(['auth.keycloak', 'permission:alerts.manage'])->prefix('v1/ale
 // Panel Alerts (user-created alerts for dashboard widget)
 Route::middleware('auth.keycloak')->prefix('v1/panel-alerts')->group(function () {
     Route::get('/active', [PanelAlertController::class, 'activeForWidget']); // widget, no permission needed
-    Route::middleware('permission:dashboard.panel_alerts.manage')->group(function () {
-        Route::get('/',        [PanelAlertController::class, 'index']);
-        Route::post('/',       [PanelAlertController::class, 'store']);
-        Route::get('/{id}',    [PanelAlertController::class, 'show'])->whereNumber('id');
-        Route::put('/{id}',    [PanelAlertController::class, 'update'])->whereNumber('id');
-        Route::delete('/{id}', [PanelAlertController::class, 'destroy'])->whereNumber('id');
-    });
+    Route::get('/',        [PanelAlertController::class, 'index'])->middleware('permission:dashboard.panel_alerts.index');
+    Route::post('/',       [PanelAlertController::class, 'store'])->middleware('permission:dashboard.panel_alerts.create');
+    Route::get('/{id}',    [PanelAlertController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.show');
+    Route::put('/{id}',    [PanelAlertController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.update');
+    Route::delete('/{id}', [PanelAlertController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.delete');
 });
 
-Route::middleware(['auth.keycloak', 'permission:dashboard.panel_alerts.manage'])
-    ->prefix('v1/panel-alert-rules')
-    ->group(function () {
-        Route::get('/',        [PanelAlertRuleController::class, 'index']);
-        Route::post('/',       [PanelAlertRuleController::class, 'store']);
-        Route::get('/{id}',    [PanelAlertRuleController::class, 'show'])->whereNumber('id');
-        Route::put('/{id}',    [PanelAlertRuleController::class, 'update'])->whereNumber('id');
-        Route::delete('/{id}', [PanelAlertRuleController::class, 'destroy'])->whereNumber('id');
-    });
+Route::middleware('auth.keycloak')->prefix('v1/panel-alert-rules')->group(function () {
+    Route::get('/',        [PanelAlertRuleController::class, 'index'])->middleware('permission:dashboard.panel_alert_rules.index');
+    Route::post('/',       [PanelAlertRuleController::class, 'store'])->middleware('permission:dashboard.panel_alert_rules.create');
+    Route::get('/{id}',    [PanelAlertRuleController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.show');
+    Route::put('/{id}',    [PanelAlertRuleController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.update');
+    Route::delete('/{id}', [PanelAlertRuleController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.delete');
+});
 
 Route::prefix('v1/health')->controller(HealthCheckController::class)->group(function () {
     Route::get('/',      'index');

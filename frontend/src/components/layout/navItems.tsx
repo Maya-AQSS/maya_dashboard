@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { NavItem } from '@ceedcv-maya/shared-layout-react'
 import { BellIcon, GridIcon, HomeIcon } from '@ceedcv-maya/shared-layout-react'
+import { useUserProfile } from '../../features/user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../permissions'
 
 function PanelAlertsIcon({ className }: { className?: string }) {
   return (
@@ -14,13 +16,28 @@ function PanelAlertsIcon({ className }: { className?: string }) {
 
 export function useNavItems(): NavItem[] {
   const { t } = useTranslation('common')
+  const { hasPermission } = useUserProfile()
+  const canViewPanelAlerts = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsIndex)
+
   return useMemo<NavItem[]>(
-    () => [
-      { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon, path: '/' },
-      { id: 'applications', label: t('nav.applications'), icon: GridIcon, path: '/applications' },
-      { id: 'notifications', label: t('nav.notifications'), icon: BellIcon, path: '/notifications' },
-      { id: 'panel-alerts', label: t('nav.panelAlerts'), icon: PanelAlertsIcon, path: '/panel-alerts' },
-    ],
-    [t],
+    () => {
+      const items: NavItem[] = [
+        { id: 'dashboard', label: t('nav.dashboard'), icon: HomeIcon, path: '/' },
+        { id: 'applications', label: t('nav.applications'), icon: GridIcon, path: '/applications' },
+        { id: 'notifications', label: t('nav.notifications'), icon: BellIcon, path: '/notifications' },
+      ]
+
+      if (canViewPanelAlerts) {
+        items.push({
+          id: 'panel-alerts',
+          label: t('nav.panelAlerts'),
+          icon: PanelAlertsIcon,
+          path: '/panel-alerts',
+        })
+      }
+
+      return items
+    },
+    [canViewPanelAlerts, t],
   )
 }

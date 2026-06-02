@@ -15,6 +15,8 @@ interface AlertRuleServiceInterface
      */
     public function paginate(AlertRuleFilterDto $filter): PaginatedDto;
 
+    public function find(int $ruleId): AlertRuleDto;
+
     /**
      * @param  array<string, mixed>  $attributes
      */

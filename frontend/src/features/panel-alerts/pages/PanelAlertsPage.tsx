@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Badge,
   Button,
@@ -14,6 +14,8 @@ import {
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { usePanelAlerts } from '../hooks/usePanelAlerts'
 import { usePanelAlertRules } from '../hooks/usePanelAlertRules'
 import { PanelAlertForm } from '../components/PanelAlertForm'
@@ -71,7 +73,18 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 export default function PanelAlertsPage() {
   const { t } = useLocale()
   const { toast } = useToast()
+  const navigate = useNavigate()
+  const { hasPermission } = useUserProfile()
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const canIndexAlerts = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsIndex)
+  const canCreateAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsCreate)
+  const canUpdateAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsUpdate)
+  const canDeleteAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsDelete)
+  const canIndexRules = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesIndex)
+  const canCreateRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesCreate)
+  const canUpdateRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesUpdate)
+  const canDeleteRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesDelete)
 
   // ── URL-synced filter state ───────────────────────────────────
   const activeTab = (searchParams.get('tab') as Tab | null) ?? 'alerts'
@@ -111,7 +124,7 @@ export default function PanelAlertsPage() {
   }
 
   const { alerts, meta, loading: alertsLoading, error: alertsError, onCreate, onUpdate, onDelete } =
-    usePanelAlerts(alertFilters)
+    usePanelAlerts(alertFilters, { enabled: canIndexAlerts })
 
   const [editAlert, setEditAlert] = useState<PanelAlert | null>(null)
   const [showAlertForm, setShowAlertForm] = useState(false)
@@ -119,15 +132,26 @@ export default function PanelAlertsPage() {
 
   // ── Rules tab state ───────────────────────────────────────────
   const { rules, loading: rulesLoading, error: rulesError, onCreate: onCreateRule, onUpdate: onUpdateRule, onDelete: onDeleteRule } =
-    usePanelAlertRules()
+    usePanelAlertRules({ enabled: canIndexRules })
 
   const [editRule, setEditRule] = useState<PanelAlertRule | null>(null)
   const [showRuleForm, setShowRuleForm] = useState(false)
   const [ruleFormLoading, setRuleFormLoading] = useState(false)
 
+  useEffect(() => {
+    if (activeTab === 'rules' && !canIndexRules) {
+      setSearchParams((prev) => {
+        prev.set('tab', 'alerts')
+        prev.delete('page')
+        return prev
+      }, { replace: true })
+    }
+  }, [activeTab, canIndexRules, setSearchParams])
+
   // ── Alert columns ─────────────────────────────────────────────
   const alertColumns: ColumnDef<PanelAlert>[] = useMemo(
-    () => [
+    () => {
+      const columns: ColumnDef<PanelAlert>[] = [
       {
         id: 'severity',
         header: t('panelAlerts.fields.severity'),
@@ -166,46 +190,57 @@ export default function PanelAlertsPage() {
         ),
         width: '90px',
       },
-      {
-        id: 'actions',
-        header: '',
-        cell: (a) => (
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={(e) => { e.stopPropagation(); setEditAlert(a); setShowAlertForm(true) }}
-            >
-              {t('actions.edit')}
-            </Button>
-            <Button
-              variant="danger"
-              size="xs"
-              onClick={(e) => {
-                e.stopPropagation()
-                if (window.confirm(t('panelAlerts.confirmDelete'))) {
-                  onDelete(a.id).then(() =>
-                    toast({ tone: 'success', title: t('panelAlerts.deleteSuccess') }),
-                  ).catch(() =>
-                    toast({ tone: 'danger', title: t('panelAlerts.deleteError') }),
-                  )
-                }
-              }}
-            >
-              {t('actions.delete')}
-            </Button>
-          </div>
-        ),
-        width: '120px',
-        align: 'right',
-      },
-    ],
-    [t, onDelete, toast],
+      ]
+
+      if (canUpdateAlert || canDeleteAlert) {
+        columns.push({
+          id: 'actions',
+          header: '',
+          cell: (a) => (
+            <div className="flex gap-1">
+              {canUpdateAlert && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={(e) => { e.stopPropagation(); setEditAlert(a); setShowAlertForm(true) }}
+                >
+                  {t('actions.edit')}
+                </Button>
+              )}
+              {canDeleteAlert && (
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (window.confirm(t('panelAlerts.confirmDelete'))) {
+                      onDelete(a.id).then(() =>
+                        toast({ tone: 'success', title: t('panelAlerts.deleteSuccess') }),
+                      ).catch(() =>
+                        toast({ tone: 'danger', title: t('panelAlerts.deleteError') }),
+                      )
+                    }
+                  }}
+                >
+                  {t('actions.delete')}
+                </Button>
+              )}
+            </div>
+          ),
+          width: '120px',
+          align: 'right',
+        })
+      }
+
+      return columns
+    },
+    [canDeleteAlert, canUpdateAlert, onDelete, t, toast],
   )
 
   // ── Rule columns ──────────────────────────────────────────────
   const ruleColumns: ColumnDef<PanelAlertRule>[] = useMemo(
-    () => [
+    () => {
+      const columns: ColumnDef<PanelAlertRule>[] = [
       {
         id: 'name',
         header: t('panelAlerts.fields.ruleName'),
@@ -244,41 +279,51 @@ export default function PanelAlertsPage() {
         cell: (r) => r.last_triggered_at ? new Date(r.last_triggered_at).toLocaleString() : '—',
         width: '160px',
       },
-      {
-        id: 'actions',
-        header: '',
-        cell: (r) => (
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={(e) => { e.stopPropagation(); setEditRule(r); setShowRuleForm(true) }}
-            >
-              {t('actions.edit')}
-            </Button>
-            <Button
-              variant="danger"
-              size="xs"
-              onClick={(e) => {
-                e.stopPropagation()
-                if (window.confirm(t('panelAlerts.confirmDelete'))) {
-                  onDeleteRule(r.id).then(() =>
-                    toast({ tone: 'success', title: t('panelAlerts.deleteSuccess') }),
-                  ).catch(() =>
-                    toast({ tone: 'danger', title: t('panelAlerts.deleteError') }),
-                  )
-                }
-              }}
-            >
-              {t('actions.delete')}
-            </Button>
-          </div>
-        ),
-        width: '120px',
-        align: 'right',
-      },
-    ],
-    [t, onDeleteRule, toast],
+      ]
+
+      if (canUpdateRule || canDeleteRule) {
+        columns.push({
+          id: 'actions',
+          header: '',
+          cell: (r) => (
+            <div className="flex gap-1">
+              {canUpdateRule && (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={(e) => { e.stopPropagation(); setEditRule(r); setShowRuleForm(true) }}
+                >
+                  {t('actions.edit')}
+                </Button>
+              )}
+              {canDeleteRule && (
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (window.confirm(t('panelAlerts.confirmDelete'))) {
+                      onDeleteRule(r.id).then(() =>
+                        toast({ tone: 'success', title: t('panelAlerts.deleteSuccess') }),
+                      ).catch(() =>
+                        toast({ tone: 'danger', title: t('panelAlerts.deleteError') }),
+                      )
+                    }
+                  }}
+                >
+                  {t('actions.delete')}
+                </Button>
+              )}
+            </div>
+          ),
+          width: '120px',
+          align: 'right',
+        })
+      }
+
+      return columns
+    },
+    [canDeleteRule, canUpdateRule, onDeleteRule, t, toast],
   )
 
   // ── Handlers ──────────────────────────────────────────────────
@@ -326,6 +371,19 @@ export default function PanelAlertsPage() {
   }
 
   const alertFiltersActive = [alertSearch, alertSeverity, includeExpired ? '1' : ''].filter(Boolean).length
+  const visibleTabs: Tab[] = canIndexRules ? ['alerts', 'rules'] : ['alerts']
+  const canCreateInActiveTab = activeTab === 'alerts' ? canCreateAlert : canCreateRule
+
+  if (!canIndexAlerts) {
+    return (
+      <>
+        <PageTitle title={t('panelAlerts.pageTitle')} onBack={() => navigate('/')} />
+        <p className="text-text-primary dark:text-text-dark-primary" role="status">
+          {t('panelAlerts.noPermission')}
+        </p>
+      </>
+    )
+  }
 
   return (
     <>
@@ -333,20 +391,22 @@ export default function PanelAlertsPage() {
         title={t('panelAlerts.pageTitle')}
         subtitle={t('panelAlerts.pageSubtitle')}
         actions={
-          <Button
-            onClick={() => {
-              if (activeTab === 'alerts') { setEditAlert(null); setShowAlertForm(true) }
-              else { setEditRule(null); setShowRuleForm(true) }
-            }}
-          >
-            + {t('actions.create')}
-          </Button>
+          canCreateInActiveTab ? (
+            <Button
+              onClick={() => {
+                if (activeTab === 'alerts') { setEditAlert(null); setShowAlertForm(true) }
+                else { setEditRule(null); setShowRuleForm(true) }
+              }}
+            >
+              + {t('actions.create')}
+            </Button>
+          ) : undefined
         }
       />
 
       {/* Tab bar */}
       <div className="flex gap-1 mb-4 border-b border-ui-border dark:border-ui-dark-border">
-        {(['alerts', 'rules'] as Tab[]).map((tab) => (
+        {visibleTabs.map((tab) => (
           <button
             key={tab}
             type="button"
