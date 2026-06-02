@@ -14,6 +14,7 @@ use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRuleRepositoryInterface;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Eloquent\AlertRepository;
 use App\Repositories\Eloquent\AlertRuleRepository;
 use App\Repositories\Eloquent\ApplicationRepository;
@@ -24,6 +25,7 @@ use App\Repositories\Eloquent\PanelAlertRepository;
 use App\Repositories\Eloquent\PanelAlertRuleRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
+use App\Repositories\Eloquent\UserRepository;
 use Maya\Profile\Migrations as ProfileMigrations;
 use App\Repositories\Resolvers\DashboardProfileResolver;
 use App\Services\Alerts\AlertIngestionService;
@@ -39,6 +41,7 @@ use App\Services\Contracts\AttendanceServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
+use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use App\Services\Contracts\PanelAlertRuleServiceInterface;
 use App\Services\Contracts\PanelAlertServiceInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
@@ -46,6 +49,7 @@ use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use App\Services\Dashboard\ApplicationService;
 use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
+use App\Services\PanelAlerts\PanelAlertNotificationService;
 use App\Services\PanelAlerts\PanelAlertRuleService;
 use App\Services\PanelAlerts\PanelAlertService;
 use App\Models\User;
@@ -54,16 +58,23 @@ use App\Services\Notifications\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
+use Maya\Messaging\Publishers\LogPublisher;
+use Maya\Messaging\Publishers\ResilientLogPublisher;
 use Maya\Profile\Repositories\Contracts\UserProfileResolverInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->singleton(ResilientLogPublisher::class, function ($app) {
+            return new ResilientLogPublisher($app->make(LogPublisher::class));
+        });
+
         // Dashboard area — applications, favorites, layout.
         $this->app->singleton(ApplicationRepositoryInterface::class, ApplicationRepository::class);
         $this->app->singleton(UserFavoriteApplicationRepositoryInterface::class, UserFavoriteApplicationRepository::class);
         $this->app->singleton(UserDashboardLayoutRepositoryInterface::class, UserDashboardLayoutRepository::class);
+        $this->app->singleton(UserRepositoryInterface::class, UserRepository::class);
 
         $this->app->singleton(ApplicationServiceInterface::class, ApplicationService::class);
         $this->app->singleton(UserFavoriteApplicationServiceInterface::class, UserFavoriteApplicationService::class);
@@ -84,6 +95,7 @@ class AppServiceProvider extends ServiceProvider
         // Panel Alerts (user-created alerts for dashboard widget).
         $this->app->singleton(PanelAlertRepositoryInterface::class, PanelAlertRepository::class);
         $this->app->singleton(PanelAlertRuleRepositoryInterface::class, PanelAlertRuleRepository::class);
+        $this->app->singleton(PanelAlertNotificationServiceInterface::class, PanelAlertNotificationService::class);
         $this->app->singleton(PanelAlertServiceInterface::class, PanelAlertService::class);
         $this->app->singleton(PanelAlertRuleServiceInterface::class, PanelAlertRuleService::class);
 

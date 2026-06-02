@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\PanelAlert;
+use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maya\Messaging\Publishers\AuditPublisher;
@@ -14,6 +15,9 @@ use Maya\Messaging\Publishers\AuditPublisher;
  * panel_alerts row, capturing the actor's Keycloak subject and the
  * before/after values so forensic queries can reconstruct who created,
  * modified or removed a visible panel alert.
+ *
+ * On create, also fans out in-app notifications to all active users
+ * via PanelAlertNotificationService (after commit).
  *
  * Routing key: maya_dashboard.panel_alert.<action>
  */
@@ -25,13 +29,25 @@ final class PanelAlertObserver
 
     public function __construct(
         private readonly AuditPublisher $publisher,
+        private readonly PanelAlertNotificationServiceInterface $notifications,
         private readonly Request $request,
     ) {}
 
     public function created(PanelAlert $alert): void
     {
         $snapshot = $alert->getAttributes();
-        DB::afterCommit(fn () => $this->publish('created', $alert, previous: null, new: $snapshot));
+        DB::afterCommit(function () use ($alert, $snapshot): void {
+            $this->publish('created', $alert, previous: null, new: $snapshot);
+
+            $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert);
+
+            $this->publish('notified', $alert, previous: null, new: [
+                'type' => $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual',
+                'recipient_count' => $recipientCount,
+                'severity' => $alert->severity,
+                'source' => $alert->source,
+            ]);
+        });
     }
 
     public function updated(PanelAlert $alert): void
