@@ -10,26 +10,41 @@ use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Log;
+use Maya\Messaging\Publishers\ResilientLogPublisher;
 
 class NotificationIngestionService implements NotificationIngestionServiceInterface
 {
     /** TTL in seconds for the user-exists cache entry. */
     private const USER_CACHE_TTL = 300;
 
+    private const CODE_MALFORMED_PAYLOAD = 'LAR-DASH-003';
+
+    private const CODE_RECIPIENT_NOT_FOUND = 'LAR-DASH-004';
+
     public function __construct(
         private readonly NotificationRepositoryInterface $repo,
+        private readonly ResilientLogPublisher $resilientLogPublisher,
     ) {}
+
+    private function messagingAppSlug(): string
+    {
+        return (string) config('messaging.app');
+    }
 
     public function ingest(array $payload, string $messageId): bool
     {
         try {
             $dto = IncomingNotificationPayload::fromArray($payload);
         } catch (\InvalidArgumentException $e) {
-            Log::warning('NotificationIngestionService: dropping malformed payload (non-retryable)', [
-                'error' => $e->getMessage(),
-                'keys' => array_keys($payload),
-            ]);
+            $this->resilientLogPublisher->publishStructured(
+                'low',
+                $e->getMessage(),
+                self::CODE_MALFORMED_PAYLOAD,
+                [
+                    'payload_keys' => array_keys($payload),
+                ],
+                $this->messagingAppSlug(),
+            );
 
             return false; // indica mensaje no-recuperable al consumer
         }
@@ -88,7 +103,13 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
         });
 
         if (! $exists) {
-            Log::warning('Notification skipped: recipient not found in users.', ['keycloak_id' => $keycloakId]);
+            $this->resilientLogPublisher->publishStructured(
+                'low',
+                'Notification skipped: recipient not found in users.',
+                self::CODE_RECIPIENT_NOT_FOUND,
+                ['recipient_keycloak_id' => $keycloakId],
+                $this->messagingAppSlug(),
+            );
 
             return null;
         }
