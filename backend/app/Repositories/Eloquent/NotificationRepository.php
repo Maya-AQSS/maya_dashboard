@@ -6,12 +6,15 @@ namespace App\Repositories\Eloquent;
 
 use App\DTOs\NotificationFilterDto;
 use App\Models\Notification;
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class NotificationRepository implements NotificationRepositoryInterface
 {
+    public function __construct(
+        private readonly UserRepositoryInterface $users,
+    ) {}
     public function paginateForRecipient(string $recipientId, NotificationFilterDto $filter): LengthAwarePaginator
     {
         $allowedSortColumns = ['created_at', 'read_at'];
@@ -99,7 +102,7 @@ final class NotificationRepository implements NotificationRepositoryInterface
 
     public function userExists(string $keycloakId): bool
     {
-        return User::query()->where('id', $keycloakId)->exists();
+        return $this->users->exists($keycloakId);
     }
 
     public function acknowledge(Notification $notification, string $userId): Notification

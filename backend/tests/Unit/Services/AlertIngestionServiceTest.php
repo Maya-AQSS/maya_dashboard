@@ -7,6 +7,27 @@ use App\Services\Alerts\AlertIngestionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Maya\Messaging\Publishers\LogPublisher;
+use Maya\Messaging\Publishers\NotificationPublisher;
+use Maya\Messaging\Publishers\ResilientLogPublisher;
+
+function makeAlertIngestionService(
+    AlertRepositoryInterface $alertRepo,
+    AlertRuleRepositoryInterface $ruleRepo,
+    ?NotificationPublisher $notificationPublisher = null,
+    ?ResilientLogPublisher $resilientLogPublisher = null,
+): AlertIngestionService {
+    return new AlertIngestionService(
+        $alertRepo,
+        $ruleRepo,
+        $notificationPublisher ?? Mockery::mock(NotificationPublisher::class)->shouldIgnoreMissing(),
+        $resilientLogPublisher ?? new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
+    );
+}
+
+beforeEach(function () {
+    config(['messaging.app' => 'maya-dashboard']);
+});
 
 // ─── ingest ───────────────────────────────────────────────────────────────────
 
@@ -14,7 +35,7 @@ it('throws ValidationException when message_id is not a UUID', function () {
     $alertRepo = Mockery::mock(AlertRepositoryInterface::class);
     $ruleRepo  = Mockery::mock(AlertRuleRepositoryInterface::class);
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     expect(fn () => $service->ingest([
         'rule_slug' => 'cpu-high',
@@ -30,7 +51,7 @@ it('throws ValidationException when message_id is empty', function () {
     $alertRepo = Mockery::mock(AlertRepositoryInterface::class);
     $ruleRepo  = Mockery::mock(AlertRuleRepositoryInterface::class);
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     expect(fn () => $service->ingest([
         'severity' => 'high',
@@ -52,7 +73,7 @@ it('upserts alert with valid rule_slug when slug exists in cache', function () {
         ->once()
         ->with($messageId, Mockery::on(fn ($args) => $args['rule_slug'] === 'cpu-high' && $args['severity'] === 'critical'));
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'rule_slug' => 'cpu-high',
@@ -76,7 +97,7 @@ it('sets rule_slug to null for unknown slug (orphan alert)', function () {
         ->once()
         ->with($messageId, Mockery::on(fn ($args) => $args['rule_slug'] === null));
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'rule_slug' => 'unknown-slug',
@@ -97,7 +118,7 @@ it('sets rule_slug to null when payload rule_slug is null', function () {
         ->once()
         ->with($messageId, Mockery::on(fn ($args) => $args['rule_slug'] === null));
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'rule_slug' => null,
@@ -121,7 +142,7 @@ it('calls ruleRepo->validSlugLookup() when cache is empty', function () {
 
     $alertRepo->shouldReceive('upsertByMessageId')->once();
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'rule_slug' => 'cpu-high',
@@ -143,7 +164,7 @@ it('uses created_at from payload when provided', function () {
         ->once()
         ->with($messageId, Mockery::on(fn ($args) => $args['created_at']->toIso8601String() === '2026-05-10T12:00:00+00:00'));
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'severity'   => 'medium',
@@ -164,12 +185,68 @@ it('uses now() as created_at when payload does not include it', function () {
         ->once()
         ->with($messageId, Mockery::on(fn ($args) => $args['created_at'] !== null));
 
-    $service = new AlertIngestionService($alertRepo, $ruleRepo);
+    $service = makeAlertIngestionService($alertRepo, $ruleRepo);
 
     $service->ingest([
         'severity' => 'high',
         'title'    => 'No Date Alert',
         'source'   => 'app.publish',
         'context'  => [],
+    ], $messageId);
+});
+
+it('publishes LAR-DASH-002 when notifying the rule creator fails', function () {
+    $messageId = (string) Str::uuid();
+    $creatorId = (string) Str::uuid();
+    $alertRepo = Mockery::mock(AlertRepositoryInterface::class);
+    $ruleRepo = Mockery::mock(AlertRuleRepositoryInterface::class);
+
+    Cache::put(AlertRule::VALID_SLUGS_CACHE_KEY, ['cpu-high' => 0]);
+
+    $alertRepo->shouldReceive('upsertByMessageId')->once();
+
+    $rule = new AlertRule([
+        'slug' => 'cpu-high',
+        'name' => 'CPU high',
+        'created_by_id' => $creatorId,
+    ]);
+
+    $ruleRepo->shouldReceive('findBySlug')->once()->with('cpu-high')->andReturn($rule);
+
+    $notificationPublisher = Mockery::mock(NotificationPublisher::class);
+    $notificationPublisher->shouldReceive('send')->once()->andThrow(new RuntimeException('AMQP unavailable'));
+
+    $logPublisher = Mockery::mock(LogPublisher::class);
+    $logPublisher->shouldReceive('publish')
+        ->once()
+        ->withArgs(function (
+            string $severity,
+            string $message,
+            ?string $errorCode,
+            ?string $file,
+            ?int $line,
+            array $metadata,
+            ?string $app,
+        ): bool {
+            return $severity === 'medium'
+                && $message === 'AMQP unavailable'
+                && $errorCode === 'LAR-DASH-002'
+                && $app === 'maya-dashboard'
+                && $metadata['rule_slug'] === 'cpu-high';
+        });
+
+    $service = makeAlertIngestionService(
+        $alertRepo,
+        $ruleRepo,
+        $notificationPublisher,
+        new ResilientLogPublisher($logPublisher),
+    );
+
+    $service->ingest([
+        'rule_slug' => 'cpu-high',
+        'severity' => 'critical',
+        'title' => 'CPU Alert',
+        'source' => 'metric.threshold',
+        'context' => ['matched_rows' => 3],
     ], $messageId);
 });

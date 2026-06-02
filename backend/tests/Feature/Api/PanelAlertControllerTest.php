@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Str;
+use Maya\Messaging\Publishers\AuditPublisher;
+use Maya\Messaging\Publishers\NotificationPublisher;
 
 uses(RefreshDatabase::class);
 
@@ -20,6 +22,7 @@ beforeEach(function () {
         'id' => $this->userId,
         'email' => 'panel-alert-test@maya.localhost',
         'name' => 'Panel Alert Test User',
+        'is_active' => true,
     ]);
 
     $userId = $this->userId;
@@ -110,6 +113,36 @@ it('creates a panel alert with valid data', function () {
     expect(PanelAlert::count())->toBe(1);
 });
 
+it('dispatches notification publish and audit events when a panel alert is stored', function () {
+    $otherUserId = (string) Str::uuid();
+    User::forceCreate([
+        'id' => $otherUserId,
+        'email' => 'other-user@maya.localhost',
+        'name' => 'Other User',
+        'is_active' => true,
+    ]);
+
+    $notificationPublisher = Mockery::mock(NotificationPublisher::class);
+    $notificationPublisher->shouldReceive('send')->twice();
+    $this->app->instance(NotificationPublisher::class, $notificationPublisher);
+
+    $auditPublisher = Mockery::mock(AuditPublisher::class);
+    $auditPublisher->shouldReceive('publish')->twice();
+    $this->app->instance(AuditPublisher::class, $auditPublisher);
+
+    $this->app->forgetInstance(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class);
+
+    $payload = [
+        'text' => 'Aviso importante para todo el centro',
+        'severity' => 'high',
+        'visible_from' => now()->toIso8601String(),
+    ];
+
+    $response = $this->postJson('/api/v1/panel-alerts', $payload);
+
+    $response->assertStatus(201);
+});
+
 it('returns 401 when creating panel alert without auth', function () {
     $this->withMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
 
@@ -158,7 +191,12 @@ it('rejects store when visible_until is before visible_from', function () {
 // ─── update ───────────────────────────────────────────────────────────────────
 
 it('updates a panel alert with valid data', function () {
-    $alert = makePanelAlert(['severity' => 'low', 'text' => 'Original text']);
+    $alert = makePanelAlert(['severity' => 'low', 'text' => 'Original text', 'created_by' => $this->userId]);
+
+    $auditPublisher = Mockery::mock(AuditPublisher::class);
+    $auditPublisher->shouldReceive('publish')->once()->withArgs(fn (...$args): bool => $args[3] === 'updated');
+    $this->app->instance(AuditPublisher::class, $auditPublisher);
+    $this->app->forgetInstance(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class);
 
     $response = $this->putJson("/api/v1/panel-alerts/{$alert->id}", [
         'text' => 'Updated text',
@@ -184,7 +222,12 @@ it('returns 404 when updating a non-existent panel alert', function () {
 // ─── destroy ──────────────────────────────────────────────────────────────────
 
 it('deletes a panel alert and returns 204', function () {
-    $alert = makePanelAlert();
+    $alert = makePanelAlert(['created_by' => $this->userId]);
+
+    $auditPublisher = Mockery::mock(AuditPublisher::class);
+    $auditPublisher->shouldReceive('publish')->once()->withArgs(fn (...$args): bool => $args[3] === 'deleted');
+    $this->app->instance(AuditPublisher::class, $auditPublisher);
+    $this->app->forgetInstance(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class);
 
     $response = $this->deleteJson("/api/v1/panel-alerts/{$alert->id}");
 

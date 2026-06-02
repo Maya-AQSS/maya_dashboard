@@ -2,6 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Badge, Button, Card, PageTitle, Spinner, useToast } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { useNotification } from '../hooks/useNotification'
 import { markNotificationRead } from '../api/notificationsApi'
 
@@ -23,8 +25,12 @@ export default function NotificationDetailPage() {
   const { t } = useLocale()
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { hasPermission } = useUserProfile()
 
-  const { data: notification, isLoading, error } = useNotification(notifId)
+  const canShow = hasPermission(DASHBOARD_PERMISSIONS.notificationsShow)
+  const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.notificationsUpdate)
+
+  const { data: notification, isLoading, error } = useNotification(notifId, { enabled: canShow })
 
   const markReadMutation = useMutation({
     mutationFn: () => markNotificationRead(notifId!),
@@ -35,6 +41,17 @@ export default function NotificationDetailPage() {
     },
     onError: () => toast({ tone: 'danger', title: t('notifications.markReadError') }),
   })
+
+  if (!canShow) {
+    return (
+      <div className="max-w-[800px] mx-auto p-4">
+        <PageTitle title={t('notifications.pageTitle')} />
+        <p className="text-text-primary dark:text-text-dark-primary" role="status">
+          {t('notifications.noPermission')}
+        </p>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -70,7 +87,7 @@ export default function NotificationDetailPage() {
           title={notification.title}
           subtitle={`#${notification.id} · ${notification.app} · ${notification.type}`}
         />
-        {!notification.read_at && (
+        {!notification.read_at && canUpdate && (
           <Button
             variant="outlineTeal"
             size="sm"

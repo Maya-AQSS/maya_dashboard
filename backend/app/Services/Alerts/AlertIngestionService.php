@@ -11,19 +11,27 @@ use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Services\Contracts\AlertIngestionServiceInterface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Log;
 use Maya\Messaging\Publishers\NotificationPublisher;
+use Maya\Messaging\Publishers\ResilientLogPublisher;
 use Throwable;
 
 class AlertIngestionService implements AlertIngestionServiceInterface
 {
     private const SLUG_CACHE_TTL = 300;
 
+    private const CODE_NOTIFY_RULE_CREATOR_FAILED = 'LAR-DASH-002';
+
     public function __construct(
         private readonly AlertRepositoryInterface $alertRepo,
         private readonly AlertRuleRepositoryInterface $ruleRepo,
         private readonly NotificationPublisher $notificationPublisher,
+        private readonly ResilientLogPublisher $resilientLogPublisher,
     ) {}
+
+    private function messagingAppSlug(): string
+    {
+        return (string) config('messaging.app');
+    }
 
     public function ingest(array $payload, string $messageId): void
     {
@@ -87,10 +95,17 @@ class AlertIngestionService implements AlertIngestionServiceInterface
                 ],
             );
         } catch (Throwable $e) {
-            Log::warning('alert.notify_rule_creator_failed', [
-                'rule_slug' => $ruleSlug,
-                'error'     => $e->getMessage(),
-            ]);
+            $this->resilientLogPublisher->publishFromThrowable(
+                $e,
+                'medium',
+                self::CODE_NOTIFY_RULE_CREATOR_FAILED,
+                [
+                    'rule_slug' => $ruleSlug,
+                    'alert_title' => $dto->title,
+                    'severity' => $dto->severity,
+                ],
+                $this->messagingAppSlug(),
+            );
         }
     }
 }

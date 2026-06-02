@@ -72,7 +72,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 export default function PanelAlertsPage() {
   const { t } = useLocale()
-  const { toast } = useToast()
+  const { show: toast } = useToast()
   const navigate = useNavigate()
   const { hasPermission } = useUserProfile()
   const [searchParams, setSearchParams] = useSearchParams()

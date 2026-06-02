@@ -373,6 +373,7 @@
     "backToList": "Tornar a la llista",
     "loadError": "No s'ha pogut carregar la notificació.",
     "empty": "No hi ha notificacions per als filtres seleccionats.",
+    "noPermission": "No tens permís per veure les notificacions.",
     "unread": "No llegida",
     "paginationInfo": "Mostrant {{from}}–{{to}} de {{total}}",
     "errorLoad": "Error en carregar notificacions.",

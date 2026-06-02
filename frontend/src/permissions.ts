@@ -14,4 +14,9 @@ export const DASHBOARD_PERMISSIONS = {
   panelAlertRulesCreate: 'dashboard.panel_alert_rules.create',
   panelAlertRulesUpdate: 'dashboard.panel_alert_rules.update',
   panelAlertRulesDelete: 'dashboard.panel_alert_rules.delete',
+  notificationsIndex: 'dashboard.notifications.index',
+  notificationsShow: 'dashboard.notifications.show',
+  notificationsCreate: 'dashboard.notifications.create',
+  notificationsUpdate: 'dashboard.notifications.update',
+  notificationsDelete: 'dashboard.notifications.delete',
 } as const

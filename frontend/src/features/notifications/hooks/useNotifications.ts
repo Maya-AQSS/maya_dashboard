@@ -5,14 +5,19 @@ import type { NotificationListFilters, PaginatedNotifications, PaginationMeta } 
 
 const POLL_MS = 60_000
 
-export function useNotifications(filters: NotificationListFilters = {}) {
+export function useNotifications(
+  filters: NotificationListFilters = {},
+  options: { enabled?: boolean } = {},
+) {
   const queryClient = useQueryClient()
   const queryKey = ['notifications', filters] as const
+  const enabled = options.enabled ?? true
 
   const query = useQuery<PaginatedNotifications, Error>({
     queryKey,
     queryFn: () => listNotifications(filters),
-    refetchInterval: POLL_MS,
+    enabled,
+    refetchInterval: enabled ? POLL_MS : false,
     refetchIntervalInBackground: false,
     retry: 1,
   })
