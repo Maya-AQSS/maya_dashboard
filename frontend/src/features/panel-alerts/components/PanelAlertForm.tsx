@@ -7,6 +7,7 @@ import {
   toDatetimeLocalValue,
 } from '@ceedcv-maya/shared-ui-react'
 import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
+import { useDarkMode } from '@ceedcv-maya/shared-layout-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertAudienceFields } from './AlertAudienceFields'
 import {
@@ -29,6 +30,7 @@ const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low']
 
 export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) {
   const { t } = useLocale()
+  const { isDark } = useDarkMode()
 
   const [text, setText] = useState(initial?.text ?? '')
   const [severity, setSeverity] = useState<Severity>(initial?.severity ?? 'medium')
@@ -86,7 +88,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
         <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
           {t('panelAlerts.fields.text')} <span className="text-danger">*</span>
         </label>
-        <MayaEditor mode="lite" initialContent={text} onChange={setText} />
+        <MayaEditor mode="lite" isDark={isDark} initialContent={text} onChange={setText} />
       </div>
 
       <div>

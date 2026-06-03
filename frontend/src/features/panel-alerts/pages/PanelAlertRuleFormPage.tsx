@@ -97,7 +97,7 @@ export default function PanelAlertRuleFormPage() {
         backLabel={t('actions.back')}
       />
 
-      <div className="mt-6 max-w-2xl">
+      <div className="mt-6">
         <div className="rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card p-6">
           <PanelAlertRuleForm
             initial={initial}

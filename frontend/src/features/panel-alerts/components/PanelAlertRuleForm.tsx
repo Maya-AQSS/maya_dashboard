@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
 import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
+import { useDarkMode } from '@ceedcv-maya/shared-layout-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertAudienceFields } from './AlertAudienceFields'
 import {
@@ -34,6 +35,7 @@ const COMMON_EVENT_TYPES = [
 
 export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Props) {
   const { t } = useLocale()
+  const { isDark } = useDarkMode()
 
   const [name, setName] = useState(initial?.name ?? '')
   const [description, setDescription] = useState(initial?.description ?? '')
@@ -229,6 +231,7 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
         </label>
         <MayaEditor
           mode="lite"
+          isDark={isDark}
           initialContent={alertText}
           onChange={setAlertText}
           placeholder={t('panelAlerts.fields.alertTextPlaceholder')}
