@@ -26,7 +26,7 @@ class ApplicationController extends Controller
         $user = $this->resolveKeycloakUser($request);
         $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
 
-        $page = $this->applications->listForUser($user, $perPage);
+        $page = $this->applications->listForUser((string) $user->id, $perPage);
 
         return $this->paginated($page, ApplicationResource::class, $request);
     }

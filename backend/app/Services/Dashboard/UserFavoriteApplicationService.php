@@ -6,7 +6,6 @@ namespace App\Services\Dashboard;
 
 use App\DTOs\UserFavoriteApplicationDto;
 use App\Models\Application;
-use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use Maya\Http\Pagination\PaginatedDto;
@@ -21,22 +20,22 @@ final class UserFavoriteApplicationService implements UserFavoriteApplicationSer
     /**
      * @return PaginatedDto<UserFavoriteApplicationDto>
      */
-    public function list(User $user, int $perPage = 100): PaginatedDto
+    public function list(string $userId, int $perPage = 100): PaginatedDto
     {
         return PaginatedDto::fromPaginator(
-            $this->favorites->paginateForUser($user, $perPage),
+            $this->favorites->paginateForUser($userId, $perPage),
             fn (Application $app): UserFavoriteApplicationDto => UserFavoriteApplicationDto::fromModel($app),
         );
     }
 
-    public function add(User $user, int $applicationId): UserFavoriteApplicationDto
+    public function add(string $userId, int $applicationId): UserFavoriteApplicationDto
     {
-        return UserFavoriteApplicationDto::fromModel($this->favorites->attach($user, $applicationId));
+        return UserFavoriteApplicationDto::fromModel($this->favorites->attach($userId, $applicationId));
     }
 
-    public function remove(User $user, int $applicationId): void
+    public function remove(string $userId, int $applicationId): void
     {
-        $detached = $this->favorites->detach($user, $applicationId);
+        $detached = $this->favorites->detach($userId, $applicationId);
 
         if ($detached === 0) {
             throw new NotFoundHttpException('Favorite application not found.');
