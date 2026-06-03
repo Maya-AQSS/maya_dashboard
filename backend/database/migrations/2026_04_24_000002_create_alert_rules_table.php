@@ -19,6 +19,13 @@ return new class extends Migration
             $table->boolean('enabled')->default(true);
             $table->jsonb('context_template')->nullable()->comment('Static keys merged into alert context');
             $table->timestampTz('last_evaluated_at')->nullable();
+            $table->boolean('notify_all')->default(true);
+            $table->string('audience_kind', 20)->nullable()->comment('academic | team');
+            $table->string('academic_level', 20)->nullable()->comment('study_type | study | module');
+            $table->string('audience_study_type_id', 64)->nullable();
+            $table->string('audience_study_id', 64)->nullable();
+            $table->string('audience_module_id', 64)->nullable();
+            $table->string('audience_team_id', 64)->nullable();
             $table->timestampsTz();
 
             $table->index(['enabled', 'last_evaluated_at']);
