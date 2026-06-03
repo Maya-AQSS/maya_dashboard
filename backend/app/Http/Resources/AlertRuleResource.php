@@ -34,6 +34,7 @@ class AlertRuleResource extends JsonResource
             'last_evaluated_at' => $dto->lastEvaluatedAt,
             'created_at' => $dto->createdAt,
             'updated_at' => $dto->updatedAt,
+            ...$dto->audience->toApiArray(),
         ];
     }
 }

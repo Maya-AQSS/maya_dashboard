@@ -20,12 +20,12 @@ interface AlertRuleServiceInterface
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function create(array $attributes): AlertRuleDto;
+    public function create(array $attributes, string $createdBy): AlertRuleDto;
 
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function update(int $ruleId, array $attributes): AlertRuleDto;
+    public function update(int $ruleId, array $attributes, string $updatedBy): AlertRuleDto;
 
     public function delete(int $ruleId): void;
 }

@@ -21,6 +21,13 @@ class AlertRule extends Model
         'slug', 'name', 'description', 'query_sql', 'severity',
         'schedule_cron', 'enabled', 'context_template', 'last_evaluated_at',
         'created_by_id',
+        'notify_all',
+        'audience_kind',
+        'academic_level',
+        'audience_study_type_id',
+        'audience_study_id',
+        'audience_module_id',
+        'audience_team_id',
     ];
 
     protected static function booted(): void
@@ -35,6 +42,7 @@ class AlertRule extends Model
     {
         return [
             'enabled' => 'boolean',
+            'notify_all' => 'boolean',
             'context_template' => 'array',
             'last_evaluated_at' => 'datetime',
         ];
