@@ -55,8 +55,11 @@ use App\Services\PanelAlerts\PanelAlertService;
 use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
+use App\Support\FdwTeardown;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
@@ -130,6 +133,16 @@ class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(ProfileMigrations::academicCatalogs());
         $this->loadMigrationsFrom(ProfileMigrations::teams());
         $this->loadMigrationsFrom(ProfileMigrations::userPermissions());
+
+        // db:wipe no elimina vistas ni foreign tables FDW (las crea el paquete
+        // shared-profile). Las limpiamos antes de migrate:fresh/db:wipe para que
+        // la reconstrucción sea reproducible (si no, el rewrite de la vista
+        // `teams` falla con «cannot drop columns from view»).
+        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
+            if (in_array($event->command, ['migrate:fresh', 'db:wipe'], true)) {
+                FdwTeardown::dropAllInPublicSchema();
+            }
+        });
 
         // Broadcasting auth endpoint protegido por JWT y bajo prefijo /api/v1 para
         // consistencia con el resto de la API. Anula el `/broadcasting/auth` que
