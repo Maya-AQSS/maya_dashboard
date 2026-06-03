@@ -2,6 +2,14 @@ import { useEffect, useState } from 'react'
 import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
 import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { AlertAudienceFields } from './AlertAudienceFields'
+import {
+  audienceFormStateFromApi,
+  buildAudiencePayload,
+  defaultAudienceFormState,
+  validateAudienceForm,
+  type AlertAudienceFormState,
+} from '../types/alertAudience'
 import type { AlertCondition, CreatePanelAlertRuleInput, PanelAlertRule, Severity } from '../types/panelAlert'
 
 interface Props {
@@ -43,12 +51,16 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
     initial?.max_frequency_minutes != null ? String(initial.max_frequency_minutes) : '60',
   )
   const [isActive, setIsActive] = useState(initial?.is_active ?? true)
+  const [audience, setAudience] = useState<AlertAudienceFormState>(() =>
+    initial ? audienceFormStateFromApi(initial) : defaultAudienceFormState(),
+  )
   const [error, setError] = useState<string | null>(null)
 
   const isCustomEventType = !COMMON_EVENT_TYPES.includes(eventType)
 
   useEffect(() => {
     if (initial) {
+      setAudience(audienceFormStateFromApi(initial))
       setName(initial.name)
       setDescription(initial.description ?? '')
       const knownType = COMMON_EVENT_TYPES.includes(initial.event_type)
@@ -81,6 +93,13 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
     if (!name.trim()) { setError(t('panelAlerts.validation.nameRequired')); return }
     if (!resolvedEventType) { setError(t('panelAlerts.validation.eventTypeRequired')); return }
     if (!alertText.trim()) { setError(t('panelAlerts.validation.alertTextRequired')); return }
+    const audienceError = validateAudienceForm(audience, {
+      teamRequired: t('panelAlerts.validation.teamRequired'),
+      studyTypeRequired: t('panelAlerts.validation.studyTypeRequired'),
+      studyRequired: t('panelAlerts.validation.studyRequired'),
+      moduleRequired: t('panelAlerts.validation.moduleRequired'),
+    })
+    if (audienceError) { setError(audienceError); return }
     try {
       await onSubmit({
         name: name.trim(),
@@ -94,6 +113,7 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
         visible_duration_hours: visibleDurationHours ? parseInt(visibleDurationHours, 10) : null,
         max_frequency_minutes: maxFrequencyMinutes ? parseInt(maxFrequencyMinutes, 10) : null,
         is_active: isActive,
+        ...buildAudiencePayload(audience),
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : t('panelAlerts.errorSave'))
@@ -270,6 +290,8 @@ export function PanelAlertRuleForm({ initial, onSubmit, onCancel, loading }: Pro
           {t('panelAlerts.fields.isActive')}
         </span>
       </label>
+
+      <AlertAudienceFields value={audience} onChange={setAudience} disabled={loading} />
 
       {error && (
         <p role="alert" className="text-sm text-danger">{error}</p>

@@ -38,6 +38,7 @@ class PanelAlertRuleResource extends JsonResource
             'created_by' => $dto->createdBy,
             'created_at' => $dto->createdAt,
             'updated_at' => $dto->updatedAt,
+            ...$dto->audience->toApiArray(),
         ];
     }
 }

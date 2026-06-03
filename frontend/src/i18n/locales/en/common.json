@@ -348,12 +348,40 @@
       "isActive": "Rule active",
       "lastTriggeredAt": "Last triggered"
     },
+    "audience": {
+      "sectionTitle": "Recipients",
+      "notifyAll": "Send to all active users",
+      "kindAcademic": "Academic context",
+      "kindTeam": "Team or department",
+      "academicLevel": "Scope level",
+      "level": {
+        "study_type": "Study type",
+        "study": "Study",
+        "module": "Module"
+      },
+      "studyType": "Study type",
+      "study": "Study",
+      "module": "Module",
+      "team": "Team",
+      "department": "Department",
+      "selectPlaceholder": "Select…",
+      "selectStudyTypeFirst": "Select a study type first.",
+      "selectStudyFirst": "Select a study first.",
+      "contextError": "Could not load your academic context.",
+      "emptyContext": "You have no academic contexts or teams assigned to narrow the audience.",
+      "noTeamsAssigned": "You have no teams or departments assigned on your profile. Check Departments and Work teams in your profile, or ask to be added in Odoo.",
+      "teamsUnavailable": "Team data is temporarily unavailable. Please try again later."
+    },
     "validation": {
       "nameRequired": "Name is required.",
       "eventTypeRequired": "Event type is required.",
       "alertTextRequired": "Alert text is required.",
       "textRequired": "Alert text is required.",
-      "visibleFromRequired": "Start date is required."
+      "visibleFromRequired": "Start date is required.",
+      "teamRequired": "Select a team or department.",
+      "studyTypeRequired": "Select a study type.",
+      "studyRequired": "Select a study.",
+      "moduleRequired": "Select a module."
     }
   },
   "notifications": {

@@ -10,7 +10,7 @@ use Cron\CronExpression;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Maya\Messaging\Publishers\AlertPublisher;
+use App\Services\Contracts\SystemAlertDispatchServiceInterface;
 use Throwable;
 
 /**
@@ -27,8 +27,10 @@ class EvaluateAlertRules extends Command
 
     protected $description = 'Run each enabled alert rule and publish matching alerts to maya.alerts';
 
-    public function handle(AlertPublisher $publisher, AlertRuleRepositoryInterface $ruleRepo): int
-    {
+    public function handle(
+        SystemAlertDispatchServiceInterface $dispatch,
+        AlertRuleRepositoryInterface $ruleRepo,
+    ): int {
         $logsConnection = (string) $this->option('logs-connection');
         $now = now();
 
@@ -74,13 +76,7 @@ class EvaluateAlertRules extends Command
             // sample_columns is metadata for redaction, not part of the alert payload.
             unset($context['sample_columns']);
 
-            $publisher->publish(
-                ruleSlug: $rule->slug,
-                severity: $rule->severity,
-                title: $rule->name,
-                context: $context,
-                source: 'logs.aggregation',
-            );
+            $dispatch->dispatchTriggeredRule($rule, $context);
 
             $this->line("  → alert published: {$rule->slug} ({$rule->severity}, {$context['matched_rows']} rows)");
         }

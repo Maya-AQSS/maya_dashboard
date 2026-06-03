@@ -23,6 +23,13 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestampTz('last_triggered_at')->nullable();
             $table->string('created_by', 255)->comment('Keycloak UUID');
+            $table->boolean('notify_all')->default(true);
+            $table->string('audience_kind', 20)->nullable()->comment('academic | team');
+            $table->string('academic_level', 20)->nullable()->comment('study_type | study | module');
+            $table->string('audience_study_type_id', 64)->nullable();
+            $table->string('audience_study_id', 64)->nullable();
+            $table->string('audience_module_id', 64)->nullable();
+            $table->string('audience_team_id', 64)->nullable();
             $table->timestampsTz();
         });
 
@@ -40,6 +47,13 @@ return new class extends Migration
                 ->constrained('panel_alert_rules')
                 ->nullOnDelete();
             $table->string('created_by', 255)->comment('Keycloak UUID');
+            $table->boolean('notify_all')->default(true);
+            $table->string('audience_kind', 20)->nullable()->comment('academic | team');
+            $table->string('academic_level', 20)->nullable()->comment('study_type | study | module');
+            $table->string('audience_study_type_id', 64)->nullable();
+            $table->string('audience_study_id', 64)->nullable();
+            $table->string('audience_module_id', 64)->nullable();
+            $table->string('audience_team_id', 64)->nullable();
             $table->timestampsTz();
 
             $table->index(['visible_from', 'visible_until']);

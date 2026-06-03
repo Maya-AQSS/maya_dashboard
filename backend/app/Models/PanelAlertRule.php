@@ -29,6 +29,13 @@ class PanelAlertRule extends Model
         'is_active',
         'last_triggered_at',
         'created_by',
+        'notify_all',
+        'audience_kind',
+        'academic_level',
+        'audience_study_type_id',
+        'audience_study_id',
+        'audience_module_id',
+        'audience_team_id',
     ];
 
     protected function casts(): array
@@ -36,6 +43,7 @@ class PanelAlertRule extends Model
         return [
             'conditions' => 'array',
             'is_active' => 'boolean',
+            'notify_all' => 'boolean',
             'last_triggered_at' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',

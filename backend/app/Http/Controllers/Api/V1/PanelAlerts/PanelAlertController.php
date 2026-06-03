@@ -40,9 +40,11 @@ class PanelAlertController extends Controller
 
     public function activeForWidget(Request $request): JsonResponse
     {
+        $userId = (string) $this->resolveKeycloakUser($request)->id;
+
         $alerts = array_map(
             fn ($dto) => (new PanelAlertResource($dto))->resolve($request),
-            $this->panelAlerts->activeForWidget(20),
+            $this->panelAlerts->activeForWidget(20, $userId),
         );
 
         return $this->okData(['alerts' => $alerts]);
@@ -64,7 +66,9 @@ class PanelAlertController extends Controller
 
     public function update(UpdatePanelAlertRequest $request, int $id): JsonResponse
     {
-        $dto = $this->panelAlerts->update($id, $request->validated());
+        $updatedBy = (string) $this->resolveKeycloakUser($request)->id;
+
+        $dto = $this->panelAlerts->update($id, $request->validated(), $updatedBy);
 
         return $this->okData(new PanelAlertResource($dto));
     }

@@ -24,7 +24,7 @@ interface PanelAlertRuleServiceInterface
     /**
      * @param  array<string, mixed>  $data
      */
-    public function update(int $id, array $data): PanelAlertRuleDto;
+    public function update(int $id, array $data, string $updatedBy): PanelAlertRuleDto;
 
     public function delete(int $id): void;
 }
