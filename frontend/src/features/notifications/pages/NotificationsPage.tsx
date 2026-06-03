@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
   Button,
@@ -114,9 +115,14 @@ export default function NotificationsPage() {
         id: 'title',
         header: t('notifications.fields.title'),
         cell: (n) => (
-          <span className={n.read_at ? 'text-text-secondary dark:text-text-dark-secondary' : 'font-semibold'}>
-            {n.title}
-          </span>
+          <EditorContentHtml
+            html={n.title}
+            className={`line-clamp-2 text-sm [&_p]:m-0 ${
+              n.read_at
+                ? 'text-text-secondary dark:text-text-dark-secondary'
+                : 'font-semibold text-text-primary dark:text-text-dark-primary'
+            }`}
+          />
         ),
         alwaysVisible: true,
       },
@@ -217,15 +223,14 @@ export default function NotificationsPage() {
                 aria-hidden
               />
               <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm truncate ${
+                <EditorContentHtml
+                  html={n.title}
+                  className={`text-sm truncate line-clamp-1 [&_p]:inline [&_p]:m-0 ${
                     n.read_at
                       ? 'text-text-secondary dark:text-text-dark-secondary'
                       : 'font-semibold text-text-primary dark:text-text-dark-primary'
                   }`}
-                >
-                  {n.title}
-                </p>
+                />
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="neutral" size="sm">{n.app}</Badge>
                   <span className="text-xs text-text-muted dark:text-text-dark-muted truncate">{n.type}</span>
@@ -237,10 +242,13 @@ export default function NotificationsPage() {
             </div>
           )}
           flipCardRender={(n) => ({
-            back: (
-              <p className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4">
-                {n.body || '—'}
-              </p>
+            back: n.body ? (
+              <EditorContentHtml
+                html={n.body}
+                className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4 [&_p]:m-0"
+              />
+            ) : (
+              <p className="text-sm text-text-secondary dark:text-text-dark-secondary">—</p>
             ),
             backAction: canUpdate && !n.read_at ? (
               <button
