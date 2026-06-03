@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
   Button,
@@ -166,7 +167,12 @@ export default function PanelAlertsPage() {
       {
         id: 'text',
         header: t('panelAlerts.fields.text'),
-        cell: (a) => <span className="line-clamp-2 text-sm">{a.text}</span>,
+        cell: (a) => (
+          <EditorContentHtml
+            html={a.text}
+            className="line-clamp-2 text-sm [&_p]:m-0"
+          />
+        ),
         alwaysVisible: true,
       },
       {
