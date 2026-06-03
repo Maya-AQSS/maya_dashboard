@@ -1,3 +1,4 @@
+import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import { Button } from '@ceedcv-maya/shared-ui-react'
 import { useTranslation } from 'react-i18next'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
@@ -181,7 +182,10 @@ function UserAlertsWidget() {
                   key={alert.id}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm ${colorCls}`}
                 >
-                  <span className="flex-1">{alert.text}</span>
+                  <EditorContentHtml
+                    html={alert.text}
+                    className="flex-1 min-w-0 text-sm [&_p]:m-0"
+                  />
                   {alert.actionLabel && (
                     <Button
                       variant="unstyled"
