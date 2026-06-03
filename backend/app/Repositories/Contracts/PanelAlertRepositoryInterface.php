@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,6 +31,8 @@ interface PanelAlertRepositoryInterface
     public function activeNow(int $limit): Collection;
 
     public function findOrFail(int $id): PanelAlert;
+
+    public function findDtoOrFail(int $id): PanelAlertDto;
 
     /**
      * @param  array<string, mixed>  $attributes

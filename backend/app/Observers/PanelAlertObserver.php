@@ -39,7 +39,7 @@ final class PanelAlertObserver
         DB::afterCommit(function () use ($alert, $snapshot): void {
             $this->publish('created', $alert, previous: null, new: $snapshot);
 
-            $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert);
+            $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert->id);
 
             $this->publish('notified', $alert, previous: null, new: [
                 'type' => $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual',
