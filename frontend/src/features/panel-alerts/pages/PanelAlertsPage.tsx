@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
@@ -20,11 +20,7 @@ import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { usePanelAlerts } from '../hooks/usePanelAlerts'
 import { usePanelAlertRules } from '../hooks/usePanelAlertRules'
-import { PanelAlertForm } from '../components/PanelAlertForm'
-import { PanelAlertRuleForm } from '../components/PanelAlertRuleForm'
 import type {
-  CreatePanelAlertInput,
-  CreatePanelAlertRuleInput,
   PanelAlert,
   PanelAlertFilters,
   PanelAlertRule,
@@ -38,38 +34,6 @@ const SEVERITY_BADGE: Record<Severity, 'danger' | 'warning' | 'info' | 'neutral'
   high: 'warning',
   medium: 'info',
   low: 'neutral',
-}
-
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handleEsc)
-    return () => document.removeEventListener('keydown', handleEsc)
-  }, [onClose])
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="panel-alert-modal-title"
-    >
-      <div className="w-full max-w-xl rounded-2xl bg-ui-card dark:bg-ui-dark-card border border-ui-border dark:border-ui-dark-border shadow-xl p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h2 id="panel-alert-modal-title" className="text-base font-semibold text-text-primary dark:text-text-dark-primary">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-text-muted hover:text-text-primary dark:text-text-dark-muted dark:hover:text-text-dark-primary text-xl leading-none"
-          >
-            ×
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  )
 }
 
 export default function PanelAlertsPage() {
@@ -125,20 +89,12 @@ export default function PanelAlertsPage() {
     sort_dir: sortBy?.direction ?? 'desc',
   }
 
-  const { alerts, meta, loading: alertsLoading, error: alertsError, onCreate, onUpdate, onDelete } =
+  const { alerts, meta, loading: alertsLoading, error: alertsError, onDelete } =
     usePanelAlerts(alertFilters, { enabled: canIndexAlerts })
 
-  const [editAlert, setEditAlert] = useState<PanelAlert | null>(null)
-  const [showAlertForm, setShowAlertForm] = useState(false)
-  const [alertFormLoading, setAlertFormLoading] = useState(false)
-
   // ── Rules tab state ───────────────────────────────────────────
-  const { rules, loading: rulesLoading, error: rulesError, onCreate: onCreateRule, onUpdate: onUpdateRule, onDelete: onDeleteRule } =
+  const { rules, loading: rulesLoading, error: rulesError, onDelete: onDeleteRule } =
     usePanelAlertRules({ enabled: canIndexRules })
-
-  const [editRule, setEditRule] = useState<PanelAlertRule | null>(null)
-  const [showRuleForm, setShowRuleForm] = useState(false)
-  const [ruleFormLoading, setRuleFormLoading] = useState(false)
 
   useEffect(() => {
     if (activeTab === 'rules' && !canIndexRules) {
@@ -209,7 +165,7 @@ export default function PanelAlertsPage() {
                 <Button
                   variant="outline"
                   size="xs"
-                  onClick={(e) => { e.stopPropagation(); setEditAlert(a); setShowAlertForm(true) }}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/alertas/${a.id}`, { state: { record: a } }) }}
                 >
                   {t('actions.edit')}
                 </Button>
@@ -298,7 +254,7 @@ export default function PanelAlertsPage() {
                 <Button
                   variant="outline"
                   size="xs"
-                  onClick={(e) => { e.stopPropagation(); setEditRule(r); setShowRuleForm(true) }}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/reglas/${r.id}`, { state: { record: r } }) }}
                 >
                   {t('actions.edit')}
                 </Button>
@@ -343,40 +299,6 @@ export default function PanelAlertsPage() {
     }, 400)
   }
 
-  const handleAlertSubmit = async (data: CreatePanelAlertInput) => {
-    setAlertFormLoading(true)
-    try {
-      if (editAlert) {
-        await onUpdate({ id: editAlert.id, data })
-        toast({ tone: 'success', title: t('panelAlerts.updateSuccess') })
-      } else {
-        await onCreate(data)
-        toast({ tone: 'success', title: t('panelAlerts.createSuccess') })
-      }
-      setShowAlertForm(false)
-      setEditAlert(null)
-    } finally {
-      setAlertFormLoading(false)
-    }
-  }
-
-  const handleRuleSubmit = async (data: CreatePanelAlertRuleInput) => {
-    setRuleFormLoading(true)
-    try {
-      if (editRule) {
-        await onUpdateRule({ id: editRule.id, data })
-        toast({ tone: 'success', title: t('panelAlerts.updateSuccess') })
-      } else {
-        await onCreateRule(data)
-        toast({ tone: 'success', title: t('panelAlerts.createSuccess') })
-      }
-      setShowRuleForm(false)
-      setEditRule(null)
-    } finally {
-      setRuleFormLoading(false)
-    }
-  }
-
   const alertFiltersActive = [alertSearch, alertSeverity, includeExpired ? '1' : ''].filter(Boolean).length
   const visibleTabs: Tab[] = canIndexRules ? ['alerts', 'rules'] : ['alerts']
   const canCreateInActiveTab = activeTab === 'alerts' ? canCreateAlert : canCreateRule
@@ -401,8 +323,8 @@ export default function PanelAlertsPage() {
           canCreateInActiveTab ? (
             <Button
               onClick={() => {
-                if (activeTab === 'alerts') { setEditAlert(null); setShowAlertForm(true) }
-                else { setEditRule(null); setShowRuleForm(true) }
+                if (activeTab === 'alerts') navigate('/panel-alerts/alertas/nueva')
+                else navigate('/panel-alerts/reglas/nueva')
               }}
             >
               + {t('actions.create')}
@@ -519,35 +441,6 @@ export default function PanelAlertsPage() {
         </div>
       )}
 
-      {/* Alert form modal */}
-      {showAlertForm && (
-        <Modal
-          title={editAlert ? t('panelAlerts.editAlert') : t('panelAlerts.newAlert')}
-          onClose={() => { setShowAlertForm(false); setEditAlert(null) }}
-        >
-          <PanelAlertForm
-            initial={editAlert}
-            onSubmit={handleAlertSubmit}
-            onCancel={() => { setShowAlertForm(false); setEditAlert(null) }}
-            loading={alertFormLoading}
-          />
-        </Modal>
-      )}
-
-      {/* Rule form modal */}
-      {showRuleForm && (
-        <Modal
-          title={editRule ? t('panelAlerts.editRule') : t('panelAlerts.newRule')}
-          onClose={() => { setShowRuleForm(false); setEditRule(null) }}
-        >
-          <PanelAlertRuleForm
-            initial={editRule}
-            onSubmit={handleRuleSubmit}
-            onCancel={() => { setShowRuleForm(false); setEditRule(null) }}
-            loading={ruleFormLoading}
-          />
-        </Modal>
-      )}
     </>
   )
 }
