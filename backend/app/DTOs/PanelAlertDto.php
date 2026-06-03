@@ -21,6 +21,7 @@ final readonly class PanelAlertDto
         public string $createdBy,
         public string $createdAt,
         public string $updatedAt,
+        public AlertAudienceDto $audience,
     ) {}
 
     public static function fromModel(PanelAlert $m): self
@@ -38,6 +39,7 @@ final readonly class PanelAlertDto
             createdBy: (string) $m->created_by,
             createdAt: $m->created_at?->toIso8601String() ?? '',
             updatedAt: $m->updated_at?->toIso8601String() ?? '',
+            audience: AlertAudienceDto::fromModel($m),
         );
     }
 }

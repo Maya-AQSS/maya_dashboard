@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\Alerts;
 
 use App\Http\Requests\Concerns\AuthorizesByPermission;
+use App\Http\Requests\Concerns\ValidatesAlertAudience;
 use App\Rules\SafeAlertQuery;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAlertRuleRequest extends FormRequest
 {
     use AuthorizesByPermission;
+    use ValidatesAlertAudience;
 
     public function authorize(): bool
     {
@@ -19,7 +21,7 @@ class UpdateAlertRuleRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        return array_merge([
             'name' => ['sometimes', 'string', 'max:200'],
             'description' => ['sometimes', 'nullable', 'string'],
             'query_sql' => ['sometimes', 'string', new SafeAlertQuery],
@@ -29,6 +31,6 @@ class UpdateAlertRuleRequest extends FormRequest
             'context_template' => ['sometimes', 'array'],
             'context_template.sample_columns' => ['sometimes', 'array'],
             'context_template.sample_columns.*' => ['string', 'max:128'],
-        ];
+        ], $this->alertAudienceRules());
     }
 }

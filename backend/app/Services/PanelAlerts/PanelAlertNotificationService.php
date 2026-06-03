@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\PanelAlerts;
 
-use App\DTOs\PanelAlertDto;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\NotificationPublisher;
@@ -20,7 +19,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
     public function __construct(
         private readonly NotificationPublisher $notificationPublisher,
         private readonly ResilientLogPublisher $resilientLogPublisher,
-        private readonly UserRepositoryInterface $users,
+        private readonly AlertAudienceRepositoryInterface $audience,
         private readonly PanelAlertRepositoryInterface $alerts,
     ) {}
 
@@ -51,11 +50,11 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
 
         $recipientCount = 0;
 
-        foreach ($this->users->cursorActiveIds() as $userId) {
+        foreach ($this->audience->cursorRecipientIdsForAudience($alert->audience) as $recipientId) {
             try {
                 $this->notificationPublisher->send(
                     type: $type,
-                    recipientId: $userId,
+                    recipientId: $recipientId,
                     title: $title,
                     body: $alert->text,
                     channels: ['app'],
@@ -73,7 +72,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
                     [
                         'type' => $type,
                         'panel_alert_id' => $alert->id,
-                        'recipient_keycloak_id' => $userId,
+                        'recipient_keycloak_id' => $recipientId,
                     ],
                     $this->messagingAppSlug(),
                 );

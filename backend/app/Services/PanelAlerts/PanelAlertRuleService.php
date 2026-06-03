@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\PanelAlerts;
 
+use App\DTOs\AlertAudienceDto;
 use App\DTOs\PanelAlertRuleDto;
 use App\Models\PanelAlertRule;
 use App\Repositories\Contracts\PanelAlertRuleRepositoryInterface;
+use App\Services\Contracts\AlertAudienceServiceInterface;
 use App\Services\Contracts\PanelAlertRuleServiceInterface;
 use Maya\Http\Pagination\PaginatedDto;
 
@@ -14,6 +16,7 @@ final class PanelAlertRuleService implements PanelAlertRuleServiceInterface
 {
     public function __construct(
         private readonly PanelAlertRuleRepositoryInterface $rules,
+        private readonly AlertAudienceServiceInterface $audience,
     ) {}
 
     /**
@@ -34,15 +37,24 @@ final class PanelAlertRuleService implements PanelAlertRuleServiceInterface
 
     public function create(array $data, string $createdBy): PanelAlertRuleDto
     {
+        $attributes = $this->audience->attributesForPersist($createdBy, $data);
+
         return PanelAlertRuleDto::fromModel(
-            $this->rules->create(array_merge($data, ['created_by' => $createdBy])),
+            $this->rules->create(array_merge($attributes, ['created_by' => $createdBy])),
         );
     }
 
-    public function update(int $id, array $data): PanelAlertRuleDto
+    public function update(int $id, array $data, string $updatedBy): PanelAlertRuleDto
     {
+        $rule = $this->rules->findOrFail($id);
+        $attributes = $this->audience->attributesForUpdate(
+            $updatedBy,
+            $data,
+            AlertAudienceDto::fromModel($rule),
+        );
+
         return PanelAlertRuleDto::fromModel(
-            $this->rules->update($this->rules->findOrFail($id), $data),
+            $this->rules->update($rule, $attributes),
         );
     }
 

@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\AlertAudienceDto;
 use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 final class PanelAlertRepository implements PanelAlertRepositoryInterface
 {
+    public function __construct(
+        private readonly AlertAudienceRepositoryInterface $audience,
+    ) {}
+
     public function paginate(
         int $perPage,
         ?string $severity,
@@ -46,13 +52,18 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
     /**
      * @return Collection<int, PanelAlert>
      */
-    public function activeNow(int $limit): Collection
+    public function activeNow(int $limit, string $userId): Collection
     {
         return PanelAlert::query()
             ->active()
             ->orderByDesc('visible_from')
-            ->limit($limit)
-            ->get();
+            ->limit($limit * 3)
+            ->get()
+            ->filter(function (PanelAlert $alert) use ($userId): bool {
+                return $this->audience->userMatchesAudience($userId, AlertAudienceDto::fromModel($alert));
+            })
+            ->take($limit)
+            ->values();
     }
 
     public function findOrFail(int $id): PanelAlert

@@ -12,10 +12,12 @@ use App\Http\Resources\AlertRuleResource;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maya\Auth\Concerns\ResolvesKeycloakUser;
 use Maya\Http\Concerns\RespondsWithEnvelope;
 
 class AlertRuleController extends Controller
 {
+    use ResolvesKeycloakUser;
     use RespondsWithEnvelope;
 
     public function __construct(
@@ -39,7 +41,10 @@ class AlertRuleController extends Controller
     public function store(StoreAlertRuleRequest $request): JsonResponse
     {
         return response()->json(
-            (new AlertRuleResource($this->rules->create($request->validated())))->resolve($request),
+            (new AlertRuleResource($this->rules->create(
+                $request->validated(),
+                (string) $this->resolveKeycloakUser($request)->id,
+            )))->resolve($request),
             201,
         );
     }
@@ -48,7 +53,11 @@ class AlertRuleController extends Controller
     {
         return response()->json(
             (new AlertRuleResource(
-                $this->rules->update($ruleId, $request->validated()),
+                $this->rules->update(
+                    $ruleId,
+                    $request->validated(),
+                    (string) $this->resolveKeycloakUser($request)->id,
+                ),
             ))->resolve($request),
         );
     }

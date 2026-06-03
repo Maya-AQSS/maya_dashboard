@@ -26,11 +26,19 @@ class PanelAlert extends Model
         'source',
         'rule_id',
         'created_by',
+        'notify_all',
+        'audience_kind',
+        'academic_level',
+        'audience_study_type_id',
+        'audience_study_id',
+        'audience_module_id',
+        'audience_team_id',
     ];
 
     protected function casts(): array
     {
         return [
+            'notify_all' => 'boolean',
             'visible_from' => 'datetime',
             'visible_until' => 'datetime',
             'created_at' => 'datetime',

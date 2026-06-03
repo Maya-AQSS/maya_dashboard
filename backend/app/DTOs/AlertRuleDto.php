@@ -25,6 +25,7 @@ final readonly class AlertRuleDto
         public ?string $createdById,
         public ?string $createdAt,
         public ?string $updatedAt,
+        public AlertAudienceDto $audience,
     ) {}
 
     public static function fromModel(AlertRule $m): self
@@ -43,6 +44,7 @@ final readonly class AlertRuleDto
             createdById: is_string($m->created_by_id) ? $m->created_by_id : null,
             createdAt: $m->created_at?->toIso8601String(),
             updatedAt: $m->updated_at?->toIso8601String(),
+            audience: AlertAudienceDto::fromModel($m),
         );
     }
 }

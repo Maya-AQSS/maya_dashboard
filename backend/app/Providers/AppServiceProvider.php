@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\AlertRepositoryInterface;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
@@ -15,6 +16,7 @@ use App\Repositories\Contracts\PanelAlertRuleRepositoryInterface;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Eloquent\AlertAudienceRepository;
 use App\Repositories\Eloquent\AlertRepository;
 use App\Repositories\Eloquent\AlertRuleRepository;
 use App\Repositories\Eloquent\ApplicationRepository;
@@ -28,14 +30,20 @@ use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Maya\Profile\Migrations as ProfileMigrations;
 use App\Repositories\Resolvers\DashboardProfileResolver;
+use App\Services\Alerts\AlertAudienceService;
+use App\Services\Alerts\AlertAudienceValidator;
 use App\Services\Alerts\AlertIngestionService;
 use App\Services\Alerts\AlertRuleService;
 use App\Services\Alerts\AlertService;
+use App\Services\Alerts\SystemAlertDispatchService;
 use App\Services\Attendance\AttendanceService;
 use App\Services\Booking\BookingService;
+use App\Services\Contracts\AlertAudienceServiceInterface;
+use App\Services\Contracts\AlertAudienceValidatorInterface;
 use App\Services\Contracts\AlertIngestionServiceInterface;
 use App\Services\Contracts\AlertRuleServiceInterface;
 use App\Services\Contracts\AlertServiceInterface;
+use App\Services\Contracts\SystemAlertDispatchServiceInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
 use App\Services\Contracts\AttendanceServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
@@ -89,11 +97,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(NotificationIngestionServiceInterface::class, NotificationIngestionService::class);
 
         // Alerts.
+        $this->app->singleton(AlertAudienceRepositoryInterface::class, AlertAudienceRepository::class);
+        $this->app->singleton(AlertAudienceValidatorInterface::class, AlertAudienceValidator::class);
+        $this->app->singleton(AlertAudienceServiceInterface::class, AlertAudienceService::class);
         $this->app->singleton(AlertRepositoryInterface::class, AlertRepository::class);
         $this->app->singleton(AlertRuleRepositoryInterface::class, AlertRuleRepository::class);
         $this->app->singleton(AlertServiceInterface::class, AlertService::class);
         $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
         $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
+        $this->app->singleton(SystemAlertDispatchServiceInterface::class, SystemAlertDispatchService::class);
 
         // Panel Alerts (user-created alerts for dashboard widget).
         $this->app->singleton(PanelAlertRepositoryInterface::class, PanelAlertRepository::class);

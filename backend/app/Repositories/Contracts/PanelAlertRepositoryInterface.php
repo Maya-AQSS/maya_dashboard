@@ -28,7 +28,7 @@ interface PanelAlertRepositoryInterface
      *
      * @return Collection<int, PanelAlert>
      */
-    public function activeNow(int $limit): Collection;
+    public function activeNow(int $limit, string $userId): Collection;
 
     public function findOrFail(int $id): PanelAlert;
 

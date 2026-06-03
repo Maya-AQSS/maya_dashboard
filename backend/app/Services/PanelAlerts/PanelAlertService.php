@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\PanelAlerts;
 
+use App\DTOs\AlertAudienceDto;
 use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
+use App\Services\Contracts\AlertAudienceServiceInterface;
 use App\Services\Contracts\PanelAlertServiceInterface;
 use Maya\Http\Pagination\PaginatedDto;
 
@@ -14,6 +16,7 @@ final class PanelAlertService implements PanelAlertServiceInterface
 {
     public function __construct(
         private readonly PanelAlertRepositoryInterface $alerts,
+        private readonly AlertAudienceServiceInterface $audience,
     ) {}
 
     /**
@@ -38,9 +41,9 @@ final class PanelAlertService implements PanelAlertServiceInterface
     /**
      * @return list<PanelAlertDto>
      */
-    public function activeForWidget(int $limit): array
+    public function activeForWidget(int $limit, string $userId): array
     {
-        return $this->alerts->activeNow($limit)
+        return $this->alerts->activeNow($limit, $userId)
             ->map(fn (PanelAlert $alert): PanelAlertDto => PanelAlertDto::fromModel($alert))
             ->values()
             ->all();
@@ -53,15 +56,24 @@ final class PanelAlertService implements PanelAlertServiceInterface
 
     public function create(array $data, string $createdBy): PanelAlertDto
     {
+        $attributes = $this->audience->attributesForPersist($createdBy, $data);
+
         return PanelAlertDto::fromModel(
-            $this->alerts->create(array_merge($data, ['created_by' => $createdBy])),
+            $this->alerts->create(array_merge($attributes, ['created_by' => $createdBy])),
         );
     }
 
-    public function update(int $id, array $data): PanelAlertDto
+    public function update(int $id, array $data, string $updatedBy): PanelAlertDto
     {
+        $alert = $this->alerts->findOrFail($id);
+        $attributes = $this->audience->attributesForUpdate(
+            $updatedBy,
+            $data,
+            AlertAudienceDto::fromModel($alert),
+        );
+
         return PanelAlertDto::fromModel(
-            $this->alerts->update($this->alerts->findOrFail($id), $data),
+            $this->alerts->update($alert, $attributes),
         );
     }
 

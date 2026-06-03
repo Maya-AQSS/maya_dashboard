@@ -8,6 +8,14 @@ import {
 } from '@ceedcv-maya/shared-ui-react'
 import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { AlertAudienceFields } from './AlertAudienceFields'
+import {
+  audienceFormStateFromApi,
+  buildAudiencePayload,
+  defaultAudienceFormState,
+  validateAudienceForm,
+  type AlertAudienceFormState,
+} from '../types/alertAudience'
 import type { CreatePanelAlertInput, PanelAlert, Severity } from '../types/panelAlert'
 
 interface Props {
@@ -28,10 +36,14 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
   const [actionUrl, setActionUrl] = useState(initial?.action_url ?? '')
   const [visibleFrom, setVisibleFrom] = useState(toDatetimeLocalValue(initial?.visible_from))
   const [visibleUntil, setVisibleUntil] = useState(toDatetimeLocalValue(initial?.visible_until))
+  const [audience, setAudience] = useState<AlertAudienceFormState>(() =>
+    initial ? audienceFormStateFromApi(initial) : defaultAudienceFormState(),
+  )
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (initial) {
+      setAudience(audienceFormStateFromApi(initial))
       setText(initial.text)
       setSeverity(initial.severity)
       setActionLabel(initial.action_label ?? '')
@@ -46,6 +58,13 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
     setError(null)
     if (!text.trim()) { setError(t('panelAlerts.validation.textRequired')); return }
     if (!visibleFrom) { setError(t('panelAlerts.validation.visibleFromRequired')); return }
+    const audienceError = validateAudienceForm(audience, {
+      teamRequired: t('panelAlerts.validation.teamRequired'),
+      studyTypeRequired: t('panelAlerts.validation.studyTypeRequired'),
+      studyRequired: t('panelAlerts.validation.studyRequired'),
+      moduleRequired: t('panelAlerts.validation.moduleRequired'),
+    })
+    if (audienceError) { setError(audienceError); return }
     try {
       await onSubmit({
         text: text.trim(),
@@ -54,6 +73,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
         action_url: actionUrl.trim() || null,
         visible_from: datetimeLocalToIso(visibleFrom)!,
         visible_until: visibleUntil ? datetimeLocalToIso(visibleUntil) : null,
+        ...buildAudiencePayload(audience),
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : t('panelAlerts.errorSave'))
@@ -109,6 +129,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
           />
         </div>
       </div>
+
+      <AlertAudienceFields value={audience} onChange={setAudience} disabled={loading} />
 
       <div className="grid grid-cols-2 gap-3">
         <div>

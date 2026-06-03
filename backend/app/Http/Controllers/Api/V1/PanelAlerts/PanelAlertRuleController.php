@@ -49,7 +49,9 @@ class PanelAlertRuleController extends Controller
 
     public function update(UpdatePanelAlertRuleRequest $request, int $id): JsonResponse
     {
-        $dto = $this->panelAlertRules->update($id, $request->validated());
+        $updatedBy = (string) $this->resolveKeycloakUser($request)->id;
+
+        $dto = $this->panelAlertRules->update($id, $request->validated(), $updatedBy);
 
         return $this->okData(new PanelAlertRuleResource($dto));
     }
