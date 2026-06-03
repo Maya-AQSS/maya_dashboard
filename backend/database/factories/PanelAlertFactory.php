@@ -27,6 +27,7 @@ class PanelAlertFactory extends Factory
             'source' => 'manual',
             'rule_id' => null,
             'created_by' => (string) Str::uuid(),
+            'notify_all' => true,
         ];
     }
 

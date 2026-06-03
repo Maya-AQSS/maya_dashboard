@@ -31,6 +31,7 @@ class PanelAlertRuleFactory extends Factory
             'is_active' => true,
             'last_triggered_at' => null,
             'created_by' => (string) Str::uuid(),
+            'notify_all' => true,
         ];
     }
 

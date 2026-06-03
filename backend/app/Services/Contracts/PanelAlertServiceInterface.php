@@ -26,7 +26,7 @@ interface PanelAlertServiceInterface
      *
      * @return list<PanelAlertDto>
      */
-    public function activeForWidget(int $limit): array;
+    public function activeForWidget(int $limit, string $userId): array;
 
     public function find(int $id): PanelAlertDto;
 
@@ -38,7 +38,7 @@ interface PanelAlertServiceInterface
     /**
      * @param  array<string, mixed>  $data
      */
-    public function update(int $id, array $data): PanelAlertDto;
+    public function update(int $id, array $data, string $updatedBy): PanelAlertDto;
 
     public function delete(int $id): void;
 }
