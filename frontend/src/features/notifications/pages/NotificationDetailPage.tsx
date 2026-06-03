@@ -1,7 +1,7 @@
 import { type ReactNode, useMemo } from 'react'
 import { EditorContentHtml, sanitizeEditorHtml } from '@ceedcv-maya/shared-editor-react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Badge, Button, PageTitle, Spinner, useToast } from '@ceedcv-maya/shared-ui-react'
+import { Badge, Button, PageTitle, Spinner, formatDateTime, useToast } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUserProfile } from '../../user-profile'
@@ -50,7 +50,7 @@ export default function NotificationDetailPage() {
   const { id } = useParams<{ id: string }>()
   const notifId = id != null && /^\d+$/.test(id) ? Number(id) : undefined
   const navigate = useNavigate()
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { hasPermission } = useUserProfile()
@@ -188,12 +188,12 @@ export default function NotificationDetailPage() {
             />
             <DetailRow
               label={t('notifications.fields.createdAt')}
-              value={new Date(notification.created_at).toLocaleString()}
+              value={formatDateTime(notification.created_at, dateLocale)}
             />
             {notification.read_at ? (
               <DetailRow
                 label={t('notifications.fields.readAt')}
-                value={new Date(notification.read_at).toLocaleString()}
+                value={formatDateTime(notification.read_at, dateLocale)}
               />
             ) : null}
             {notification.message_id ? (

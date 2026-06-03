@@ -6,6 +6,7 @@ import {
   Badge,
   Button,
   DataTable,
+  formatDateTime,
   FilterField,
   PageTitle,
   Pagination,
@@ -25,7 +26,7 @@ import type { Notification, NotificationListFilters } from '../types/notificatio
 const POLL_MS = 60_000
 
 export default function NotificationsPage() {
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { hasPermission } = useUserProfile()
@@ -149,12 +150,12 @@ export default function NotificationsPage() {
       {
         id: 'created_at',
         header: t('notifications.fields.createdAt'),
-        cell: (n) => new Date(n.created_at).toLocaleString(),
+        cell: (n) => formatDateTime(n.created_at, dateLocale),
         sortable: true,
         width: '180px',
       },
     ],
-    [t],
+    [dateLocale, t],
   )
 
   const totalPages = meta?.last_page ?? 1
@@ -236,7 +237,7 @@ export default function NotificationsPage() {
                   <span className="text-xs text-text-muted dark:text-text-dark-muted truncate">{n.type}</span>
                 </div>
                 <p className="text-xs text-text-muted dark:text-text-dark-muted mt-1">
-                  {new Date(n.created_at).toLocaleString()}
+                  {formatDateTime(n.created_at, dateLocale)}
                 </p>
               </div>
             </div>

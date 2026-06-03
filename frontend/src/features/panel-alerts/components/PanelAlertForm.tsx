@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
+import {
+  Button,
+  Select,
+  TextInput,
+  datetimeLocalToIso,
+  toDatetimeLocalValue,
+} from '@ceedcv-maya/shared-ui-react'
 import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import type { CreatePanelAlertInput, PanelAlert, Severity } from '../types/panelAlert'
@@ -13,11 +19,6 @@ interface Props {
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low']
 
-function toDatetimeLocal(iso: string | null | undefined): string {
-  if (!iso) return ''
-  return iso.slice(0, 16)
-}
-
 export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) {
   const { t } = useLocale()
 
@@ -25,8 +26,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
   const [severity, setSeverity] = useState<Severity>(initial?.severity ?? 'medium')
   const [actionLabel, setActionLabel] = useState(initial?.action_label ?? '')
   const [actionUrl, setActionUrl] = useState(initial?.action_url ?? '')
-  const [visibleFrom, setVisibleFrom] = useState(toDatetimeLocal(initial?.visible_from))
-  const [visibleUntil, setVisibleUntil] = useState(toDatetimeLocal(initial?.visible_until))
+  const [visibleFrom, setVisibleFrom] = useState(toDatetimeLocalValue(initial?.visible_from))
+  const [visibleUntil, setVisibleUntil] = useState(toDatetimeLocalValue(initial?.visible_until))
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,8 +36,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
       setSeverity(initial.severity)
       setActionLabel(initial.action_label ?? '')
       setActionUrl(initial.action_url ?? '')
-      setVisibleFrom(toDatetimeLocal(initial.visible_from))
-      setVisibleUntil(toDatetimeLocal(initial.visible_until))
+      setVisibleFrom(toDatetimeLocalValue(initial.visible_from))
+      setVisibleUntil(toDatetimeLocalValue(initial.visible_until))
     }
   }, [initial])
 
@@ -51,8 +52,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
         severity,
         action_label: actionLabel.trim() || null,
         action_url: actionUrl.trim() || null,
-        visible_from: new Date(visibleFrom).toISOString(),
-        visible_until: visibleUntil ? new Date(visibleUntil).toISOString() : null,
+        visible_from: datetimeLocalToIso(visibleFrom)!,
+        visible_until: visibleUntil ? datetimeLocalToIso(visibleUntil) : null,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : t('panelAlerts.errorSave'))
