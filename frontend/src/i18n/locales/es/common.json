@@ -348,12 +348,40 @@
       "isActive": "Regla activa",
       "lastTriggeredAt": "Última activación"
     },
+    "audience": {
+      "sectionTitle": "Destinatarios",
+      "notifyAll": "Enviar a todos los usuarios activos",
+      "kindAcademic": "Contexto académico",
+      "kindTeam": "Equipo o departamento",
+      "academicLevel": "Nivel de alcance",
+      "level": {
+        "study_type": "Tipo de estudio",
+        "study": "Estudio",
+        "module": "Módulo"
+      },
+      "studyType": "Tipo de estudio",
+      "study": "Estudio",
+      "module": "Módulo",
+      "team": "Equipo",
+      "department": "Departamento",
+      "selectPlaceholder": "Seleccionar…",
+      "selectStudyTypeFirst": "Selecciona primero un tipo de estudio.",
+      "selectStudyFirst": "Selecciona primero un estudio.",
+      "contextError": "No se pudo cargar tu contexto académico.",
+      "emptyContext": "No tienes contextos académicos ni equipos asignados para acotar la audiencia.",
+      "noTeamsAssigned": "No tienes equipos ni departamentos asignados en tu perfil. Revisa la sección Departamentos y Equipos en tu perfil, o pide que te asignen membresía en Odoo.",
+      "teamsUnavailable": "Los datos de equipos no están disponibles ahora mismo. Inténtalo más tarde."
+    },
     "validation": {
       "nameRequired": "El nombre es obligatorio.",
       "eventTypeRequired": "El tipo de evento es obligatorio.",
       "alertTextRequired": "El texto de la alerta es obligatorio.",
       "textRequired": "El texto de la alerta es obligatorio.",
-      "visibleFromRequired": "La fecha de inicio es obligatoria."
+      "visibleFromRequired": "La fecha de inicio es obligatoria.",
+      "teamRequired": "Selecciona un equipo o departamento.",
+      "studyTypeRequired": "Selecciona un tipo de estudio.",
+      "studyRequired": "Selecciona un estudio.",
+      "moduleRequired": "Selecciona un módulo."
     }
   },
   "notifications": {

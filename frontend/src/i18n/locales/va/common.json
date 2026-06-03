@@ -348,12 +348,40 @@
       "isActive": "Regla activa",
       "lastTriggeredAt": "Última activació"
     },
+    "audience": {
+      "sectionTitle": "Destinataris",
+      "notifyAll": "Enviar a tots els usuaris actius",
+      "kindAcademic": "Context acadèmic",
+      "kindTeam": "Equip o departament",
+      "academicLevel": "Nivell d'abast",
+      "level": {
+        "study_type": "Tipus d'estudi",
+        "study": "Estudi",
+        "module": "Mòdul"
+      },
+      "studyType": "Tipus d'estudi",
+      "study": "Estudi",
+      "module": "Mòdul",
+      "team": "Equip",
+      "department": "Departament",
+      "selectPlaceholder": "Seleccionar…",
+      "selectStudyTypeFirst": "Selecciona primer un tipus d'estudi.",
+      "selectStudyFirst": "Selecciona primer un estudi.",
+      "contextError": "No s'ha pogut carregar el teu context acadèmic.",
+      "emptyContext": "No tens contextos acadèmics ni equips assignats per acotar l'audiència.",
+      "noTeamsAssigned": "No tens equips ni departaments assignats al teu perfil. Revisa Departaments i Equips al perfil, o demana que t'assignin membresia a Odoo.",
+      "teamsUnavailable": "Les dades d'equips no estan disponibles ara. Torna-ho a provar més tard."
+    },
     "validation": {
       "nameRequired": "El nom és obligatori.",
       "eventTypeRequired": "El tipus d'esdeveniment és obligatori.",
       "alertTextRequired": "El text de l'alerta és obligatori.",
       "textRequired": "El text de l'alerta és obligatori.",
-      "visibleFromRequired": "La data d'inici és obligatòria."
+      "visibleFromRequired": "La data d'inici és obligatòria.",
+      "teamRequired": "Selecciona un equip o departament.",
+      "studyTypeRequired": "Selecciona un tipus d'estudi.",
+      "studyRequired": "Selecciona un estudi.",
+      "moduleRequired": "Selecciona un mòdul."
     }
   },
   "notifications": {
