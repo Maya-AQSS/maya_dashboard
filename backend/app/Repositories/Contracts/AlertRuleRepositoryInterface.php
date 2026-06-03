@@ -56,4 +56,9 @@ interface AlertRuleRepositoryInterface
      * Finds a rule by its slug. Returns null if not found.
      */
     public function findBySlug(string $slug): ?AlertRule;
+
+    /**
+     * Finds a rule by its slug and returns a DTO. Returns null if not found.
+     */
+    public function findDtoBySlug(string $slug): ?\App\DTOs\AlertRuleDto;
 }

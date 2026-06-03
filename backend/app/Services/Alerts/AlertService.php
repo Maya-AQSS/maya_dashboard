@@ -32,17 +32,11 @@ final class AlertService implements AlertServiceInterface
 
     public function acknowledge(int $alertId, string $userId): AlertDto
     {
-        return AlertDto::fromModel($this->alerts->acknowledge(
-            $this->alerts->findOrFail($alertId),
-            $userId,
-        ));
+        return AlertDto::fromModel($this->alerts->acknowledge($alertId, $userId));
     }
 
     public function resolve(int $alertId, string $userId): AlertDto
     {
-        return AlertDto::fromModel($this->alerts->resolve(
-            $this->alerts->findOrFail($alertId),
-            $userId,
-        ));
+        return AlertDto::fromModel($this->alerts->resolve($alertId, $userId));
     }
 }
