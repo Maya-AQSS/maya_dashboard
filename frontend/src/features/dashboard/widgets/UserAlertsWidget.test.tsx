@@ -99,6 +99,15 @@ describe('UserAlertsWidget', () => {
       expect(screen.getByText('Segunda alerta')).toBeTruthy()
     })
 
+    it('renderiza el HTML del editor en lugar de mostrar etiquetas literales', () => {
+      setupMocks({
+        alerts: [{ id: '1', text: '<p><strong>Prueba</strong></p>', color: 'amber' }],
+      })
+      render(<UserAlertsWidget />)
+      expect(screen.getByText('Prueba')).toBeTruthy()
+      expect(screen.queryByText('<p><strong>Prueba</strong></p>')).toBeNull()
+    })
+
     it('muestra el botón de acción cuando actionLabel está presente', () => {
       setupMocks({
         alerts: [{ id: '1', text: 'Alerta', color: 'blue', actionLabel: 'Ver detalle' }],

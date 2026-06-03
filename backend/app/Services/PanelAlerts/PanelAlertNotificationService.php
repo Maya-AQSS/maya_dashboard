@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\PanelAlerts;
 
-use App\DTOs\AlertAudienceDto;
-use App\Models\PanelAlert;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\NotificationPublisher;
@@ -21,6 +20,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
         private readonly NotificationPublisher $notificationPublisher,
         private readonly ResilientLogPublisher $resilientLogPublisher,
         private readonly AlertAudienceRepositoryInterface $audience,
+        private readonly PanelAlertRepositoryInterface $alerts,
     ) {}
 
     private function messagingAppSlug(): string
@@ -28,8 +28,10 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
         return (string) config('messaging.app');
     }
 
-    public function notifyUsersOfNewAlert(PanelAlert $alert): int
+    public function notifyUsersOfNewAlert(int $alertId): int
     {
+        $alert = $this->alerts->findDtoOrFail($alertId);
+
         $type = $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual';
         $title = Str::limit($alert->text, 120, '…');
         $isCritical = in_array($alert->severity, ['critical', 'high'], true);
@@ -38,19 +40,17 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
             'panel_alert_id' => $alert->id,
             'severity' => $alert->severity,
             'source' => $alert->source,
-            'action_label' => $alert->action_label,
-            'action_url' => $alert->action_url,
+            'action_label' => $alert->actionLabel,
+            'action_url' => $alert->actionUrl,
         ];
 
-        if ($alert->rule_id !== null) {
-            $metadata['rule_id'] = $alert->rule_id;
+        if ($alert->ruleId !== null) {
+            $metadata['rule_id'] = $alert->ruleId;
         }
 
         $recipientCount = 0;
 
-        $audienceConfig = AlertAudienceDto::fromModel($alert);
-
-        foreach ($this->audience->cursorRecipientIdsForAudience($audienceConfig) as $recipientId) {
+        foreach ($this->audience->cursorRecipientIdsForAudience($alert->audience) as $recipientId) {
             try {
                 $this->notificationPublisher->send(
                     type: $type,

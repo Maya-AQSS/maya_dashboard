@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
   Button,
   DataTable,
+  formatDateTime,
   FilterField,
   PageTitle,
   Pagination,
@@ -71,7 +73,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 }
 
 export default function PanelAlertsPage() {
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
   const { show: toast } = useToast()
   const navigate = useNavigate()
   const { hasPermission } = useUserProfile()
@@ -166,20 +168,25 @@ export default function PanelAlertsPage() {
       {
         id: 'text',
         header: t('panelAlerts.fields.text'),
-        cell: (a) => <span className="line-clamp-2 text-sm">{a.text}</span>,
+        cell: (a) => (
+          <EditorContentHtml
+            html={a.text}
+            className="line-clamp-2 text-sm [&_p]:m-0"
+          />
+        ),
         alwaysVisible: true,
       },
       {
         id: 'visible_from',
         header: t('panelAlerts.fields.visibleFrom'),
-        cell: (a) => new Date(a.visible_from).toLocaleString(),
+        cell: (a) => formatDateTime(a.visible_from, dateLocale),
         sortable: true,
         width: '160px',
       },
       {
         id: 'visible_until',
         header: t('panelAlerts.fields.visibleUntil'),
-        cell: (a) => a.visible_until ? new Date(a.visible_until).toLocaleString() : '—',
+        cell: (a) => (a.visible_until ? formatDateTime(a.visible_until, dateLocale) : '—'),
         width: '160px',
       },
       {
@@ -234,7 +241,7 @@ export default function PanelAlertsPage() {
 
       return columns
     },
-    [canDeleteAlert, canUpdateAlert, onDelete, t, toast],
+    [canDeleteAlert, canUpdateAlert, dateLocale, onDelete, t, toast],
   )
 
   // ── Rule columns ──────────────────────────────────────────────
@@ -276,7 +283,7 @@ export default function PanelAlertsPage() {
       {
         id: 'last_triggered_at',
         header: t('panelAlerts.fields.lastTriggeredAt'),
-        cell: (r) => r.last_triggered_at ? new Date(r.last_triggered_at).toLocaleString() : '—',
+        cell: (r) => (r.last_triggered_at ? formatDateTime(r.last_triggered_at, dateLocale) : '—'),
         width: '160px',
       },
       ]
@@ -323,7 +330,7 @@ export default function PanelAlertsPage() {
 
       return columns
     },
-    [canDeleteRule, canUpdateRule, onDeleteRule, t, toast],
+    [canDeleteRule, canUpdateRule, dateLocale, onDeleteRule, t, toast],
   )
 
   // ── Handlers ──────────────────────────────────────────────────

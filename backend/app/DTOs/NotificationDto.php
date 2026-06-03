@@ -54,4 +54,32 @@ final readonly class NotificationDto
             resolvedBy: $m->resolved_by,
         );
     }
+
+    /**
+     * Convert DTO to associative array for broadcast/serialization.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'message_id' => $this->messageId,
+            'app' => $this->app,
+            'type' => $this->type,
+            'recipient_id' => $this->recipientId,
+            'title' => $this->title,
+            'body' => $this->body,
+            'channels' => $this->channels,
+            'metadata' => $this->metadata,
+            'read_at' => $this->readAt,
+            'created_at' => $this->createdAt,
+            'is_critical' => $this->isCritical,
+            'scope' => $this->scope,
+            'acknowledged_at' => $this->acknowledgedAt,
+            'acknowledged_by' => $this->acknowledgedBy,
+            'resolved_at' => $this->resolvedAt,
+            'resolved_by' => $this->resolvedBy,
+        ];
+    }
 }

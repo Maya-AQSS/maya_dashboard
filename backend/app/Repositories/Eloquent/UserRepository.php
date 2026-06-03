@@ -16,6 +16,18 @@ final class UserRepository implements UserRepositoryInterface
     }
 
     /**
+     * @return Generator<string>
+     */
+    public function cursorActiveIds(): Generator
+    {
+        yield from User::query()
+            ->where('is_active', true)
+            ->select('id')
+            ->cursor()
+            ->map(fn (User $user) => $user->id);
+    }
+
+    /**
      * @return Generator<User>
      */
     public function cursorActive(): Generator

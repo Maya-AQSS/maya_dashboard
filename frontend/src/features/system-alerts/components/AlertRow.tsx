@@ -1,5 +1,5 @@
 import { useActionState } from 'react'
-import { Button } from '@ceedcv-maya/shared-ui-react'
+import { Button, formatDateTime } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 
 export interface SystemAlert {
@@ -39,7 +39,7 @@ interface AlertRowProps {
  * surfaced inline without a global loading flag.
  */
 export function AlertRow({ alert, onAcknowledge, onResolve }: AlertRowProps) {
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
 
   const [ackState, ackAction, ackPending] = useActionState<ActionState, void>(
     async (_prev) => {
@@ -77,7 +77,7 @@ export function AlertRow({ alert, onAcknowledge, onResolve }: AlertRowProps) {
           <strong>{alert.title}</strong>
           <div className="text-sm text-text-muted dark:text-text-dark-muted">
             {alert.rule_slug || t('dashboard.systemAlerts.adHoc')} · {alert.source} ·{' '}
-            {new Date(alert.created_at).toLocaleString()}
+            {formatDateTime(alert.created_at, dateLocale)}
           </div>
         </div>
         <div className="flex gap-1.5">

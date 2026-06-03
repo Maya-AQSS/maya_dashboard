@@ -17,9 +17,20 @@ interface AlertRepositoryInterface
 
     public function findOrFail(int $alertId): Alert;
 
-    public function acknowledge(Alert $alert, string $userId): Alert;
+    /**
+     * Marks an alert as acknowledged. Accepts alertId only;
+     * repository fetches the model internally.
+     */
+    public function acknowledge(int $alertId, string $userId): Alert;
 
-    public function resolve(Alert $alert, string $userId): Alert;
+    /**
+     * Marks an alert as resolved. Accepts alertId only;
+     * repository fetches the model internally. Validates that
+     * the alert is not already resolved.
+     *
+     * @throws \DomainException If alert is already resolved.
+     */
+    public function resolve(int $alertId, string $userId): Alert;
 
     /**
      * Idempotent ingest by AMQP message id. Returns the persisted (or

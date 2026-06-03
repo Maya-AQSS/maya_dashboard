@@ -31,8 +31,10 @@ final class AlertRepository implements AlertRepositoryInterface
         return Alert::findOrFail($alertId);
     }
 
-    public function acknowledge(Alert $alert, string $userId): Alert
+    public function acknowledge(int $alertId, string $userId): Alert
     {
+        $alert = $this->findOrFail($alertId);
+
         if ($alert->acknowledged_at === null) {
             $alert->update([
                 'acknowledged_at' => now(),
@@ -43,8 +45,10 @@ final class AlertRepository implements AlertRepositoryInterface
         return $alert->refresh();
     }
 
-    public function resolve(Alert $alert, string $userId): Alert
+    public function resolve(int $alertId, string $userId): Alert
     {
+        $alert = $this->findOrFail($alertId);
+
         if ($alert->resolved_at !== null) {
             throw new \DomainException('Alert already resolved');
         }

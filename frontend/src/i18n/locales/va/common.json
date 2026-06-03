@@ -399,6 +399,8 @@
     "markReadSuccess": "Notificació marcada com llegida.",
     "markReadError": "No s'ha pogut marcar com llegida.",
     "backToList": "Tornar a la llista",
+    "detailMessage": "Missatge",
+    "detailInfo": "Informació",
     "loadError": "No s'ha pogut carregar la notificació.",
     "empty": "No hi ha notificacions per als filtres seleccionats.",
     "noPermission": "No tens permís per veure les notificacions.",

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\DTOs\IncomingNotificationPayload;
+use App\DTOs\NotificationDto;
 use App\Events\NotificationCreated;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
@@ -62,7 +63,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             }
         }
 
-        $notification = $this->repo->upsertByMessageId($messageId, [
+        $notificationModel = $this->repo->upsertByMessageId($messageId, [
             'app' => $dto->app,
             'type' => $dto->type,
             'recipient_id' => $recipientId,
@@ -77,13 +78,16 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             'scope' => $dto->scope,
         ]);
 
+        // Convert model to DTO to avoid leaking Eloquent model.
+        $notificationDto = NotificationDto::fromModel($notificationModel);
+
         // El broadcast personal solo tiene sentido cuando hay recipient. Las
         // notificaciones de scope=dashboard se sirven vía polling al widget de
         // alertas críticas del dashboard.
-        if ($notification->recipient_id !== null) {
+        if ($notificationDto->recipientId !== '') {
             event(new NotificationCreated(
-                notification: $notification->toArray(),
-                userId: $notification->recipient_id,
+                notification: $notificationDto->toArray(),
+                userId: $notificationDto->recipientId,
             ));
         }
 

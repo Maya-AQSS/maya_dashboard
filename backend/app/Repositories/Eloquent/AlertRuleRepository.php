@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\AlertRuleDto;
 use App\DTOs\AlertRuleFilterDto;
 use App\Models\AlertRule;
 use App\Repositories\Contracts\AlertRuleRepositoryInterface;
@@ -84,5 +85,12 @@ final class AlertRuleRepository implements AlertRuleRepositoryInterface
     public function findBySlug(string $slug): ?AlertRule
     {
         return AlertRule::query()->where('slug', $slug)->first();
+    }
+
+    public function findDtoBySlug(string $slug): ?AlertRuleDto
+    {
+        $rule = $this->findBySlug($slug);
+
+        return $rule !== null ? AlertRuleDto::fromModel($rule) : null;
     }
 }

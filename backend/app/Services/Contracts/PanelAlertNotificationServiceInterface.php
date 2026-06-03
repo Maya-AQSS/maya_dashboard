@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Contracts;
 
-use App\Models\PanelAlert;
-
 interface PanelAlertNotificationServiceInterface
 {
     /**
@@ -13,5 +11,5 @@ interface PanelAlertNotificationServiceInterface
      *
      * @return int Número de destinatarios a los que se publicó correctamente.
      */
-    public function notifyUsersOfNewAlert(PanelAlert $alert): int;
+    public function notifyUsersOfNewAlert(int $alertId): int;
 }

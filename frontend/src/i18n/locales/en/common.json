@@ -399,6 +399,8 @@
     "markReadSuccess": "Notification marked as read.",
     "markReadError": "Could not mark as read.",
     "backToList": "Back to list",
+    "detailMessage": "Message",
+    "detailInfo": "Information",
     "loadError": "Could not load the notification.",
     "empty": "No notifications for the selected filters.",
     "noPermission": "You do not have permission to view notifications.",

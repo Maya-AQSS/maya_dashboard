@@ -399,6 +399,8 @@
     "markReadSuccess": "Notificación marcada como leída.",
     "markReadError": "No se pudo marcar como leída.",
     "backToList": "Volver a la lista",
+    "detailMessage": "Mensaje",
+    "detailInfo": "Información",
     "loadError": "No se pudo cargar la notificación.",
     "empty": "No hay notificaciones para los filtros seleccionados.",
     "noPermission": "No tienes permiso para ver las notificaciones.",

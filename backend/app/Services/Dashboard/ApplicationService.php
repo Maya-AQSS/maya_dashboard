@@ -6,7 +6,6 @@ namespace App\Services\Dashboard;
 
 use App\DTOs\ApplicationDto;
 use App\Models\Application;
-use App\Models\User;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
 use Maya\Http\Pagination\PaginatedDto;
@@ -20,10 +19,10 @@ final class ApplicationService implements ApplicationServiceInterface
     /**
      * @return PaginatedDto<ApplicationDto>
      */
-    public function listForUser(User $user, int $perPage = 100): PaginatedDto
+    public function listForUser(string $userId, int $perPage = 100): PaginatedDto
     {
         return PaginatedDto::fromPaginator(
-            $this->applications->paginateActiveWithFavoriteFlag((string) $user->id, $perPage),
+            $this->applications->paginateActiveWithFavoriteFlag($userId, $perPage),
             fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app),
         );
     }

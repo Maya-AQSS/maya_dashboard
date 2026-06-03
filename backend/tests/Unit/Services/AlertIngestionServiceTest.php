@@ -205,13 +205,23 @@ it('publishes LAR-DASH-002 when notifying the rule creator fails', function () {
 
     $alertRepo->shouldReceive('upsertByMessageId')->once();
 
-    $rule = new AlertRule([
-        'slug' => 'cpu-high',
-        'name' => 'CPU high',
-        'created_by_id' => $creatorId,
-    ]);
+    $ruleDto = new \App\DTOs\AlertRuleDto(
+        id: 1,
+        slug: 'cpu-high',
+        name: 'CPU high',
+        description: null,
+        querySql: 'SELECT COUNT(*) FROM...',
+        severity: 'high',
+        scheduleCron: '* * * * *',
+        enabled: true,
+        contextTemplate: [],
+        lastEvaluatedAt: null,
+        createdById: $creatorId,
+        createdAt: null,
+        updatedAt: null,
+    );
 
-    $ruleRepo->shouldReceive('findBySlug')->once()->with('cpu-high')->andReturn($rule);
+    $ruleRepo->shouldReceive('findDtoBySlug')->once()->with('cpu-high')->andReturn($ruleDto);
 
     $notificationPublisher = Mockery::mock(NotificationPublisher::class);
     $notificationPublisher->shouldReceive('send')->once()->andThrow(new RuntimeException('AMQP unavailable'));

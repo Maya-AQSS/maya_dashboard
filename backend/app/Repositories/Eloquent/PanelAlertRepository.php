@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\Eloquent;
 
 use App\DTOs\AlertAudienceDto;
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
@@ -68,6 +69,11 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
     public function findOrFail(int $id): PanelAlert
     {
         return PanelAlert::findOrFail($id);
+    }
+
+    public function findDtoOrFail(int $id): PanelAlertDto
+    {
+        return PanelAlertDto::fromModel($this->findOrFail($id));
     }
 
     public function create(array $attributes): PanelAlert

@@ -11,20 +11,25 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class UserFavoriteApplicationRepository implements UserFavoriteApplicationRepositoryInterface
 {
-    public function paginateForUser(User $user, int $perPage = 100): LengthAwarePaginator
+    public function paginateForUser(string $userId, int $perPage = 100): LengthAwarePaginator
     {
+        $user = User::query()->findOrFail($userId);
+
         return $user->favoriteApplications()->paginate($perPage);
     }
 
-    public function attach(User $user, int $applicationId): Application
+    public function attach(string $userId, int $applicationId): Application
     {
+        $user = User::query()->findOrFail($userId);
         $user->favoriteApplications()->syncWithoutDetaching([$applicationId]);
 
         return $user->favoriteApplications()->findOrFail($applicationId);
     }
 
-    public function detach(User $user, int $applicationId): int
+    public function detach(string $userId, int $applicationId): int
     {
+        $user = User::query()->findOrFail($userId);
+
         return $user->favoriteApplications()->detach($applicationId);
     }
 }

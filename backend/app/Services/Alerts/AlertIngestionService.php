@@ -70,13 +70,13 @@ class AlertIngestionService implements AlertIngestionServiceInterface
         }
 
         try {
-            $rule = $this->ruleRepo->findBySlug($ruleSlug);
+            $rule = $this->ruleRepo->findDtoBySlug($ruleSlug);
 
             if ($rule === null) {
                 return;
             }
 
-            $creatorId = $rule->created_by_id;
+            $creatorId = $rule->createdById;
 
             if (! is_string($creatorId) || $creatorId === '') {
                 return;

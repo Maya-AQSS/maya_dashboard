@@ -1,8 +1,9 @@
 <?php
 
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
-use App\Models\User;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -40,13 +41,17 @@ it('notifies every active user when a panel alert is created', function () {
         })(),
     );
 
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
+
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
         $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(2);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(2);
 });
 
 it('uses panel_alert.rule type for rule-sourced alerts', function () {
@@ -86,13 +91,17 @@ it('uses panel_alert.rule type for rule-sourced alerts', function () {
         })(),
     );
 
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
+
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
         $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(1);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(1);
 });
 
 it('publishes structured log to maya.logs when notification publish fails for a user', function () {
@@ -140,11 +149,15 @@ it('publishes structured log to maya.logs when notification publish fails for a 
         })(),
     );
 
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
+
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher($logPublisher),
         $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(0);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(0);
 });
