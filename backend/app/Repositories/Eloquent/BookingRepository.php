@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\Eloquent;
 
 use App\DTOs\BookingDto;
+use App\Models\Booking;
 use App\Repositories\Contracts\BookingRepositoryInterface;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Lectura de la vista `bookings` — proyección FDW de `v_app_bookings`
@@ -19,7 +19,7 @@ final class BookingRepository implements BookingRepositoryInterface
         $rangeStart = $fromYmd.' 00:00:00';
         $rangeEnd = $toYmd.' 23:59:59';
 
-        $rows = DB::table('bookings')
+        $rows = Booking::query()
             ->select([
                 'id', 'user_id', 'title', 'resource_id', 'resource_name',
                 'start_at', 'end_at', 'all_day', 'status',
