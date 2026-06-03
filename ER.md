@@ -35,7 +35,7 @@ erDiagram
         timestamp updated_at
     }
 
-    NOTIFICATIONS ||--o{ USER : references
+    USERS ||--o{ NOTIFICATIONS : receives
     NOTIFICATIONS {
         bigint id PK
         varchar message_id UK
