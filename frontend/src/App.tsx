@@ -135,7 +135,12 @@ function AppWithLayout() {
         favoritesSlot={
           <SidebarFavorites label={t('nav.favorites')} dashboardApiUrl={DASHBOARD_API_URL} />
         }
-        notificationsSlot={<NotificationsBell dashboardApiUrl={DASHBOARD_API_URL} />}
+        notificationsSlot={
+          <NotificationsBell
+            dashboardApiUrl={DASHBOARD_API_URL}
+            onNavigate={(n) => navigate(`/notifications/${n.id}`)}
+          />
+        }
       >
         <AppRoutes />
       </AppLayout>

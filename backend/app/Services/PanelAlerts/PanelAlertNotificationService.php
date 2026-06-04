@@ -58,6 +58,8 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
                     app: $this->messagingAppSlug(),
                     isCritical: $isCritical,
                     scope: 'user',
+                    severity: $alert->severity,
+                    url: $alert->actionUrl,
                 );
                 $recipientCount++;
             } catch (Throwable $e) {
