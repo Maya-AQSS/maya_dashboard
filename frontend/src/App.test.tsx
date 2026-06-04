@@ -72,10 +72,6 @@ vi.mock('./features/profile/pages/ProfilePage', () => ({
   default: () => <div data-testid="profile-page" />,
 }))
 
-vi.mock('./features/system-alerts/pages/SystemAlertsPage', () => ({
-  default: () => <div data-testid="system-alerts-page" />,
-}))
-
 vi.mock('./shared/pages/NotFoundPage', () => ({
   default: () => <div data-testid="not-found-page" />,
 }))

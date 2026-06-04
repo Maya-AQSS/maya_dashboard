@@ -20,10 +20,10 @@ class ListPanelAlertsRequest extends FormRequest
     {
         return [
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'severity' => ['nullable', 'string', 'in:critical,high,medium,low'],
+            'severity' => ['nullable', 'string', 'in:critical,high,medium,low,info'],
             'search' => ['nullable', 'string', 'max:255'],
             'include_expired' => ['nullable', 'boolean'],
-            'sort_by' => ['nullable', 'string', 'in:visible_from,created_at,severity'],
+            'sort_by' => ['nullable', 'string', 'in:visible_from,visible_until,created_at,severity'],
             'sort_dir' => ['nullable', 'string', 'in:asc,desc'],
         ];
     }

@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace App\Repositories\Eloquent;
 
+use App\DTOs\AlertAudienceDto;
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 final class PanelAlertRepository implements PanelAlertRepositoryInterface
 {
+    public function __construct(
+        private readonly AlertAudienceRepositoryInterface $audience,
+    ) {}
+
     public function paginate(
         int $perPage,
         ?string $severity,
@@ -19,7 +26,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
         string $sortBy,
         string $sortDir,
     ): LengthAwarePaginator {
-        $query = PanelAlert::query()->with('rule');
+        $query = PanelAlert::query();
 
         if (! $includeExpired) {
             $query->active();
@@ -33,11 +40,16 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
             $query->where('text', 'ilike', '%'.$search.'%');
         }
 
-        $allowedSortColumns = ['visible_from', 'created_at', 'severity'];
-        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'created_at';
+        $allowedSortColumns = ['visible_from', 'visible_until', 'created_at', 'severity'];
+        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'visible_from';
         $direction = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
 
         $query->orderBy($column, $direction);
+        // Orden estable por fecha de ejecución y de finalización.
+        if ($column !== 'visible_from') {
+            $query->orderBy('visible_from', $direction);
+        }
+        $query->orderBy('visible_until', $direction);
 
         return $query->paginate($perPage);
     }
@@ -45,18 +57,36 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
     /**
      * @return Collection<int, PanelAlert>
      */
-    public function activeNow(int $limit): Collection
+    public function activeNow(int $limit, string $userId): Collection
     {
         return PanelAlert::query()
             ->active()
             ->orderByDesc('visible_from')
-            ->limit($limit)
-            ->get();
+            ->limit($limit * 3)
+            ->get()
+            ->filter(function (PanelAlert $alert) use ($userId): bool {
+                return $this->audience->userMatchesAudience($userId, AlertAudienceDto::fromModel($alert));
+            })
+            ->take($limit)
+            ->values();
     }
 
     public function findOrFail(int $id): PanelAlert
     {
         return PanelAlert::findOrFail($id);
+    }
+
+    public function findDtoOrFail(int $id): PanelAlertDto
+    {
+        return PanelAlertDto::fromModel($this->findOrFail($id));
+    }
+
+    /**
+     * @return Collection<int, PanelAlert>
+     */
+    public function allRecurring(): Collection
+    {
+        return PanelAlert::query()->recurring()->orderBy('id')->get();
     }
 
     public function create(array $attributes): PanelAlert

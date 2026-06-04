@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
   Button,
   DataTable,
+  formatDateTime,
   FilterField,
   PageTitle,
   Pagination,
@@ -19,12 +21,21 @@ import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { getUnreadCount } from '../api/notificationsApi'
 import { useNotifications } from '../hooks/useNotifications'
-import type { Notification, NotificationListFilters } from '../types/notification'
+import { notificationAppLabel } from '../appLabel'
+import type { Notification, NotificationListFilters, NotificationSeverity } from '../types/notification'
 
 const POLL_MS = 60_000
 
+const SEVERITY_BADGE: Record<NotificationSeverity, 'danger' | 'warning' | 'info' | 'neutral'> = {
+  critical: 'danger',
+  high: 'warning',
+  medium: 'info',
+  low: 'neutral',
+  info: 'neutral',
+}
+
 export default function NotificationsPage() {
-  const { t } = useLocale()
+  const { t, dateLocale } = useLocale()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { hasPermission } = useUserProfile()
@@ -56,9 +67,23 @@ export default function NotificationsPage() {
     sort_dir: sortBy?.direction ?? 'desc',
   }
 
-  const { notifications, meta, loading, error, onMarkRead, onMarkAllRead } = useNotifications(filters, {
+  const { notifications, meta, loading, error, onMarkRead, onMarkAllRead, onDelete } = useNotifications(filters, {
     enabled: canIndex,
   })
+
+  const openNotification = (n: Notification) => {
+    if (canUpdate && !n.read_at) onMarkRead(n.id).catch(() => undefined)
+    // Always open the notification detail; the related resource (n.url) is an
+    // explicit "Ver" action inside the detail.
+    navigate(`/notifications/${n.id}`)
+  }
+
+  const handleDelete = (n: Notification) => {
+    if (!window.confirm(t('notifications.confirmDelete'))) return
+    onDelete(n.id)
+      .then(() => toast({ tone: 'success', title: t('notifications.deleteSuccess') }))
+      .catch(() => toast({ tone: 'danger', title: t('notifications.deleteError') }))
+  }
 
   const { data: unreadData } = useQuery({
     queryKey: ['notifications', 'unread-count'],
@@ -111,12 +136,27 @@ export default function NotificationsPage() {
         align: 'center',
       },
       {
+        id: 'severity',
+        header: t('notifications.fields.severity'),
+        cell: (n) => (
+          <Badge variant={SEVERITY_BADGE[n.severity]} size="sm">
+            {t(`severity.${n.severity}`)}
+          </Badge>
+        ),
+        width: '110px',
+      },
+      {
         id: 'title',
         header: t('notifications.fields.title'),
         cell: (n) => (
-          <span className={n.read_at ? 'text-text-secondary dark:text-text-dark-secondary' : 'font-semibold'}>
-            {n.title}
-          </span>
+          <EditorContentHtml
+            html={n.title}
+            className={`line-clamp-2 text-sm [&_p]:m-0 ${
+              n.read_at
+                ? 'text-text-secondary dark:text-text-dark-secondary'
+                : 'font-semibold text-text-primary dark:text-text-dark-primary'
+            }`}
+          />
         ),
         alwaysVisible: true,
       },
@@ -125,10 +165,10 @@ export default function NotificationsPage() {
         header: t('notifications.fields.app'),
         cell: (n) => (
           <Badge variant="neutral" size="sm">
-            {n.app}
+            {notificationAppLabel(t, n.app)}
           </Badge>
         ),
-        width: '120px',
+        width: '140px',
       },
       {
         id: 'type',
@@ -143,12 +183,28 @@ export default function NotificationsPage() {
       {
         id: 'created_at',
         header: t('notifications.fields.createdAt'),
-        cell: (n) => new Date(n.created_at).toLocaleString(),
+        cell: (n) => formatDateTime(n.created_at, dateLocale),
         sortable: true,
         width: '180px',
       },
+      {
+        id: 'actions',
+        header: '',
+        cell: (n) => (
+          <Button
+            variant="danger"
+            size="xs"
+            onClick={(e) => { e.stopPropagation(); handleDelete(n) }}
+          >
+            {t('actions.delete')}
+          </Button>
+        ),
+        width: '90px',
+        align: 'right',
+      },
     ],
-    [t],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dateLocale, t],
   )
 
   const totalPages = meta?.last_page ?? 1
@@ -206,10 +262,7 @@ export default function NotificationsPage() {
           filtersActiveCount={filtersActiveCount}
           onClearFilters={clearFilters}
           filtersStorageKey="maya:dashboard:notifications-table"
-          onRowClick={(n) => {
-            if (canUpdate && !n.read_at) onMarkRead(n.id).catch(() => undefined)
-            navigate(`/notifications/${n.id}`)
-          }}
+          onRowClick={(n) => openNotification(n)}
           cardRender={(n) => (
             <div className="flex items-start gap-3 flex-1">
               <span
@@ -217,30 +270,32 @@ export default function NotificationsPage() {
                 aria-hidden
               />
               <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm truncate ${
+                <EditorContentHtml
+                  html={n.title}
+                  className={`text-sm truncate line-clamp-1 [&_p]:inline [&_p]:m-0 ${
                     n.read_at
                       ? 'text-text-secondary dark:text-text-dark-secondary'
                       : 'font-semibold text-text-primary dark:text-text-dark-primary'
                   }`}
-                >
-                  {n.title}
-                </p>
+                />
                 <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="neutral" size="sm">{n.app}</Badge>
+                  <Badge variant="neutral" size="sm">{notificationAppLabel(t, n.app)}</Badge>
                   <span className="text-xs text-text-muted dark:text-text-dark-muted truncate">{n.type}</span>
                 </div>
                 <p className="text-xs text-text-muted dark:text-text-dark-muted mt-1">
-                  {new Date(n.created_at).toLocaleString()}
+                  {formatDateTime(n.created_at, dateLocale)}
                 </p>
               </div>
             </div>
           )}
           flipCardRender={(n) => ({
-            back: (
-              <p className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4">
-                {n.body || '—'}
-              </p>
+            back: n.body ? (
+              <EditorContentHtml
+                html={n.body}
+                className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4 [&_p]:m-0"
+              />
+            ) : (
+              <p className="text-sm text-text-secondary dark:text-text-dark-secondary">—</p>
             ),
             backAction: canUpdate && !n.read_at ? (
               <button

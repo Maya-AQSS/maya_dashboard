@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\PanelAlerts;
 
-use App\Models\PanelAlert;
-use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\NotificationPublisher;
@@ -19,7 +19,8 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
     public function __construct(
         private readonly NotificationPublisher $notificationPublisher,
         private readonly ResilientLogPublisher $resilientLogPublisher,
-        private readonly UserRepositoryInterface $users,
+        private readonly AlertAudienceRepositoryInterface $audience,
+        private readonly PanelAlertRepositoryInterface $alerts,
     ) {}
 
     private function messagingAppSlug(): string
@@ -27,31 +28,29 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
         return (string) config('messaging.app');
     }
 
-    public function notifyUsersOfNewAlert(PanelAlert $alert): int
+    public function notifyUsersOfNewAlert(int $alertId): int
     {
-        $type = $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual';
-        $title = Str::limit($alert->text, 120, '…');
+        $alert = $this->alerts->findDtoOrFail($alertId);
+
+        $type = 'panel_alert.' . $alert->source;
+        $title = Str::limit(strip_tags($alert->text), 120, '…');
         $isCritical = in_array($alert->severity, ['critical', 'high'], true);
 
         $metadata = [
             'panel_alert_id' => $alert->id,
             'severity' => $alert->severity,
             'source' => $alert->source,
-            'action_label' => $alert->action_label,
-            'action_url' => $alert->action_url,
+            'action_label' => $alert->actionLabel,
+            'action_url' => $alert->actionUrl,
         ];
-
-        if ($alert->rule_id !== null) {
-            $metadata['rule_id'] = $alert->rule_id;
-        }
 
         $recipientCount = 0;
 
-        foreach ($this->users->cursorActive() as $user) {
+        foreach ($this->audience->cursorRecipientIdsForAudience($alert->audience) as $recipientId) {
             try {
                 $this->notificationPublisher->send(
                     type: $type,
-                    recipientId: $user->id,
+                    recipientId: $recipientId,
                     title: $title,
                     body: $alert->text,
                     channels: ['app'],
@@ -69,7 +68,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
                     [
                         'type' => $type,
                         'panel_alert_id' => $alert->id,
-                        'recipient_keycloak_id' => $user->id,
+                        'recipient_keycloak_id' => $recipientId,
                     ],
                     $this->messagingAppSlug(),
                 );

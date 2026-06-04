@@ -29,11 +29,14 @@ class PanelAlertResource extends JsonResource
             'action_url' => $dto->actionUrl,
             'visible_from' => $dto->visibleFrom,
             'visible_until' => $dto->visibleUntil,
+            'schedule_cron' => $dto->scheduleCron,
+            'duration_minutes' => $dto->durationMinutes,
+            'last_materialized_at' => $dto->lastMaterializedAt,
             'source' => $dto->source,
-            'rule_id' => $dto->ruleId,
             'created_by' => $dto->createdBy,
             'created_at' => $dto->createdAt,
             'updated_at' => $dto->updatedAt,
+            ...$dto->audience->toApiArray(),
         ];
     }
 }

@@ -39,16 +39,26 @@ final class PanelAlertObserver
         DB::afterCommit(function () use ($alert, $snapshot): void {
             $this->publish('created', $alert, previous: null, new: $snapshot);
 
-            $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert);
+            $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert->id);
 
             $this->publish('notified', $alert, previous: null, new: [
-                'type' => $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual',
+                'type' => 'panel_alert.' . $alert->source,
                 'recipient_count' => $recipientCount,
                 'severity' => $alert->severity,
                 'source' => $alert->source,
             ]);
         });
     }
+
+    /**
+     * Fields whose change warrants re-notifying recipients (content, presentation,
+     * visibility window or audience). Editing only metadata like last_materialized_at
+     * or schedule_cron does NOT re-notify.
+     */
+    private const NOTIFY_ON_CHANGE = [
+        'text', 'severity', 'action_label', 'action_url',
+        'visible_from', 'visible_until', 'audience',
+    ];
 
     public function updated(PanelAlert $alert): void
     {
@@ -59,7 +69,26 @@ final class PanelAlertObserver
             return;
         }
 
-        DB::afterCommit(fn () => $this->publish('updated', $alert, previous: $previous, new: $new));
+        $shouldRenotify = array_intersect(array_keys($new), self::NOTIFY_ON_CHANGE) !== [];
+        $alertId = $alert->id;
+
+        DB::afterCommit(function () use ($alert, $previous, $new, $shouldRenotify, $alertId): void {
+            $this->publish('updated', $alert, previous: $previous, new: $new);
+
+            // Fix B1: editar una alerta re-notifica a los destinatarios (antes solo
+            // se notificaba en la creación). También cubre la re-materialización del
+            // cron, que desplaza la ventana de visibilidad.
+            if ($shouldRenotify) {
+                $recipientCount = $this->notifications->notifyUsersOfNewAlert($alertId);
+
+                $this->publish('renotified', $alert, previous: null, new: [
+                    'type' => 'panel_alert.' . $alert->source,
+                    'recipient_count' => $recipientCount,
+                    'severity' => $alert->severity,
+                    'source' => $alert->source,
+                ]);
+            }
+        });
     }
 
     public function deleted(PanelAlert $alert): void

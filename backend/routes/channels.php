@@ -31,6 +31,15 @@ use Illuminate\Support\Facades\Broadcast;
  * a DTO of JWT claims, NOT an Eloquent `User`. Strict-typing to `User`
  * caused a TypeError 500 on every `/api/v1/broadcasting/auth` call.
  */
+/**
+ * Canal compartido del dashboard para alertas de scope=dashboard|both.
+ * Cualquier usuario autenticado puede escucharlo (alertas globales del panel).
+ * Debe declararse ANTES del comodín para que 'dashboard' no se interprete como userId.
+ */
+Broadcast::channel('notifications.dashboard', function (Authenticatable $user): bool {
+    return $user->getAuthIdentifier() !== null;
+});
+
 Broadcast::channel('notifications.{userId}', function (Authenticatable $user, string $userId): bool {
     return $user->getAuthIdentifier() === $userId;
 });

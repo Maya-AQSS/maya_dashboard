@@ -4,59 +4,66 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\AlertRepositoryInterface;
-use App\Repositories\Contracts\AlertRuleRepositoryInterface;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Repositories\Contracts\AttendanceRepositoryInterface;
 use App\Repositories\Contracts\BookingRepositoryInterface;
+use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
+use App\Repositories\Contracts\NotificationRuleRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
-use App\Repositories\Contracts\PanelAlertRuleRepositoryInterface;
 use App\Repositories\Contracts\UserDashboardLayoutRepositoryInterface;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
-use App\Repositories\Eloquent\AlertRepository;
-use App\Repositories\Eloquent\AlertRuleRepository;
+use App\Repositories\Eloquent\AlertAudienceRepository;
 use App\Repositories\Eloquent\ApplicationRepository;
 use App\Repositories\Eloquent\AttendanceRepository;
 use App\Repositories\Eloquent\BookingRepository;
+use App\Repositories\Eloquent\NotificationDefinitionRepository;
 use App\Repositories\Eloquent\NotificationRepository;
+use App\Repositories\Eloquent\NotificationRuleRepository;
 use App\Repositories\Eloquent\PanelAlertRepository;
-use App\Repositories\Eloquent\PanelAlertRuleRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
 use App\Repositories\Eloquent\UserRepository;
 use Maya\Profile\Migrations as ProfileMigrations;
 use App\Repositories\Resolvers\DashboardProfileResolver;
-use App\Services\Alerts\AlertIngestionService;
-use App\Services\Alerts\AlertRuleService;
-use App\Services\Alerts\AlertService;
+use App\Services\Alerts\AlertAudienceService;
+use App\Services\Alerts\AlertAudienceValidator;
 use App\Services\Attendance\AttendanceService;
 use App\Services\Booking\BookingService;
-use App\Services\Contracts\AlertIngestionServiceInterface;
-use App\Services\Contracts\AlertRuleServiceInterface;
-use App\Services\Contracts\AlertServiceInterface;
+use App\Services\Contracts\AlertAudienceServiceInterface;
+use App\Services\Contracts\AlertAudienceValidatorInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
+use App\Services\Contracts\AttendanceReminderServiceInterface;
 use App\Services\Contracts\AttendanceServiceInterface;
 use App\Services\Contracts\BookingServiceInterface;
+use App\Services\Contracts\NotificationDefinitionServiceInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
+use App\Services\Contracts\NotificationRuleServiceInterface;
+use App\Services\Contracts\NotificationSampleServiceInterface;
 use App\Services\Contracts\NotificationServiceInterface;
 use App\Services\Contracts\PanelAlertNotificationServiceInterface;
-use App\Services\Contracts\PanelAlertRuleServiceInterface;
 use App\Services\Contracts\PanelAlertServiceInterface;
 use App\Services\Contracts\UserDashboardLayoutServiceInterface;
 use App\Services\Contracts\UserFavoriteApplicationServiceInterface;
 use App\Services\Dashboard\ApplicationService;
 use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
+use App\Services\Notifications\AttendanceReminderService;
+use App\Services\Notifications\NotificationDefinitionService;
+use App\Services\Notifications\NotificationRuleService;
+use App\Services\Notifications\NotificationSampleService;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
-use App\Services\PanelAlerts\PanelAlertRuleService;
 use App\Services\PanelAlerts\PanelAlertService;
 use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
+use App\Support\FdwTeardown;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
@@ -82,22 +89,24 @@ class AppServiceProvider extends ServiceProvider
 
         // Notifications.
         $this->app->singleton(NotificationRepositoryInterface::class, NotificationRepository::class);
+        $this->app->singleton(NotificationDefinitionRepositoryInterface::class, NotificationDefinitionRepository::class);
+        $this->app->singleton(NotificationRuleRepositoryInterface::class, NotificationRuleRepository::class);
         $this->app->singleton(NotificationServiceInterface::class, NotificationService::class);
         $this->app->singleton(NotificationIngestionServiceInterface::class, NotificationIngestionService::class);
+        $this->app->singleton(NotificationDefinitionServiceInterface::class, NotificationDefinitionService::class);
+        $this->app->singleton(NotificationRuleServiceInterface::class, NotificationRuleService::class);
+        $this->app->singleton(AttendanceReminderServiceInterface::class, AttendanceReminderService::class);
+        $this->app->singleton(NotificationSampleServiceInterface::class, NotificationSampleService::class);
 
-        // Alerts.
-        $this->app->singleton(AlertRepositoryInterface::class, AlertRepository::class);
-        $this->app->singleton(AlertRuleRepositoryInterface::class, AlertRuleRepository::class);
-        $this->app->singleton(AlertServiceInterface::class, AlertService::class);
-        $this->app->singleton(AlertRuleServiceInterface::class, AlertRuleService::class);
-        $this->app->singleton(AlertIngestionServiceInterface::class, AlertIngestionService::class);
+        // Audience targeting (shared by panel alerts and notification definitions).
+        $this->app->singleton(AlertAudienceRepositoryInterface::class, AlertAudienceRepository::class);
+        $this->app->singleton(AlertAudienceValidatorInterface::class, AlertAudienceValidator::class);
+        $this->app->singleton(AlertAudienceServiceInterface::class, AlertAudienceService::class);
 
-        // Panel Alerts (user-created alerts for dashboard widget).
+        // Panel Alerts (manual alerts for the dashboard widget + bell).
         $this->app->singleton(PanelAlertRepositoryInterface::class, PanelAlertRepository::class);
-        $this->app->singleton(PanelAlertRuleRepositoryInterface::class, PanelAlertRuleRepository::class);
         $this->app->singleton(PanelAlertNotificationServiceInterface::class, PanelAlertNotificationService::class);
         $this->app->singleton(PanelAlertServiceInterface::class, PanelAlertService::class);
-        $this->app->singleton(PanelAlertRuleServiceInterface::class, PanelAlertRuleService::class);
 
         // Odoo-sourced widgets (read-only via postgres_fdw).
         $this->app->singleton(AttendanceRepositoryInterface::class, AttendanceRepository::class);
@@ -115,9 +124,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // AlertRule usa el attribute #[ObservedBy(AlertRuleObserver::class)] —
-        // registrado automáticamente por Laravel sin llamada explícita aquí.
-
         // Migraciones FDW compartidas del paquete `maya/shared-profile-laravel`:
         //   - academicAssignments: user_study_types, user_studies, user_course_modules
         //   - teams: teams, team_members
@@ -130,6 +136,16 @@ class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(ProfileMigrations::academicCatalogs());
         $this->loadMigrationsFrom(ProfileMigrations::teams());
         $this->loadMigrationsFrom(ProfileMigrations::userPermissions());
+
+        // db:wipe no elimina vistas ni foreign tables FDW (las crea el paquete
+        // shared-profile). Las limpiamos antes de migrate:fresh/db:wipe para que
+        // la reconstrucción sea reproducible (si no, el rewrite de la vista
+        // `teams` falla con «cannot drop columns from view»).
+        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
+            if (in_array($event->command, ['migrate:fresh', 'db:wipe'], true)) {
+                FdwTeardown::dropAllInPublicSchema();
+            }
+        });
 
         // Broadcasting auth endpoint protegido por JWT y bajo prefijo /api/v1 para
         // consistencia con el resto de la API. Anula el `/broadcasting/auth` que

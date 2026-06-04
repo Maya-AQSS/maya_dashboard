@@ -16,12 +16,20 @@ final readonly class PanelAlertDto
         public ?string $actionUrl,
         public string $visibleFrom,
         public ?string $visibleUntil,
+        public ?string $scheduleCron,
+        public ?int $durationMinutes,
+        public ?string $lastMaterializedAt,
         public string $source,
-        public ?int $ruleId,
         public string $createdBy,
         public string $createdAt,
         public string $updatedAt,
+        public AlertAudienceDto $audience,
     ) {}
+
+    public function isRecurring(): bool
+    {
+        return $this->scheduleCron !== null;
+    }
 
     public static function fromModel(PanelAlert $m): self
     {
@@ -33,11 +41,14 @@ final readonly class PanelAlertDto
             actionUrl: $m->action_url,
             visibleFrom: $m->visible_from->toIso8601String(),
             visibleUntil: $m->visible_until?->toIso8601String(),
+            scheduleCron: $m->schedule_cron,
+            durationMinutes: $m->duration_minutes !== null ? (int) $m->duration_minutes : null,
+            lastMaterializedAt: $m->last_materialized_at?->toIso8601String(),
             source: (string) $m->source,
-            ruleId: $m->rule_id !== null ? (int) $m->rule_id : null,
             createdBy: (string) $m->created_by,
             createdAt: $m->created_at?->toIso8601String() ?? '',
             updatedAt: $m->updated_at?->toIso8601String() ?? '',
+            audience: AlertAudienceDto::fromModel($m),
         );
     }
 }

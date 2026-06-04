@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories\Contracts;
 
 use App\Models\Application;
-use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface UserFavoriteApplicationRepositoryInterface
@@ -15,12 +14,12 @@ interface UserFavoriteApplicationRepositoryInterface
      *
      * @return LengthAwarePaginator<Application>
      */
-    public function paginateForUser(User $user, int $perPage = 100): LengthAwarePaginator;
+    public function paginateForUser(string $userId, int $perPage = 100): LengthAwarePaginator;
 
-    public function attach(User $user, int $applicationId): Application;
+    public function attach(string $userId, int $applicationId): Application;
 
     /**
      * Devuelve el número de favoritos detached (0 si no existía).
      */
-    public function detach(User $user, int $applicationId): int;
+    public function detach(string $userId, int $applicationId): int;
 }

@@ -8,9 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Evaluate alert rules every minute. Each rule decides internally whether
-// enough time has passed since last_evaluated_at to re-run (honors schedule_cron).
-Schedule::command('alerts:evaluate')
+// Re-materialize recurring panel alerts whose cron is due (shifts the
+// visibility window and re-notifies recipients via the observer).
+Schedule::command('panel-alerts:materialize')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();

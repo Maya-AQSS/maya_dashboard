@@ -282,3 +282,21 @@ it('markAllRead only affects own notifications', function () {
     $otherNotif->refresh();
     expect($otherNotif->read_at)->toBeNull();
 });
+
+// ─── destroy ────────────────────────────────────────────────────────────────────
+
+it('deletes own notification and returns 204', function () {
+    $n = makeNotification($this->userId);
+
+    $response = $this->deleteJson("/api/v1/notifications/{$n->id}");
+
+    $response->assertNoContent();
+    expect(\App\Models\Notification::find($n->id))->toBeNull();
+});
+
+it('returns 404 when deleting a notification of another user', function () {
+    $other = makeNotification((string) Str::uuid());
+
+    $this->deleteJson("/api/v1/notifications/{$other->id}")->assertNotFound();
+    expect(\App\Models\Notification::find($other->id))->not->toBeNull();
+});

@@ -5,7 +5,7 @@ import { useFichajeAlerts } from './useFichajeAlerts'
 import { getActivePanelAlerts } from '../../panel-alerts/api/panelAlertsApi'
 import { useCriticalAlerts } from '../../notifications/hooks/useCriticalAlerts'
 import type { PanelAlert } from '../../panel-alerts/types/panelAlert'
-import type { AlertItem } from './useActiveSystemAlerts'
+import type { AlertItem } from '../types/alertItem'
 
 export type { AlertItem }
 

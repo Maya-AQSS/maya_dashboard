@@ -1,8 +1,9 @@
 <?php
 
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
-use App\Models\User;
-use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -31,31 +32,35 @@ it('notifies every active user when a panel alert is created', function () {
     $notificationPublisher = Mockery::mock(NotificationPublisher::class);
     $notificationPublisher->shouldReceive('send')->twice();
 
-    $users = Mockery::mock(UserRepositoryInterface::class);
-    $users->shouldReceive('cursorActive')->once()->andReturn(
+    $audience = Mockery::mock(AlertAudienceRepositoryInterface::class);
+    $audience->shouldReceive('cursorRecipientIdsForAudience')->once()->andReturn(
         (function () use ($userA, $userB) {
-            yield new User(['id' => $userA]);
-            yield new User(['id' => $userB]);
+            yield $userA;
+            yield $userB;
         })(),
     );
+
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
 
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
-        $users,
+        $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(2);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(2);
 });
 
-it('uses panel_alert.rule type for rule-sourced alerts', function () {
+it('uses panel_alert.scheduled type for scheduled-sourced alerts', function () {
     $userId = (string) Str::uuid();
 
     $alert = PanelAlert::forceCreate([
         'text' => 'Umbral superado',
         'severity' => 'medium',
         'visible_from' => now(),
-        'source' => 'rule',
+        'source' => 'scheduled',
         'created_by' => $userId,
     ]);
 
@@ -73,24 +78,28 @@ it('uses panel_alert.rule type for rule-sourced alerts', function () {
             ?string $createdAt,
             bool $isCritical,
             string $scope,
-        ): bool => $type === 'panel_alert.rule'
+        ): bool => $type === 'panel_alert.scheduled'
             && $isCritical === false
             && $recipientId === $userId);
 
-    $users = Mockery::mock(UserRepositoryInterface::class);
-    $users->shouldReceive('cursorActive')->once()->andReturn(
+    $audience = Mockery::mock(AlertAudienceRepositoryInterface::class);
+    $audience->shouldReceive('cursorRecipientIdsForAudience')->once()->andReturn(
         (function () use ($userId) {
-            yield new User(['id' => $userId]);
+            yield $userId;
         })(),
     );
+
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
 
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
-        $users,
+        $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(1);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(1);
 });
 
 it('publishes structured log to maya.logs when notification publish fails for a user', function () {
@@ -130,18 +139,22 @@ it('publishes structured log to maya.logs when notification publish fails for a 
                 && $metadata['type'] === 'panel_alert.manual';
         });
 
-    $users = Mockery::mock(UserRepositoryInterface::class);
-    $users->shouldReceive('cursorActive')->once()->andReturn(
+    $audience = Mockery::mock(AlertAudienceRepositoryInterface::class);
+    $audience->shouldReceive('cursorRecipientIdsForAudience')->once()->andReturn(
         (function () use ($userId) {
-            yield new User(['id' => $userId]);
+            yield $userId;
         })(),
     );
+
+    $alerts = Mockery::mock(PanelAlertRepositoryInterface::class);
+    $alerts->shouldReceive('findDtoOrFail')->once()->with($alert->id)->andReturn(PanelAlertDto::fromModel($alert));
 
     $service = new PanelAlertNotificationService(
         $notificationPublisher,
         new ResilientLogPublisher($logPublisher),
-        $users,
+        $audience,
+        $alerts,
     );
 
-    expect($service->notifyUsersOfNewAlert($alert))->toBe(0);
+    expect($service->notifyUsersOfNewAlert($alert->id))->toBe(0);
 });

@@ -106,7 +106,7 @@ services:
       WORKER_LABEL: "[worker]"
       WORKER_WAIT_MIGRATION: create_notifications_table
       WORKER_PATCH_CONSUMER: "1"
-      WORKER_CONSUMERS: "notifications:consume alerts:consume"
+      WORKER_CONSUMERS: "notifications:consume"
       LOG_STACK: "daily"
     entrypoint: ["/maya_infra/scripts/worker-entrypoint.sh"]
     command: []

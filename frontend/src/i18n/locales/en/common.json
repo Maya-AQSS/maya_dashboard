@@ -278,7 +278,30 @@
     "critical": "Critical",
     "high": "High",
     "medium": "Medium",
-    "low": "Low"
+    "low": "Low",
+    "info": "Info"
+  },
+  "systemNotifications": {
+    "empty": "No system notifications configured.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "toggleSuccess": "Status updated.",
+    "toggleError": "Could not update the status.",
+    "category": {
+      "event": "Event",
+      "scheduled": "Scheduled"
+    },
+    "fields": {
+      "label": "Notification",
+      "sourceApp": "Service",
+      "category": "Type",
+      "enabled": "Status",
+      "lastEvaluatedAt": "Last evaluation"
+    },
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by name or service…"
   },
   "values": {
     "optional": "(optional)"
@@ -289,7 +312,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "create": "Create",
-    "saving": "Saving…"
+    "saving": "Saving…",
+    "test": "Test"
   },
   "panelAlerts": {
     "pageTitle": "Panel alerts",
@@ -299,6 +323,12 @@
     "newRule": "New rule",
     "tabAlerts": "Alerts",
     "tabRules": "Rules",
+    "tabSystem": "System notifications",
+    "recurrence": {
+      "legend": "Recurrence (optional)",
+      "cronHelp": "Cron expression. When set, the alert reappears on each trigger.",
+      "durationHelp": "Minutes it stays visible on each repetition."
+    },
     "editAlert": "Edit alert",
     "editRule": "Edit rule",
     "empty": "No alerts for the selected filters.",
@@ -320,13 +350,16 @@
     "addCondition": "Add condition",
     "source": {
       "manual": "Manual",
-      "rule": "Rule"
+      "scheduled": "Scheduled"
     },
     "fields": {
       "text": "Alert text",
       "severity": "Severity",
       "visibleFrom": "Visible from",
       "visibleUntil": "Visible until",
+      "recurrence": "Recurrence",
+      "scheduleCron": "Recurrence cron",
+      "durationMinutes": "Duration (minutes)",
       "source": "Source",
       "ruleName": "Rule name",
       "description": "Description",
@@ -348,12 +381,40 @@
       "isActive": "Rule active",
       "lastTriggeredAt": "Last triggered"
     },
+    "audience": {
+      "sectionTitle": "Recipients",
+      "notifyAll": "Send to all active users",
+      "kindAcademic": "Academic context",
+      "kindTeam": "Team or department",
+      "academicLevel": "Scope level",
+      "level": {
+        "study_type": "Study type",
+        "study": "Study",
+        "module": "Module"
+      },
+      "studyType": "Study type",
+      "study": "Study",
+      "module": "Module",
+      "team": "Team",
+      "department": "Department",
+      "selectPlaceholder": "Select…",
+      "selectStudyTypeFirst": "Select a study type first.",
+      "selectStudyFirst": "Select a study first.",
+      "contextError": "Could not load your academic context.",
+      "emptyContext": "You have no academic contexts or teams assigned to narrow the audience.",
+      "noTeamsAssigned": "You have no teams or departments assigned on your profile. Check Departments and Work teams in your profile, or ask to be added in Odoo.",
+      "teamsUnavailable": "Team data is temporarily unavailable. Please try again later."
+    },
     "validation": {
       "nameRequired": "Name is required.",
       "eventTypeRequired": "Event type is required.",
       "alertTextRequired": "Alert text is required.",
       "textRequired": "Alert text is required.",
-      "visibleFromRequired": "Start date is required."
+      "visibleFromRequired": "Start date is required.",
+      "teamRequired": "Select a team or department.",
+      "studyTypeRequired": "Select a study type.",
+      "studyRequired": "Select a study.",
+      "moduleRequired": "Select a module."
     }
   },
   "notifications": {
@@ -371,6 +432,8 @@
     "markReadSuccess": "Notification marked as read.",
     "markReadError": "Could not mark as read.",
     "backToList": "Back to list",
+    "detailMessage": "Message",
+    "detailInfo": "Information",
     "loadError": "Could not load the notification.",
     "empty": "No notifications for the selected filters.",
     "noPermission": "You do not have permission to view notifications.",
@@ -392,11 +455,56 @@
       "createdAt": "Received",
       "readAt": "Read at",
       "messageId": "Message ID",
-      "metadata": "Metadata"
+      "metadata": "Metadata",
+      "severity": "Severity"
     },
     "status": {
       "read": "Read",
       "unread": "Unread"
-    }
+    },
+    "confirmDelete": "Are you sure you want to delete this notification?",
+    "deleteSuccess": "Notification deleted.",
+    "deleteError": "Could not delete the notification.",
+    "testSent": "Test notification sent.",
+    "testError": "Could not send the test.",
+    "apps": {
+      "maya-dashboard": "Dashboard",
+      "maya-authorization": "Authorization",
+      "maya-dms": "Document management",
+      "maya-logs": "Logs",
+      "maya-audit": "Audit"
+    },
+    "viewResource": "View resource"
+  },
+  "scheduledRules": {
+    "newRule": "New rule",
+    "empty": "No scheduled rules.",
+    "errorSave": "Could not save the rule.",
+    "saveSuccess": "Rule saved.",
+    "confirmDelete": "Are you sure you want to delete this rule?",
+    "deleteSuccess": "Rule deleted.",
+    "deleteError": "Could not delete the rule.",
+    "useDefaultSeverity": "Use default severity",
+    "addParam": "Add parameter",
+    "paramKey": "Key",
+    "paramValue": "Value",
+    "fields": {
+      "evaluator": "Rule type",
+      "name": "Name",
+      "description": "Description",
+      "scheduleCron": "Cron",
+      "severityOverride": "Severity",
+      "params": "Parameters",
+      "enabled": "Enabled",
+      "sourceApp": "Service"
+    },
+    "validation": {
+      "evaluatorRequired": "Select a rule type.",
+      "nameRequired": "Name is required.",
+      "cronRequired": "Cron is required."
+    },
+    "editRule": "Edit rule",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by name or type…"
   }
 }

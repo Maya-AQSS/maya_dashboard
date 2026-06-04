@@ -10,7 +10,6 @@
  * class level, without requiring an AMQP broker or database.
  */
 
-use App\DTOs\IncomingAlertPayload;
 use App\DTOs\IncomingNotificationPayload;
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -106,70 +105,43 @@ it('notification DTO regression: recipient_id is NOT mapped (must use recipient_
     expect($dto->recipientKeycloakId)->toBe('');
 });
 
-// ─── AlertPublisher → IncomingAlertPayload ────────────────────────────────────
+// ─── New fields: severity, url, i18n keys + params ───────────────────────────
 
-it('alert DTO parses publisher payload with all fields', function () {
-    // Exact payload shape from AlertPublisher::publish()
-    $publisherPayload = wire([
-        'rule_slug'  => 'cpu-high',
-        'severity'   => 'critical',
-        'title'      => 'CPU al 95%',
-        'source'     => 'metric.threshold',
-        'context'    => (object) ['host' => 'web-01', 'value' => 95],
-        'created_at' => '2026-05-10T15:00:00Z',
+it('notification DTO parses severity, url and i18n keys', function () {
+    $payload = wire([
+        'app'                   => 'maya-dms',
+        'type'                  => 'document.published',
+        'recipient_keycloak_id' => 'uuid-1',
+        'title_key'             => 'notifications.document.published.title',
+        'body_key'              => 'notifications.document.published.body',
+        'params'                => (object) ['document_id' => 42, 'document_title' => 'Acta'],
+        'severity'              => 'high',
+        'url'                   => '/documents/42',
+        'channels'              => ['app'],
+        'created_at'            => '2026-05-10T12:00:00Z',
     ]);
 
-    $dto = IncomingAlertPayload::fromArray($publisherPayload);
+    $dto = IncomingNotificationPayload::fromArray($payload);
 
-    expect($dto->ruleSlug)->toBe('cpu-high')
-        ->and($dto->severity)->toBe('critical')
-        ->and($dto->title)->toBe('CPU al 95%')
-        ->and($dto->source)->toBe('metric.threshold')
-        ->and($dto->context)->toBe(['host' => 'web-01', 'value' => 95])
-        ->and($dto->createdAt)->toBe('2026-05-10T15:00:00Z');
+    expect($dto->titleKey)->toBe('notifications.document.published.title')
+        ->and($dto->bodyKey)->toBe('notifications.document.published.body')
+        ->and($dto->params)->toBe(['document_id' => 42, 'document_title' => 'Acta'])
+        ->and($dto->severity)->toBe('high')
+        ->and($dto->url)->toBe('/documents/42');
 });
 
-it('alert DTO uses source default when publisher omits it', function () {
+it('notification DTO normalizes empty params object to an array', function () {
     $payload = wire([
-        'rule_slug' => 'disk-low',
-        'severity'  => 'high',
-        'title'     => 'Disco al 90%',
-        'context'   => (object) [],
+        'app'      => 'maya-dms',
+        'type'     => 'document.published',
+        'recipient_keycloak_id' => 'uuid-2',
+        'params'   => (object) [],
+        'channels' => ['app'],
     ]);
 
-    $dto = IncomingAlertPayload::fromArray($payload);
+    $dto = IncomingNotificationPayload::fromArray($payload);
 
-    expect($dto->source)->toBe('app.publish')
-        ->and($dto->ruleSlug)->toBe('disk-low')
-        ->and($dto->createdAt)->toBeNull();
-});
-
-it('alert DTO regression: rule_id is NOT mapped (must use rule_slug)', function () {
-    // Would have caught the original bug where publisher sent 'rule_id'
-    // instead of 'rule_slug' (jedi-review Fase 4 F16).
-    $payload = wire([
-        'rule_id'  => 'cpu-high',   // wrong field name
-        'severity' => 'high',
-        'title'    => 'Test',
-        'context'  => (object) [],
-    ]);
-
-    $dto = IncomingAlertPayload::fromArray($payload);
-
-    expect($dto->ruleSlug)->toBeNull();
-});
-
-it('alert DTO nullifies rule_slug for orphan alerts (unknown slug)', function () {
-    $payload = wire([
-        'rule_slug' => null,
-        'severity'  => 'low',
-        'title'     => 'Orphan',
-        'source'    => 'system.dlq',
-        'context'   => (object) [],
-        'created_at' => '2026-05-10T16:00:00Z',
-    ]);
-
-    $dto = IncomingAlertPayload::fromArray($payload);
-
-    expect($dto->ruleSlug)->toBeNull();
+    expect($dto->params)->toBe([])
+        ->and($dto->severity)->toBeNull()
+        ->and($dto->url)->toBeNull();
 });

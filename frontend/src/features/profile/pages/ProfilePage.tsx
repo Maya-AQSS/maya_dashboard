@@ -104,9 +104,9 @@ function TeamBadgeList({ items }: { items: Array<{ name: string; code?: string }
   if (!items.length) return <span className="text-sm text-text-secondary dark:text-text-dark-secondary">—</span>
   return (
     <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
+      {items.map((item, index) => (
         <span
-          key={item.code ?? item.name}
+          key={item.code || item.name || `team-${index}`}
           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-ui-border dark:bg-ui-dark-border text-text-primary dark:text-text-dark-primary"
         >
           {item.code && <span className="opacity-60">{item.code}</span>}

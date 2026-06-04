@@ -25,21 +25,35 @@ final class NotificationCreated implements ShouldBroadcastNow
 
     /**
      * @param  array<string, mixed>  $notification  Payload serializado de la notificación persistida.
-     * @param  string  $userId  Keycloak UUID del destinatario (recipient_id en la tabla).
+     * @param  string  $userId  Keycloak UUID del destinatario ('' si solo scope=dashboard).
+     * @param  string  $scope   user | dashboard | both — decide los canales de emisión.
      */
     public function __construct(
         private readonly array $notification,
         private readonly string $userId,
+        private readonly string $scope = 'user',
     ) {}
 
     /**
+     * Personal channel for the recipient (when present) and/or the shared
+     * dashboard channel for scope=dashboard|both (fixes the previous
+     * polling-only delivery of global alerts).
+     *
      * @return list<Channel>
      */
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('notifications.' . $this->userId),
-        ];
+        $channels = [];
+
+        if ($this->userId !== '') {
+            $channels[] = new PrivateChannel('notifications.' . $this->userId);
+        }
+
+        if ($this->scope === 'dashboard' || $this->scope === 'both') {
+            $channels[] = new PrivateChannel('notifications.dashboard');
+        }
+
+        return $channels;
     }
 
     public function broadcastAs(): string

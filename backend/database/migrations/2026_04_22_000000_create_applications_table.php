@@ -59,8 +59,11 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug', 100);
             $table->text('description')->nullable();
+            $table->string('icon', 40)->nullable();
+            $table->string('color', 7)->nullable();
             $table->string('traefik_url', 2048)->nullable();
             $table->boolean('is_active')->default(true);
+            $table->string('view_permission_slug', 150)->nullable();
             $table->timestamps();
         });
     }
@@ -93,14 +96,17 @@ return new class extends Migration
 
         DB::statement("
             CREATE FOREIGN TABLE " . self::FDW_TBL . " (
-                id          bigint        NOT NULL,
-                name        varchar(255)  NOT NULL,
-                slug        varchar(100)  NOT NULL,
-                description text,
-                traefik_url varchar(2048),
-                is_active   boolean       NOT NULL DEFAULT true,
-                created_at  timestamp,
-                updated_at  timestamp
+                id                    bigint        NOT NULL,
+                name                  varchar(255)  NOT NULL,
+                slug                  varchar(100)  NOT NULL,
+                description           text,
+                icon                  varchar(40),
+                color                 varchar(7),
+                traefik_url           varchar(2048),
+                is_active             boolean       NOT NULL DEFAULT true,
+                view_permission_slug  varchar(150),
+                created_at            timestamp,
+                updated_at            timestamp
             )
             SERVER " . self::SERVER . "
             OPTIONS (schema_name 'public', table_name 'applications')

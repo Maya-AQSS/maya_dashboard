@@ -79,6 +79,8 @@ const ProfilePage = lazy(() => import('./features/profile/pages/ProfilePage'))
 const NotificationsPage = lazy(() => import('./features/notifications/pages/NotificationsPage'))
 const NotificationDetailPage = lazy(() => import('./features/notifications/pages/NotificationDetailPage'))
 const PanelAlertsPage = lazy(() => import('./features/panel-alerts/pages/PanelAlertsPage'))
+const PanelAlertFormPage = lazy(() => import('./features/panel-alerts/pages/PanelAlertFormPage'))
+const NotificationRuleFormPage = lazy(() => import('./features/panel-alerts/pages/NotificationRuleFormPage'))
 const NotFoundPage = lazy(() => import('./shared/pages/NotFoundPage'))
 
 function AppRoutes() {
@@ -91,6 +93,10 @@ function AppRoutes() {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/notifications/:id" element={<NotificationDetailPage />} />
         <Route path="/panel-alerts" element={<PanelAlertsPage />} />
+        <Route path="/panel-alerts/alertas/nueva" element={<PanelAlertFormPage />} />
+        <Route path="/panel-alerts/alertas/:id" element={<PanelAlertFormPage />} />
+        <Route path="/panel-alerts/reglas/nueva" element={<NotificationRuleFormPage />} />
+        <Route path="/panel-alerts/reglas/:id" element={<NotificationRuleFormPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

@@ -96,3 +96,11 @@ export async function resolveNotification(id: number): Promise<void> {
     throw mapApiError(err, 'notifications')
   }
 }
+
+export async function deleteNotification(id: number): Promise<void> {
+  try {
+    await apiFetchJson(`/notifications/${id}`, { method: 'DELETE' })
+  } catch (err) {
+    throw mapApiError(err, 'notifications')
+  }
+}

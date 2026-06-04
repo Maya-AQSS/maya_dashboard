@@ -69,4 +69,11 @@ final class NotificationService implements NotificationServiceInterface
             $userId,
         ));
     }
+
+    public function delete(string $recipientId, int $notificationId): void
+    {
+        $this->notifications->delete(
+            $this->notifications->findForRecipientOrFail($recipientId, $notificationId),
+        );
+    }
 }

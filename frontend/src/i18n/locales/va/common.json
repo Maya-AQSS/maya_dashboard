@@ -278,7 +278,30 @@
     "critical": "Crítica",
     "high": "Alta",
     "medium": "Mitjana",
-    "low": "Baixa"
+    "low": "Baixa",
+    "info": "Informativa"
+  },
+  "systemNotifications": {
+    "empty": "No hi ha notificacions del sistema configurades.",
+    "enabled": "Activa",
+    "disabled": "Desactivada",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "toggleSuccess": "Estat actualitzat.",
+    "toggleError": "No s'ha pogut actualitzar l'estat.",
+    "category": {
+      "event": "Esdeveniment",
+      "scheduled": "Programada"
+    },
+    "fields": {
+      "label": "Notificació",
+      "sourceApp": "Servici",
+      "category": "Tipus",
+      "enabled": "Estat",
+      "lastEvaluatedAt": "Última avaluació"
+    },
+    "searchLabel": "Cercar",
+    "searchPlaceholder": "Cerca per nom o servici…"
   },
   "values": {
     "optional": "(opcional)"
@@ -289,7 +312,8 @@
     "cancel": "Cancel·lar",
     "save": "Guardar",
     "create": "Crear",
-    "saving": "Guardant…"
+    "saving": "Guardant…",
+    "test": "Provar"
   },
   "panelAlerts": {
     "pageTitle": "Alertes del panell",
@@ -299,6 +323,12 @@
     "newRule": "Nova regla",
     "tabAlerts": "Alertes",
     "tabRules": "Regles",
+    "tabSystem": "Notificacions del sistema",
+    "recurrence": {
+      "legend": "Recurrència (opcional)",
+      "cronHelp": "Expressió cron. Si s'indica, l'alerta es torna a mostrar en cada disparada.",
+      "durationHelp": "Minuts que roman visible en cada repetició."
+    },
     "editAlert": "Editar alerta",
     "editRule": "Editar regla",
     "empty": "No hi ha alertes per als filtres seleccionats.",
@@ -320,13 +350,16 @@
     "addCondition": "Afegir condició",
     "source": {
       "manual": "Manual",
-      "rule": "Regla"
+      "scheduled": "Programada"
     },
     "fields": {
       "text": "Text de l'alerta",
       "severity": "Severitat",
       "visibleFrom": "Visible des de",
       "visibleUntil": "Visible fins",
+      "recurrence": "Recurrència",
+      "scheduleCron": "Cron de recurrència",
+      "durationMinutes": "Duració (minuts)",
       "source": "Origen",
       "ruleName": "Nom de la regla",
       "description": "Descripció",
@@ -348,12 +381,40 @@
       "isActive": "Regla activa",
       "lastTriggeredAt": "Última activació"
     },
+    "audience": {
+      "sectionTitle": "Destinataris",
+      "notifyAll": "Enviar a tots els usuaris actius",
+      "kindAcademic": "Context acadèmic",
+      "kindTeam": "Equip o departament",
+      "academicLevel": "Nivell d'abast",
+      "level": {
+        "study_type": "Tipus d'estudi",
+        "study": "Estudi",
+        "module": "Mòdul"
+      },
+      "studyType": "Tipus d'estudi",
+      "study": "Estudi",
+      "module": "Mòdul",
+      "team": "Equip",
+      "department": "Departament",
+      "selectPlaceholder": "Seleccionar…",
+      "selectStudyTypeFirst": "Selecciona primer un tipus d'estudi.",
+      "selectStudyFirst": "Selecciona primer un estudi.",
+      "contextError": "No s'ha pogut carregar el teu context acadèmic.",
+      "emptyContext": "No tens contextos acadèmics ni equips assignats per acotar l'audiència.",
+      "noTeamsAssigned": "No tens equips ni departaments assignats al teu perfil. Revisa Departaments i Equips al perfil, o demana que t'assignin membresia a Odoo.",
+      "teamsUnavailable": "Les dades d'equips no estan disponibles ara. Torna-ho a provar més tard."
+    },
     "validation": {
       "nameRequired": "El nom és obligatori.",
       "eventTypeRequired": "El tipus d'esdeveniment és obligatori.",
       "alertTextRequired": "El text de l'alerta és obligatori.",
       "textRequired": "El text de l'alerta és obligatori.",
-      "visibleFromRequired": "La data d'inici és obligatòria."
+      "visibleFromRequired": "La data d'inici és obligatòria.",
+      "teamRequired": "Selecciona un equip o departament.",
+      "studyTypeRequired": "Selecciona un tipus d'estudi.",
+      "studyRequired": "Selecciona un estudi.",
+      "moduleRequired": "Selecciona un mòdul."
     }
   },
   "notifications": {
@@ -371,6 +432,8 @@
     "markReadSuccess": "Notificació marcada com llegida.",
     "markReadError": "No s'ha pogut marcar com llegida.",
     "backToList": "Tornar a la llista",
+    "detailMessage": "Missatge",
+    "detailInfo": "Informació",
     "loadError": "No s'ha pogut carregar la notificació.",
     "empty": "No hi ha notificacions per als filtres seleccionats.",
     "noPermission": "No tens permís per veure les notificacions.",
@@ -392,11 +455,56 @@
       "createdAt": "Rebuda",
       "readAt": "Llegida",
       "messageId": "ID de missatge",
-      "metadata": "Metadades"
+      "metadata": "Metadades",
+      "severity": "Severitat"
     },
     "status": {
       "read": "Llegida",
       "unread": "No llegida"
-    }
+    },
+    "confirmDelete": "Segur que vols eliminar esta notificació?",
+    "deleteSuccess": "Notificació eliminada.",
+    "deleteError": "No s'ha pogut eliminar la notificació.",
+    "testSent": "Notificació de prova enviada.",
+    "testError": "No s'ha pogut enviar la prova.",
+    "apps": {
+      "maya-dashboard": "Panell principal",
+      "maya-authorization": "Autorització",
+      "maya-dms": "Gestió documental",
+      "maya-logs": "Registres",
+      "maya-audit": "Auditoria"
+    },
+    "viewResource": "Veure recurs"
+  },
+  "scheduledRules": {
+    "newRule": "Nova regla",
+    "empty": "No hi ha regles programades.",
+    "errorSave": "No s'ha pogut guardar la regla.",
+    "saveSuccess": "Regla guardada.",
+    "confirmDelete": "Segur que vols eliminar esta regla?",
+    "deleteSuccess": "Regla eliminada.",
+    "deleteError": "No s'ha pogut eliminar la regla.",
+    "useDefaultSeverity": "Usar severitat per defecte",
+    "addParam": "Afegir paràmetre",
+    "paramKey": "Clau",
+    "paramValue": "Valor",
+    "fields": {
+      "evaluator": "Tipus de regla",
+      "name": "Nom",
+      "description": "Descripció",
+      "scheduleCron": "Cron",
+      "severityOverride": "Severitat",
+      "params": "Paràmetres",
+      "enabled": "Activa",
+      "sourceApp": "Servici"
+    },
+    "validation": {
+      "evaluatorRequired": "Selecciona un tipus de regla.",
+      "nameRequired": "El nom és obligatori.",
+      "cronRequired": "El cron és obligatori."
+    },
+    "editRule": "Editar regla",
+    "searchLabel": "Cercar",
+    "searchPlaceholder": "Cerca per nom o tipus…"
   }
 }

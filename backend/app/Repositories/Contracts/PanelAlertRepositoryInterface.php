@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Contracts;
 
+use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,9 +28,18 @@ interface PanelAlertRepositoryInterface
      *
      * @return Collection<int, PanelAlert>
      */
-    public function activeNow(int $limit): Collection;
+    public function activeNow(int $limit, string $userId): Collection;
 
     public function findOrFail(int $id): PanelAlert;
+
+    public function findDtoOrFail(int $id): PanelAlertDto;
+
+    /**
+     * All recurring alerts (schedule_cron set), for the materializer.
+     *
+     * @return Collection<int, PanelAlert>
+     */
+    public function allRecurring(): Collection;
 
     /**
      * @param  array<string, mixed>  $attributes

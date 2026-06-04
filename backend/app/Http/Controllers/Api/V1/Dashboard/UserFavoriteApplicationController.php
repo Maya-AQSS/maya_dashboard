@@ -28,7 +28,7 @@ class UserFavoriteApplicationController extends Controller
         $user = $this->resolveKeycloakUser($request);
         $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
 
-        $page = $this->favorites->list($user, $perPage);
+        $page = $this->favorites->list((string) $user->id, $perPage);
 
         return $this->paginated($page, UserFavoriteApplicationResource::class, $request);
     }
@@ -39,7 +39,7 @@ class UserFavoriteApplicationController extends Controller
         $applicationId = (int) $request->validated('application_id');
 
         return new UserFavoriteApplicationResource(
-            $this->favorites->add($user, $applicationId),
+            $this->favorites->add((string) $user->id, $applicationId),
         );
     }
 
@@ -48,7 +48,7 @@ class UserFavoriteApplicationController extends Controller
         unset($user);
 
         $resolved = $this->resolveKeycloakUser($request);
-        $this->favorites->remove($resolved, (int) $applicationId);
+        $this->favorites->remove((string) $resolved->id, (int) $applicationId);
 
         return response()->json(null, 204);
     }

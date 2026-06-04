@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\PanelAlert;
-use App\Models\PanelAlertRule;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
@@ -190,13 +189,18 @@ it('rejects store when visible_until is before visible_from', function () {
 
 // ─── update ───────────────────────────────────────────────────────────────────
 
-it('updates a panel alert with valid data', function () {
+it('updates a panel alert with valid data and re-notifies recipients', function () {
     $alert = makePanelAlert(['severity' => 'low', 'text' => 'Original text', 'created_by' => $this->userId]);
 
+    // Edit now both audits ('updated') and re-notifies ('renotified') — fix B1.
     $auditPublisher = Mockery::mock(AuditPublisher::class);
-    $auditPublisher->shouldReceive('publish')->once()->withArgs(fn (...$args): bool => $args[3] === 'updated');
+    $auditPublisher->shouldReceive('publish')->withArgs(fn (...$args): bool => $args[3] === 'updated')->once();
+    $auditPublisher->shouldReceive('publish')->withArgs(fn (...$args): bool => $args[3] === 'renotified')->once();
     $this->app->instance(AuditPublisher::class, $auditPublisher);
-    $this->app->forgetInstance(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class);
+
+    $notify = Mockery::mock(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class);
+    $notify->shouldReceive('notifyUsersOfNewAlert')->once()->andReturn(1);
+    $this->app->instance(\App\Services\Contracts\PanelAlertNotificationServiceInterface::class, $notify);
 
     $response = $this->putJson("/api/v1/panel-alerts/{$alert->id}", [
         'text' => 'Updated text',
