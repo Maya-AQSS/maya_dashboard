@@ -8,13 +8,13 @@ apps server-rendered (patrón `?return_to=<url>` + `?session_token=<jwt>`).
 - **Frontend**: React 19 + Vite + TypeScript
 - **IdP**: Keycloak 24 (realm `maya`)
 - **BD**: PostgreSQL 17
-- **Colas**: RabbitMQ (worker dedicado: `notifications:consume` + `alerts:consume`)
+- **Colas**: RabbitMQ (worker dedicado: `notifications:consume`)
 
 ## Infraestructura
 - Reverse proxy: **Traefik latest**
 - Red Docker compartida: `maya_network`
 - Script de arranque: `./up.sh` (no usar `docker compose up` directamente)
-- Servicios: `backend` (API HTTP), `worker` (consumers AMQP), `scheduler` (`schedule:run` cada 60s para `alerts:evaluate`), `frontend`
+- Servicios: `backend` (API HTTP), `worker` (consumer AMQP `notifications:consume`), `scheduler` (`schedule:run` cada 60s para `panel-alerts:materialize`), `frontend`
 
 ## Accesos locales (vía Traefik)
 - Frontend:  https://dashboard.maya.test

@@ -69,7 +69,7 @@ services:
     networks:
       - maya_network
 
-  # ─── Worker: consumers AMQP (notifications.ingest + alerts.ingest) ───
+  # ─── Worker: consumer AMQP (notifications.ingest) ───
   worker:
     build:
       context: ./backend
