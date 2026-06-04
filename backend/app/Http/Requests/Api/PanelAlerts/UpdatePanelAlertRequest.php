@@ -23,11 +23,13 @@ class UpdatePanelAlertRequest extends FormRequest
     {
         return array_merge([
             'text' => ['sometimes', 'string'],
-            'severity' => ['sometimes', 'string', 'in:critical,high,medium,low'],
+            'severity' => ['sometimes', 'string', 'in:critical,high,medium,low,info'],
             'action_label' => ['sometimes', 'nullable', 'string', 'max:255'],
             'action_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
             'visible_from' => ['sometimes', 'date'],
             'visible_until' => ['sometimes', 'nullable', 'date', 'after:visible_from'],
+            'schedule_cron' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'duration_minutes' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:525600'],
         ], $this->alertAudienceRules());
     }
 }

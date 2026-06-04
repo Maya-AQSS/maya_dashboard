@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\AsAudience;
 use App\Observers\PanelAlertObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[ObservedBy([PanelAlertObserver::class])]
 class PanelAlert extends Model
@@ -23,32 +23,25 @@ class PanelAlert extends Model
         'action_url',
         'visible_from',
         'visible_until',
+        'schedule_cron',
+        'duration_minutes',
+        'last_materialized_at',
         'source',
-        'rule_id',
         'created_by',
-        'notify_all',
-        'audience_kind',
-        'academic_level',
-        'audience_study_type_id',
-        'audience_study_id',
-        'audience_module_id',
-        'audience_team_id',
+        'audience',
     ];
 
     protected function casts(): array
     {
         return [
-            'notify_all' => 'boolean',
             'visible_from' => 'datetime',
             'visible_until' => 'datetime',
+            'last_materialized_at' => 'datetime',
+            'duration_minutes' => 'integer',
+            'audience' => AsAudience::class,
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
-    }
-
-    public function rule(): BelongsTo
-    {
-        return $this->belongsTo(PanelAlertRule::class, 'rule_id');
     }
 
     /**
@@ -62,5 +55,18 @@ class PanelAlert extends Model
                 $q->whereNull('visible_until')
                     ->orWhere('visible_until', '>=', now());
             });
+    }
+
+    /**
+     * Recurring alerts have a cron expression that drives re-materialization.
+     */
+    public function scopeRecurring(Builder $query): Builder
+    {
+        return $query->whereNotNull('schedule_cron');
+    }
+
+    public function isRecurring(): bool
+    {
+        return $this->schedule_cron !== null;
     }
 }

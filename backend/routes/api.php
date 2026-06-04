@@ -1,16 +1,17 @@
 <?php
 
 use App\Http\Controllers\Api\HealthCheckController;
-use App\Http\Controllers\Api\V1\Alerts\AlertController;
-use App\Http\Controllers\Api\V1\Alerts\AlertRuleController;
 use App\Http\Controllers\Api\V1\Attendance\AttendanceController;
 use App\Http\Controllers\Api\V1\Booking\BookingController;
 use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
 use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
+use App\Http\Controllers\Api\V1\Notifications\AttendanceReminderController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationController;
+use App\Http\Controllers\Api\V1\Notifications\NotificationSampleController;
+use App\Http\Controllers\Api\V1\Notifications\NotificationDefinitionController;
+use App\Http\Controllers\Api\V1\Notifications\NotificationRuleController;
 use App\Http\Controllers\Api\V1\PanelAlerts\PanelAlertController;
-use App\Http\Controllers\Api\V1\PanelAlerts\PanelAlertRuleController;
 use Illuminate\Support\Facades\Route;
 use Maya\Profile\Controllers\MeController;
 use Maya\Profile\Routing\AcademicContextRoutes;
@@ -55,24 +56,29 @@ Route::middleware('auth.keycloak')->prefix('v1/notifications')->group(function (
     Route::post('/{id}/read',      [NotificationController::class, 'markRead'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
     Route::post('/{id}/acknowledge', [NotificationController::class, 'acknowledge'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
     Route::post('/{id}/resolve',   [NotificationController::class, 'resolve'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
+    Route::delete('/{id}',         [NotificationController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.notifications.update');
+    // Login-triggered: emite recordatorio si no has fichado hoy (idempotente).
+    Route::post('/attendance-reminder', [AttendanceReminderController::class, 'check'])->middleware('permission:dashboard.notifications.index');
+    // QA: dispara una notificación de muestra del tipo indicado al usuario actual.
+    Route::post('/fire-sample', [NotificationSampleController::class, 'fire'])->middleware('permission:dashboard.notifications.index');
 });
 
-// Alerts (system-wide, visible to ops roles)
-Route::middleware('auth.keycloak')->prefix('v1/alerts')->group(function () {
-    Route::get('/',                      [AlertController::class, 'index']);
-    Route::post('/{id}/acknowledge',     [AlertController::class, 'acknowledge']);
-    Route::post('/{id}/resolve',         [AlertController::class, 'resolve']);
+// Notification definitions — system notification catalog (Alerts panel toggle).
+Route::middleware('auth.keycloak')->prefix('v1/notification-definitions')->group(function () {
+    Route::get('/',       [NotificationDefinitionController::class, 'index'])->middleware('permission:dashboard.panel_alerts.index');
+    Route::put('/{id}',   [NotificationDefinitionController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.update');
 });
 
-Route::middleware('auth.keycloak')->prefix('v1/alert-rules')->group(function () {
-    Route::get('/', [AlertRuleController::class, 'index']);
-    Route::get('/{id}', [AlertRuleController::class, 'show'])->whereNumber('id');
-    Route::post('/',        [AlertRuleController::class, 'store']);
-    Route::put('/{id}',     [AlertRuleController::class, 'update']);
-    Route::delete('/{id}',  [AlertRuleController::class, 'destroy']);
+// Notification rules — configurable scheduled-rule instances (level B).
+Route::middleware('auth.keycloak')->prefix('v1/notification-rules')->group(function () {
+    Route::get('/',       [NotificationRuleController::class, 'index'])->middleware('permission:dashboard.panel_alerts.index');
+    Route::post('/',      [NotificationRuleController::class, 'store'])->middleware('permission:dashboard.panel_alerts.create');
+    Route::get('/{id}',   [NotificationRuleController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.show');
+    Route::put('/{id}',   [NotificationRuleController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.update');
+    Route::delete('/{id}', [NotificationRuleController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.delete');
 });
 
-// Panel Alerts (user-created alerts for dashboard widget)
+// Panel Alerts (manual alerts for dashboard widget + bell)
 Route::middleware('auth.keycloak')->prefix('v1/panel-alerts')->group(function () {
     Route::get('/active', [PanelAlertController::class, 'activeForWidget']); // widget, no permission needed
     Route::get('/',        [PanelAlertController::class, 'index'])->middleware('permission:dashboard.panel_alerts.index');
@@ -80,14 +86,6 @@ Route::middleware('auth.keycloak')->prefix('v1/panel-alerts')->group(function ()
     Route::get('/{id}',    [PanelAlertController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.show');
     Route::put('/{id}',    [PanelAlertController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.update');
     Route::delete('/{id}', [PanelAlertController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.panel_alerts.delete');
-});
-
-Route::middleware('auth.keycloak')->prefix('v1/panel-alert-rules')->group(function () {
-    Route::get('/',        [PanelAlertRuleController::class, 'index'])->middleware('permission:dashboard.panel_alert_rules.index');
-    Route::post('/',       [PanelAlertRuleController::class, 'store'])->middleware('permission:dashboard.panel_alert_rules.create');
-    Route::get('/{id}',    [PanelAlertRuleController::class, 'show'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.show');
-    Route::put('/{id}',    [PanelAlertRuleController::class, 'update'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.update');
-    Route::delete('/{id}', [PanelAlertRuleController::class, 'destroy'])->whereNumber('id')->middleware('permission:dashboard.panel_alert_rules.delete');
 });
 
 Route::prefix('v1/health')->controller(HealthCheckController::class)->group(function () {

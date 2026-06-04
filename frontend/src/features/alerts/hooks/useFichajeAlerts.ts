@@ -1,9 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { postClockIn } from '../../fichaje/api/clockInApi'
+import { postAttendanceReminder } from '../api/attendanceReminderApi'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
-import type { AlertItem } from './useActiveSystemAlerts'
+import type { AlertItem } from '../types/alertItem'
 
 function formatHHMM(date: Date): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
@@ -40,6 +42,7 @@ interface UseFichajeAlertsReturn {
  */
 export function useFichajeAlerts(): UseFichajeAlertsReturn {
   const { user } = useAuth()
+  const { t } = useLocale()
   const userId = user?.sub
   const today = useMemo(() => startOfToday(), [])
   const todayKey = useMemo(() => toDateString(today), [today])
@@ -69,6 +72,17 @@ export function useFichajeAlerts(): UseFichajeAlertsReturn {
     mutation.mutate()
   }
 
+  // Recordatorio pasivo en login: si no has fichado hoy, pide al backend que
+  // emita la notificación (campana/bandeja). El servidor re-valida y es
+  // idempotente; el guard de sesión evita repetir en cada render del día.
+  useEffect(() => {
+    if (!userId || firstInToday) return
+    const key = `attendance-reminder:${userId}:${todayKey}`
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, '1')
+    postAttendanceReminder().catch(() => sessionStorage.removeItem(key))
+  }, [userId, firstInToday, todayKey])
+
   const alerts = useMemo<AlertItem[]>(() => {
     if (firstInToday) {
       // Confirmación verde — se puede descartar; el id incluye el día para
@@ -76,7 +90,7 @@ export function useFichajeAlerts(): UseFichajeAlertsReturn {
       return [{
         id: `local:fichado:${todayKey}`,
         color: 'green',
-        text: `Fichado a las ${formatHHMM(firstInToday)}`,
+        text: t('dashboard.fichaje.clockedInAt', { time: formatHHMM(firstInToday) }),
         actionLabel: null,
         canDismiss: true,
       }]
@@ -86,12 +100,12 @@ export function useFichajeAlerts(): UseFichajeAlertsReturn {
     return [{
       id: `local:no-fichado:${todayKey}`,
       color: 'amber',
-      text: 'No has fichado hoy',
-      actionLabel: mutation.isPending ? 'Fichando…' : 'Fichar',
+      text: t('dashboard.fichaje.notClockedIn'),
+      actionLabel: mutation.isPending ? t('dashboard.fichaje.clockingIn') : t('dashboard.fichaje.clockInButton'),
       actionKind: 'clockIn',
       canDismiss: false,
     }]
-  }, [firstInToday, mutation.isPending, todayKey])
+  }, [firstInToday, mutation.isPending, todayKey, t])
 
   return { alerts, clockIn, clockInPending: mutation.isPending }
 }

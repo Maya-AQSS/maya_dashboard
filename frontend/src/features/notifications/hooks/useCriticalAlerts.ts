@@ -27,7 +27,7 @@ export function useCriticalAlerts() {
     id: n.id,
     title: n.title,
     body: n.body ?? '',
-    severity: (n.metadata?.severity as string | undefined) ?? 'high',
+    severity: n.severity ?? 'high',
     createdAt: n.created_at,
     acknowledged: n.acknowledged_at !== null,
     canDismiss: true,

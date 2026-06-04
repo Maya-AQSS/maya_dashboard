@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
-use App\Models\AlertRule;
-use App\Models\PanelAlert;
-use App\Models\PanelAlertRule;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * Configuración de audiencia para alertas (panel, reglas de panel, reglas de sistema).
+ * Configuración de audiencia para notificaciones y alertas de panel.
+ *
+ * Persistida como JSON en la columna `audience` (ver App\Casts\AsAudience).
  */
 final readonly class AlertAudienceDto
 {
@@ -23,9 +23,24 @@ final readonly class AlertAudienceDto
         public ?string $audienceTeamId,
     ) {}
 
-    public static function fromModel(PanelAlert|PanelAlertRule|AlertRule $model): self
+    public static function fromModel(Model $model): self
     {
+        $audience = $model->getAttribute('audience');
+
+        if ($audience instanceof self) {
+            return $audience;
+        }
+
+        if (is_array($audience)) {
+            return self::fromArray($audience);
+        }
+
         return self::fromArray($model->getAttributes());
+    }
+
+    public static function allRecipients(): self
+    {
+        return new self(true, null, null, null, null, null, null);
     }
 
     /**

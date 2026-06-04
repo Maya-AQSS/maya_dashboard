@@ -29,10 +29,12 @@ final class AlertAudienceService implements AlertAudienceServiceInterface
     {
         $this->validator->assertCreatorOwnsAudience($creatorId, $validated);
 
+        // Non-audience fields pass through; the audience is persisted as a single
+        // value object into the JSONB `audience` column (App\Casts\AsAudience).
         $content = array_diff_key($validated, array_flip(self::INPUT_KEYS));
-        $audience = AlertAudienceDto::fromValidatedInput($validated)->toPersistenceArray();
+        $content['audience'] = AlertAudienceDto::fromValidatedInput($validated);
 
-        return array_merge($content, $audience);
+        return $content;
     }
 
     public function attributesForUpdate(string $creatorId, array $validated, AlertAudienceDto $current): array

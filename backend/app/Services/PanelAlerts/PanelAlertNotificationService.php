@@ -32,8 +32,8 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
     {
         $alert = $this->alerts->findDtoOrFail($alertId);
 
-        $type = $alert->source === 'rule' ? 'panel_alert.rule' : 'panel_alert.manual';
-        $title = Str::limit($alert->text, 120, '…');
+        $type = 'panel_alert.' . $alert->source;
+        $title = Str::limit(strip_tags($alert->text), 120, '…');
         $isCritical = in_array($alert->severity, ['critical', 'high'], true);
 
         $metadata = [
@@ -43,10 +43,6 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
             'action_label' => $alert->actionLabel,
             'action_url' => $alert->actionUrl,
         ];
-
-        if ($alert->ruleId !== null) {
-            $metadata['rule_id'] = $alert->ruleId;
-        }
 
         $recipientCount = 0;
 

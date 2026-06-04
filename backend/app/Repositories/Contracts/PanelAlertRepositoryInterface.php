@@ -35,6 +35,13 @@ interface PanelAlertRepositoryInterface
     public function findDtoOrFail(int $id): PanelAlertDto;
 
     /**
+     * All recurring alerts (schedule_cron set), for the materializer.
+     *
+     * @return Collection<int, PanelAlert>
+     */
+    public function allRecurring(): Collection;
+
+    /**
      * @param  array<string, mixed>  $attributes
      */
     public function create(array $attributes): PanelAlert;

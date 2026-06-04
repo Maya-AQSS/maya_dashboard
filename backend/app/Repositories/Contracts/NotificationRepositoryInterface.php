@@ -34,6 +34,13 @@ interface NotificationRepositoryInterface
 
     public function unreadCountForRecipient(string $recipientId): int;
 
+    public function existsByMessageId(string $messageId): bool;
+
+    /**
+     * Permanently removes the recipient's notification.
+     */
+    public function delete(Notification $notification): void;
+
     /**
      * Idempotent ingest by AMQP message id. Returns the persisted (or
      * existing) notification row.

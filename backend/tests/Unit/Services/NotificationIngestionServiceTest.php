@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\NotificationDefinition;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
 use App\Services\Notifications\NotificationIngestionService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
@@ -13,11 +15,15 @@ function makeNotificationIngestionService(
     return new NotificationIngestionService(
         $repo,
         $resilientLogPublisher ?? new ResilientLogPublisher(Mockery::mock(LogPublisher::class)->shouldIgnoreMissing()),
+        app(\App\Services\Contracts\NotificationDefinitionServiceInterface::class),
     );
 }
 
 beforeEach(function () {
-    config(['messaging.app' => 'maya-dashboard']);
+    config([
+        'messaging.app' => 'maya-dashboard',
+        'broadcasting.default' => 'null',
+    ]);
 });
 
 // ─── ingest ───────────────────────────────────────────────────────────────────
@@ -136,8 +142,7 @@ it('returns true and upserts when recipient user exists', function () {
     $keycloakId = (string) Str::uuid();
     $messageId  = (string) Str::uuid();
 
-    $notification = Mockery::mock(\App\Models\Notification::class);
-    $notification->recipient_id = $keycloakId;
+    $notification = new \App\Models\Notification(['recipient_id' => $keycloakId]);
 
     $repo = Mockery::mock(NotificationRepositoryInterface::class);
     $repo->shouldReceive('userExists')->once()->with($keycloakId)->andReturn(true);
@@ -164,8 +169,7 @@ it('returns true and upserts when recipient user exists', function () {
 
 it('caches known user IDs — userExists called only once for repeated ingestion', function () {
     $keycloakId = (string) Str::uuid();
-    $notification = Mockery::mock(\App\Models\Notification::class);
-    $notification->recipient_id = $keycloakId;
+    $notification = new \App\Models\Notification(['recipient_id' => $keycloakId]);
 
     $repo = Mockery::mock(NotificationRepositoryInterface::class);
     // userExists should be called exactly once (second call uses in-memory cache)
@@ -191,8 +195,7 @@ it('caches known user IDs — userExists called only once for repeated ingestion
 it('uses now() when created_at is absent', function () {
     $keycloakId = (string) Str::uuid();
     $messageId  = (string) Str::uuid();
-    $notification = Mockery::mock(\App\Models\Notification::class);
-    $notification->recipient_id = $keycloakId;
+    $notification = new \App\Models\Notification(['recipient_id' => $keycloakId]);
 
     $repo = Mockery::mock(NotificationRepositoryInterface::class);
     $repo->shouldReceive('userExists')->andReturn(true);
@@ -220,8 +223,7 @@ it('uses now() when created_at is absent', function () {
 it('passes metadata and channels arrays correctly', function () {
     $keycloakId = (string) Str::uuid();
     $messageId  = (string) Str::uuid();
-    $notification = Mockery::mock(\App\Models\Notification::class);
-    $notification->recipient_id = $keycloakId;
+    $notification = new \App\Models\Notification(['recipient_id' => $keycloakId]);
 
     $repo = Mockery::mock(NotificationRepositoryInterface::class);
     $repo->shouldReceive('userExists')->andReturn(true);
@@ -242,4 +244,64 @@ it('passes metadata and channels arrays correctly', function () {
         'metadata'              => ['key' => 'val'],
         'created_at'            => '2026-05-10T00:00:00Z',
     ], $messageId);
+});
+
+// ─── toggle gate + severity/url defaults (real DB) ──────────────────────────
+
+describe('catalog gate and defaults', function () {
+    uses(RefreshDatabase::class);
+
+    it('drops a disabled notification type but acknowledges the message', function () {
+        NotificationDefinition::factory()->disabled()->create(['key' => 'foo.disabled']);
+
+        $repo = Mockery::mock(NotificationRepositoryInterface::class);
+        $repo->shouldReceive('userExists')->never();
+        $repo->shouldReceive('upsertByMessageId')->never();
+
+        $service = makeNotificationIngestionService($repo);
+
+        $result = $service->ingest([
+            'app' => 'maya-dms',
+            'type' => 'foo.disabled',
+            'recipient_keycloak_id' => (string) Str::uuid(),
+            'channels' => ['app'],
+        ], (string) Str::uuid());
+
+        expect($result)->toBeTrue(); // acknowledged (dropped, not error)
+    });
+
+    it('fills severity and url from the definition when payload omits them', function () {
+        $keycloakId = (string) Str::uuid();
+        $messageId = (string) Str::uuid();
+
+        NotificationDefinition::factory()->create([
+            'key' => 'document.published',
+            'default_severity' => 'high',
+            'url_template' => '/documents/{document_id}',
+            'title_key' => 'notifications.document.published.title',
+            'body_key' => 'notifications.document.published.body',
+        ]);
+
+        $captured = null;
+        $repo = Mockery::mock(NotificationRepositoryInterface::class);
+        $repo->shouldReceive('userExists')->andReturn(true);
+        $repo->shouldReceive('upsertByMessageId')->once()->andReturnUsing(function ($mid, $args) use (&$captured, $keycloakId) {
+            $captured = $args;
+
+            return new \App\Models\Notification(['recipient_id' => $keycloakId]);
+        });
+
+        makeNotificationIngestionService($repo)->ingest([
+            'app' => 'maya-dms',
+            'type' => 'document.published',
+            'recipient_keycloak_id' => $keycloakId,
+            'channels' => ['app'],
+            'params' => ['document_id' => 42],
+        ], $messageId);
+
+        expect($captured['severity'])->toBe('high');
+        expect($captured['url'])->toBe('/documents/42');
+        expect($captured['title_key'])->toBe('notifications.document.published.title');
+        expect($captured['params'])->toBe(['document_id' => 42]);
+    });
 });

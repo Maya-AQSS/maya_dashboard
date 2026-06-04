@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
@@ -19,21 +19,18 @@ import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { usePanelAlerts } from '../hooks/usePanelAlerts'
-import { usePanelAlertRules } from '../hooks/usePanelAlertRules'
-import type {
-  PanelAlert,
-  PanelAlertFilters,
-  PanelAlertRule,
-  Severity,
-} from '../types/panelAlert'
+import { SystemNotificationsTab } from '../components/SystemNotificationsTab'
+import { ScheduledRulesTab } from '../components/ScheduledRulesTab'
+import type { PanelAlert, PanelAlertFilters, Severity } from '../types/panelAlert'
 
-type Tab = 'alerts' | 'rules'
+type Tab = 'alerts' | 'system' | 'rules'
 
 const SEVERITY_BADGE: Record<Severity, 'danger' | 'warning' | 'info' | 'neutral'> = {
   critical: 'danger',
   high: 'warning',
   medium: 'info',
   low: 'neutral',
+  info: 'neutral',
 }
 
 export default function PanelAlertsPage() {
@@ -47,19 +44,16 @@ export default function PanelAlertsPage() {
   const canCreateAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsCreate)
   const canUpdateAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsUpdate)
   const canDeleteAlert = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsDelete)
-  const canIndexRules = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesIndex)
-  const canCreateRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesCreate)
-  const canUpdateRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesUpdate)
-  const canDeleteRule = hasPermission(DASHBOARD_PERMISSIONS.panelAlertRulesDelete)
 
   // ── URL-synced filter state ───────────────────────────────────
   const activeTab = (searchParams.get('tab') as Tab | null) ?? 'alerts'
   const alertPage = Number(searchParams.get('page') ?? '1')
   const alertSearch = searchParams.get('search') ?? ''
   const alertSeverity = (searchParams.get('severity') as Severity | '') ?? ''
-  const includeExpired = searchParams.get('expired') === '1'
+  // Por defecto se muestran TODAS las alertas (activas y expiradas), ordenadas
+  // por fecha de ejecución/finalización; el usuario puede filtrar a solo activas.
+  const includeExpired = searchParams.get('expired') !== '0'
 
-  // ── Local UI state (debounce input only) ─────────────────────
   const [alertSearchInput, setAlertSearchInput] = useState(alertSearch)
   const alertDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -73,7 +67,8 @@ export default function PanelAlertsPage() {
     setSearchParams((prev) => { severity ? prev.set('severity', severity) : prev.delete('severity'); prev.delete('page'); return prev }, { replace: true })
   }
   const setIncludeExpired = (value: boolean) => {
-    setSearchParams((prev) => { value ? prev.set('expired', '1') : prev.delete('expired'); prev.delete('page'); return prev }, { replace: true })
+    // Ausencia de 'expired' = todas (por defecto); 'expired=0' = solo activas.
+    setSearchParams((prev) => { value ? prev.delete('expired') : prev.set('expired', '0'); prev.delete('page'); return prev }, { replace: true })
   }
 
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
@@ -91,20 +86,6 @@ export default function PanelAlertsPage() {
 
   const { alerts, meta, loading: alertsLoading, error: alertsError, onDelete } =
     usePanelAlerts(alertFilters, { enabled: canIndexAlerts })
-
-  // ── Rules tab state ───────────────────────────────────────────
-  const { rules, loading: rulesLoading, error: rulesError, onDelete: onDeleteRule } =
-    usePanelAlertRules({ enabled: canIndexRules })
-
-  useEffect(() => {
-    if (activeTab === 'rules' && !canIndexRules) {
-      setSearchParams((prev) => {
-        prev.set('tab', 'alerts')
-        prev.delete('page')
-        return prev
-      }, { replace: true })
-    }
-  }, [activeTab, canIndexRules, setSearchParams])
 
   // ── Alert columns ─────────────────────────────────────────────
   const alertColumns: ColumnDef<PanelAlert>[] = useMemo(
@@ -143,7 +124,14 @@ export default function PanelAlertsPage() {
         id: 'visible_until',
         header: t('panelAlerts.fields.visibleUntil'),
         cell: (a) => (a.visible_until ? formatDateTime(a.visible_until, dateLocale) : '—'),
+        sortable: true,
         width: '160px',
+      },
+      {
+        id: 'schedule_cron',
+        header: t('panelAlerts.fields.recurrence'),
+        cell: (a) => (a.schedule_cron ? <code className="text-xs font-mono">{a.schedule_cron}</code> : '—'),
+        width: '130px',
       },
       {
         id: 'source',
@@ -197,96 +185,7 @@ export default function PanelAlertsPage() {
 
       return columns
     },
-    [canDeleteAlert, canUpdateAlert, dateLocale, onDelete, t, toast],
-  )
-
-  // ── Rule columns ──────────────────────────────────────────────
-  const ruleColumns: ColumnDef<PanelAlertRule>[] = useMemo(
-    () => {
-      const columns: ColumnDef<PanelAlertRule>[] = [
-      {
-        id: 'name',
-        header: t('panelAlerts.fields.ruleName'),
-        cell: (r) => <span className="font-medium">{r.name}</span>,
-        alwaysVisible: true,
-      },
-      {
-        id: 'event_type',
-        header: t('panelAlerts.fields.eventType'),
-        cell: (r) => <code className="text-xs font-mono">{r.event_type}</code>,
-        width: '180px',
-      },
-      {
-        id: 'severity',
-        header: t('panelAlerts.fields.severity'),
-        cell: (r) => (
-          <Badge variant={SEVERITY_BADGE[r.severity]} size="sm">
-            {t(`severity.${r.severity}`)}
-          </Badge>
-        ),
-        width: '110px',
-      },
-      {
-        id: 'is_active',
-        header: t('panelAlerts.fields.isActive'),
-        cell: (r) => (
-          <Badge variant={r.is_active ? 'success' : 'neutral'} size="sm">
-            {r.is_active ? t('panelAlerts.active') : t('panelAlerts.inactive')}
-          </Badge>
-        ),
-        width: '90px',
-      },
-      {
-        id: 'last_triggered_at',
-        header: t('panelAlerts.fields.lastTriggeredAt'),
-        cell: (r) => (r.last_triggered_at ? formatDateTime(r.last_triggered_at, dateLocale) : '—'),
-        width: '160px',
-      },
-      ]
-
-      if (canUpdateRule || canDeleteRule) {
-        columns.push({
-          id: 'actions',
-          header: '',
-          cell: (r) => (
-            <div className="flex gap-1">
-              {canUpdateRule && (
-                <Button
-                  variant="outline"
-                  size="xs"
-                  onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/reglas/${r.id}`, { state: { record: r } }) }}
-                >
-                  {t('actions.edit')}
-                </Button>
-              )}
-              {canDeleteRule && (
-                <Button
-                  variant="danger"
-                  size="xs"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (window.confirm(t('panelAlerts.confirmDelete'))) {
-                      onDeleteRule(r.id).then(() =>
-                        toast({ tone: 'success', title: t('panelAlerts.deleteSuccess') }),
-                      ).catch(() =>
-                        toast({ tone: 'danger', title: t('panelAlerts.deleteError') }),
-                      )
-                    }
-                  }}
-                >
-                  {t('actions.delete')}
-                </Button>
-              )}
-            </div>
-          ),
-          width: '120px',
-          align: 'right',
-        })
-      }
-
-      return columns
-    },
-    [canDeleteRule, canUpdateRule, dateLocale, onDeleteRule, t, toast],
+    [canDeleteAlert, canUpdateAlert, dateLocale, navigate, onDelete, t, toast],
   )
 
   // ── Handlers ──────────────────────────────────────────────────
@@ -299,9 +198,15 @@ export default function PanelAlertsPage() {
     }, 400)
   }
 
-  const alertFiltersActive = [alertSearch, alertSeverity, includeExpired ? '1' : ''].filter(Boolean).length
-  const visibleTabs: Tab[] = canIndexRules ? ['alerts', 'rules'] : ['alerts']
-  const canCreateInActiveTab = activeTab === 'alerts' ? canCreateAlert : canCreateRule
+  const alertFiltersActive = [alertSearch, alertSeverity, includeExpired ? '' : 'active-only'].filter(Boolean).length
+  const visibleTabs: Tab[] = ['alerts', 'system', 'rules']
+
+  const tabLabel = (tab: Tab): string =>
+    tab === 'alerts'
+      ? t('panelAlerts.tabAlerts')
+      : tab === 'system'
+        ? t('panelAlerts.tabSystem')
+        : t('panelAlerts.tabRules')
 
   if (!canIndexAlerts) {
     return (
@@ -320,13 +225,12 @@ export default function PanelAlertsPage() {
         title={t('panelAlerts.pageTitle')}
         subtitle={t('panelAlerts.pageSubtitle')}
         actions={
-          canCreateInActiveTab ? (
-            <Button
-              onClick={() => {
-                if (activeTab === 'alerts') navigate('/panel-alerts/alertas/nueva')
-                else navigate('/panel-alerts/reglas/nueva')
-              }}
-            >
+          activeTab === 'alerts' && canCreateAlert ? (
+            <Button onClick={() => navigate('/panel-alerts/alertas/nueva')}>
+              + {t('actions.create')}
+            </Button>
+          ) : activeTab === 'rules' && canCreateAlert ? (
+            <Button onClick={() => navigate('/panel-alerts/reglas/nueva')}>
               + {t('actions.create')}
             </Button>
           ) : undefined
@@ -347,7 +251,7 @@ export default function PanelAlertsPage() {
                 : 'border-transparent text-text-secondary dark:text-text-dark-secondary hover:text-text-primary dark:hover:text-text-dark-primary',
             ].join(' ')}
           >
-            {tab === 'alerts' ? t('panelAlerts.tabAlerts') : t('panelAlerts.tabRules')}
+            {tabLabel(tab)}
           </button>
         ))}
       </div>
@@ -397,6 +301,7 @@ export default function PanelAlertsPage() {
                     <option value="high">{t('severity.high')}</option>
                     <option value="medium">{t('severity.medium')}</option>
                     <option value="low">{t('severity.low')}</option>
+                    <option value="info">{t('severity.info')}</option>
                   </Select>
                 </FilterField>
                 <FilterField label={t('panelAlerts.includeExpired')}>
@@ -425,22 +330,15 @@ export default function PanelAlertsPage() {
         </div>
       )}
 
-      {/* Rules tab */}
-      {activeTab === 'rules' && (
-        <div className="space-y-4">
-          {rulesError && (
-            <p role="alert" className="text-sm text-danger">{rulesError}</p>
-          )}
-          <DataTable
-            columns={ruleColumns}
-            rows={rules}
-            loading={rulesLoading}
-            rowKey={(r) => r.id}
-            emptyMessage={t('panelAlerts.rulesEmpty')}
-          />
-        </div>
+      {/* System notifications tab */}
+      {activeTab === 'system' && (
+        <SystemNotificationsTab canToggle={canUpdateAlert} />
       )}
 
+      {/* Scheduled rules tab (level B) */}
+      {activeTab === 'rules' && (
+        <ScheduledRulesTab canManage={canUpdateAlert} />
+      )}
     </>
   )
 }

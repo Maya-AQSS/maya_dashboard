@@ -80,7 +80,7 @@ const NotificationsPage = lazy(() => import('./features/notifications/pages/Noti
 const NotificationDetailPage = lazy(() => import('./features/notifications/pages/NotificationDetailPage'))
 const PanelAlertsPage = lazy(() => import('./features/panel-alerts/pages/PanelAlertsPage'))
 const PanelAlertFormPage = lazy(() => import('./features/panel-alerts/pages/PanelAlertFormPage'))
-const PanelAlertRuleFormPage = lazy(() => import('./features/panel-alerts/pages/PanelAlertRuleFormPage'))
+const NotificationRuleFormPage = lazy(() => import('./features/panel-alerts/pages/NotificationRuleFormPage'))
 const NotFoundPage = lazy(() => import('./shared/pages/NotFoundPage'))
 
 function AppRoutes() {
@@ -95,8 +95,8 @@ function AppRoutes() {
         <Route path="/panel-alerts" element={<PanelAlertsPage />} />
         <Route path="/panel-alerts/alertas/nueva" element={<PanelAlertFormPage />} />
         <Route path="/panel-alerts/alertas/:id" element={<PanelAlertFormPage />} />
-        <Route path="/panel-alerts/reglas/nueva" element={<PanelAlertRuleFormPage />} />
-        <Route path="/panel-alerts/reglas/:id" element={<PanelAlertRuleFormPage />} />
+        <Route path="/panel-alerts/reglas/nueva" element={<NotificationRuleFormPage />} />
+        <Route path="/panel-alerts/reglas/:id" element={<NotificationRuleFormPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

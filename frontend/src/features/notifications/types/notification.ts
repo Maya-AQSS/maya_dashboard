@@ -1,3 +1,5 @@
+export type NotificationSeverity = 'critical' | 'high' | 'medium' | 'low' | 'info'
+
 export interface Notification {
   id: number
   message_id: string | null
@@ -6,6 +8,12 @@ export interface Notification {
   recipient_id: string
   title: string
   body: string | null
+  title_key: string | null
+  body_key: string | null
+  params: Record<string, unknown>
+  severity: NotificationSeverity
+  url: string | null
+  target_app: string | null
   channels: string[]
   metadata: Record<string, unknown>
   read_at: string | null

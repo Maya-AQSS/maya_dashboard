@@ -55,7 +55,12 @@ final class NotificationRepository implements NotificationRepositoryInterface
         }
 
         if ($filter->isCritical !== null) {
-            $query->where('is_critical', $filter->isCritical);
+            $critical = ['critical', 'high'];
+            if ($filter->isCritical) {
+                $query->whereIn('severity', $critical);
+            } else {
+                $query->whereNotIn('severity', $critical);
+            }
         }
 
         if ($filter->acknowledged !== null) {
@@ -93,6 +98,16 @@ final class NotificationRepository implements NotificationRepositoryInterface
     public function unreadCountForRecipient(string $recipientId): int
     {
         return Notification::forRecipient($recipientId)->unread()->count();
+    }
+
+    public function delete(Notification $notification): void
+    {
+        $notification->delete();
+    }
+
+    public function existsByMessageId(string $messageId): bool
+    {
+        return Notification::query()->where('message_id', $messageId)->exists();
     }
 
     public function upsertByMessageId(string $messageId, array $attributes): Notification

@@ -2,7 +2,7 @@ import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import { Button } from '@ceedcv-maya/shared-ui-react'
 import { useTranslation } from 'react-i18next'
 import { useUserAlerts } from '../../alerts/hooks/useUserAlerts'
-import type { AlertItem } from '../../alerts/hooks/useActiveSystemAlerts'
+import type { AlertItem } from '../../alerts/types/alertItem'
 
 const COLOR_CLASSES = {
   amber: 'bg-warning-light dark:bg-warning-dark/20 border-warning/20 dark:border-warning/50 text-warning-dark dark:text-warning',

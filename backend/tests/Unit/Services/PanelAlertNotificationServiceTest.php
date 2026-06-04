@@ -27,7 +27,6 @@ it('notifies every active user when a panel alert is created', function () {
         'visible_from' => now(),
         'source' => 'manual',
         'created_by' => $userA,
-        'notify_all' => true,
     ]);
 
     $notificationPublisher = Mockery::mock(NotificationPublisher::class);
@@ -54,16 +53,15 @@ it('notifies every active user when a panel alert is created', function () {
     expect($service->notifyUsersOfNewAlert($alert->id))->toBe(2);
 });
 
-it('uses panel_alert.rule type for rule-sourced alerts', function () {
+it('uses panel_alert.scheduled type for scheduled-sourced alerts', function () {
     $userId = (string) Str::uuid();
 
     $alert = PanelAlert::forceCreate([
         'text' => 'Umbral superado',
         'severity' => 'medium',
         'visible_from' => now(),
-        'source' => 'rule',
+        'source' => 'scheduled',
         'created_by' => $userId,
-        'notify_all' => true,
     ]);
 
     $notificationPublisher = Mockery::mock(NotificationPublisher::class);
@@ -80,7 +78,7 @@ it('uses panel_alert.rule type for rule-sourced alerts', function () {
             ?string $createdAt,
             bool $isCritical,
             string $scope,
-        ): bool => $type === 'panel_alert.rule'
+        ): bool => $type === 'panel_alert.scheduled'
             && $isCritical === false
             && $recipientId === $userId);
 
@@ -113,7 +111,6 @@ it('publishes structured log to maya.logs when notification publish fails for a 
         'visible_from' => now(),
         'source' => 'manual',
         'created_by' => $userId,
-        'notify_all' => true,
     ]);
 
     $notificationPublisher = Mockery::mock(NotificationPublisher::class);

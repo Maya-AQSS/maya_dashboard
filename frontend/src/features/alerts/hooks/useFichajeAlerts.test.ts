@@ -19,6 +19,21 @@ vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: () => ({ user: { sub: 'user-1' } }),
 }))
 
+// t() devuelve la clave (o el valor interpolado de {time}) para asserts estables.
+vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
+  useLocale: () => ({
+    t: (key: string, opts?: Record<string, unknown>) =>
+      opts && 'time' in opts ? String(opts.time) : key,
+    dateLocale: undefined,
+  }),
+}))
+
+// El recordatorio pasivo (efecto en login) se mockea para no contaminar apiFetchJson.
+const postAttendanceReminderMock = vi.fn().mockResolvedValue(undefined)
+vi.mock('../api/attendanceReminderApi', () => ({
+  postAttendanceReminder: () => postAttendanceReminderMock(),
+}))
+
 import { useFichajeAlerts } from './useFichajeAlerts'
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -31,6 +46,8 @@ function wrapper({ children }: { children: ReactNode }) {
 beforeEach(() => {
   apiGetJsonMock.mockReset()
   apiFetchJsonMock.mockReset()
+  postAttendanceReminderMock.mockClear()
+  sessionStorage.clear()
 })
 
 afterEach(() => {
@@ -108,11 +125,11 @@ describe('useFichajeAlerts', () => {
     apiFetchJsonMock.mockImplementationOnce(() => new Promise((resolve) => { resolvePost = resolve }))
 
     const { result } = renderHook(() => useFichajeAlerts(), { wrapper })
-    await waitFor(() => expect(result.current.alerts[0].actionLabel).toBe('Fichar'))
+    await waitFor(() => expect(result.current.alerts[0].actionLabel).toBe('dashboard.fichaje.clockInButton'))
 
     result.current.clockIn()
 
-    await waitFor(() => expect(result.current.alerts[0].actionLabel).toBe('Fichando…'))
+    await waitFor(() => expect(result.current.alerts[0].actionLabel).toBe('dashboard.fichaje.clockingIn'))
     expect(result.current.clockInPending).toBe(true)
 
     resolvePost?.({ id: '1', user_id: 'user-1', check_in: new Date().toISOString(), check_out: null, source: 'manual' })

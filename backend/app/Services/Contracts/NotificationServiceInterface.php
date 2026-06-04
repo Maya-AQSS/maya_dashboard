@@ -22,4 +22,6 @@ interface NotificationServiceInterface
     public function markAllRead(string $recipientId): int;
 
     public function unreadCount(string $recipientId): int;
+
+    public function delete(string $recipientId, int $notificationId): void;
 }

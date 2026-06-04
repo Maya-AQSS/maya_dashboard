@@ -26,7 +26,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
         string $sortBy,
         string $sortDir,
     ): LengthAwarePaginator {
-        $query = PanelAlert::query()->with('rule');
+        $query = PanelAlert::query();
 
         if (! $includeExpired) {
             $query->active();
@@ -40,11 +40,16 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
             $query->where('text', 'ilike', '%'.$search.'%');
         }
 
-        $allowedSortColumns = ['visible_from', 'created_at', 'severity'];
-        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'created_at';
+        $allowedSortColumns = ['visible_from', 'visible_until', 'created_at', 'severity'];
+        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'visible_from';
         $direction = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
 
         $query->orderBy($column, $direction);
+        // Orden estable por fecha de ejecución y de finalización.
+        if ($column !== 'visible_from') {
+            $query->orderBy('visible_from', $direction);
+        }
+        $query->orderBy('visible_until', $direction);
 
         return $query->paginate($perPage);
     }
@@ -74,6 +79,14 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
     public function findDtoOrFail(int $id): PanelAlertDto
     {
         return PanelAlertDto::fromModel($this->findOrFail($id));
+    }
+
+    /**
+     * @return Collection<int, PanelAlert>
+     */
+    public function allRecurring(): Collection
+    {
+        return PanelAlert::query()->recurring()->orderBy('id')->get();
     }
 
     public function create(array $attributes): PanelAlert

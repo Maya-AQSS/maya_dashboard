@@ -8,6 +8,8 @@ import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { useNotification } from '../hooks/useNotification'
 import { markNotificationRead } from '../api/notificationsApi'
+import { notificationAppLabel } from '../appLabel'
+import { resolveResourceTarget } from '../resolveResourceUrl'
 
 function editorHtmlToPlainText(html: string): string {
   const safe = sanitizeEditorHtml(html)
@@ -121,24 +123,41 @@ export default function NotificationDetailPage() {
     )
   }
 
+  const resourceTarget = resolveResourceTarget(notification.url, notification.target_app)
+
   return (
     <>
       <PageTitle
         title={pageTitle}
-        subtitle={`#${notification.id} · ${notification.app} · ${notification.type}`}
+        subtitle={`#${notification.id} · ${notificationAppLabel(t, notification.app)} · ${notification.type}`}
         onBack={() => navigate('/notifications')}
         actions={
-          !notification.read_at && canUpdate ? (
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={markReadMutation.isPending}
-              onClick={() => markReadMutation.mutate()}
-              className="w-full sm:w-auto"
-            >
-              {markReadMutation.isPending ? t('notifications.markingRead') : t('notifications.markRead')}
-            </Button>
-          ) : null
+          <div className="flex flex-col sm:flex-row gap-2">
+            {resourceTarget ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  if (resourceTarget.internal) navigate(resourceTarget.href)
+                  else window.location.assign(resourceTarget.href)
+                }}
+              >
+                {t('notifications.viewResource')}
+              </Button>
+            ) : null}
+            {!notification.read_at && canUpdate ? (
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={markReadMutation.isPending}
+                onClick={() => markReadMutation.mutate()}
+                className="w-full sm:w-auto"
+              >
+                {markReadMutation.isPending ? t('notifications.markingRead') : t('notifications.markRead')}
+              </Button>
+            ) : null}
+          </div>
         }
       />
 
@@ -166,7 +185,7 @@ export default function NotificationDetailPage() {
             />
             <DetailRow
               label={t('notifications.fields.app')}
-              value={<Badge variant="neutral" size="sm">{notification.app}</Badge>}
+              value={<Badge variant="neutral" size="sm">{notificationAppLabel(t, notification.app)}</Badge>}
             />
             <DetailRow
               label={t('notifications.fields.type')}

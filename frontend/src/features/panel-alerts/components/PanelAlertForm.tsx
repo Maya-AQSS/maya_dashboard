@@ -26,7 +26,7 @@ interface Props {
   loading?: boolean
 }
 
-const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low']
+const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low', 'info']
 
 export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) {
   const { t } = useLocale()
@@ -38,6 +38,10 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
   const [actionUrl, setActionUrl] = useState(initial?.action_url ?? '')
   const [visibleFrom, setVisibleFrom] = useState(toDatetimeLocalValue(initial?.visible_from))
   const [visibleUntil, setVisibleUntil] = useState(toDatetimeLocalValue(initial?.visible_until))
+  const [scheduleCron, setScheduleCron] = useState(initial?.schedule_cron ?? '')
+  const [durationMinutes, setDurationMinutes] = useState(
+    initial?.duration_minutes != null ? String(initial.duration_minutes) : '',
+  )
   const [audience, setAudience] = useState<AlertAudienceFormState>(() =>
     initial ? audienceFormStateFromApi(initial) : defaultAudienceFormState(),
   )
@@ -52,6 +56,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
       setActionUrl(initial.action_url ?? '')
       setVisibleFrom(toDatetimeLocalValue(initial.visible_from))
       setVisibleUntil(toDatetimeLocalValue(initial.visible_until))
+      setScheduleCron(initial.schedule_cron ?? '')
+      setDurationMinutes(initial.duration_minutes != null ? String(initial.duration_minutes) : '')
     }
   }, [initial])
 
@@ -75,6 +81,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
         action_url: actionUrl.trim() || null,
         visible_from: datetimeLocalToIso(visibleFrom)!,
         visible_until: visibleUntil ? datetimeLocalToIso(visibleUntil) : null,
+        schedule_cron: scheduleCron.trim() || null,
+        duration_minutes: durationMinutes.trim() ? Number(durationMinutes) : null,
         ...buildAudiencePayload(audience),
       })
     } catch (err) {
@@ -160,6 +168,46 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
           />
         </div>
       </div>
+
+      {/* Recurrence (optional): cron + window duration. When set, the alert
+          re-appears on each cron tick for `duration_minutes`. */}
+      <fieldset className="border border-ui-border dark:border-ui-dark-border rounded-md p-3">
+        <legend className="px-1 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+          {t('panelAlerts.recurrence.legend')}
+        </legend>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
+              {t('panelAlerts.fields.scheduleCron')}
+            </label>
+            <TextInput
+              fieldSize="sm"
+              value={scheduleCron}
+              onChange={(e) => setScheduleCron(e.target.value)}
+              placeholder="0 9 * * 1"
+            />
+            <p className="mt-1 text-xs text-text-secondary dark:text-text-dark-secondary">
+              {t('panelAlerts.recurrence.cronHelp')}
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
+              {t('panelAlerts.fields.durationMinutes')}
+            </label>
+            <TextInput
+              fieldSize="sm"
+              type="number"
+              min={1}
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(e.target.value)}
+              placeholder="120"
+            />
+            <p className="mt-1 text-xs text-text-secondary dark:text-text-dark-secondary">
+              {t('panelAlerts.recurrence.durationHelp')}
+            </p>
+          </div>
+        </div>
+      </fieldset>
 
       {error && (
         <p role="alert" className="text-sm text-danger">{error}</p>

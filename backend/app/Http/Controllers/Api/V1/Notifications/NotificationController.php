@@ -74,4 +74,13 @@ class NotificationController extends Controller
 
         return $this->okData(new NotificationResource($this->notifications->resolve($recipientId, $notificationId, $recipientId)));
     }
+
+    public function destroy(Request $request, int $notificationId): JsonResponse
+    {
+        $recipientId = (string) $this->resolveKeycloakUser($request)->id;
+
+        $this->notifications->delete($recipientId, $notificationId);
+
+        return $this->noContent();
+    }
 }
