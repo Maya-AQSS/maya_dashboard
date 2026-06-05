@@ -141,10 +141,17 @@ function ProfilePage() {
   const { hasPermission } = useUserProfile()
   const canShow = hasPermission(DASHBOARD_PERMISSIONS.profileShow)
   const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.profileUpdate)
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
+  const { languages } = useLanguages()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+
+  // Nombre legible del idioma actual para la vista de solo-lectura.
+  const currentLanguageName = useMemo(
+    () => languages.find((l) => l.code === locale)?.name ?? locale,
+    [languages, locale],
+  )
 
   const schema = useMemo(() => createEmployeeFormSchema(t), [t])
   const academicContextTexts = useMemo(() => ({
@@ -324,6 +331,13 @@ function ProfilePage() {
               <ProfileRow label={t('profile.carRegistration1')} value={employeeData?.car_registration_number_1} />
               <ProfileRow label={t('profile.carRegistration2')} value={employeeData?.car_registration_number_2} />
               <ProfileRow label={t('profile.carRegistration3')} value={employeeData?.car_registration_number_3} />
+            </ProfileDl>
+          </ProfileSection>
+
+          {/* Preferencias (solo lectura): idioma actual en texto */}
+          <ProfileSection title={t('userMenu.preferences') || 'Preferencias'}>
+            <ProfileDl>
+              <ProfileRow label={t('profile.language') || 'Idioma'} value={currentLanguageName} />
             </ProfileDl>
           </ProfileSection>
 
