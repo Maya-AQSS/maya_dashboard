@@ -333,8 +333,6 @@ function ProfilePage() {
             error={academicError instanceof Error ? academicError : null}
             texts={academicContextTexts}
           />
-
-          <PreferencesCard canUpdate={canUpdate} />
         </section>
       ) : (
         <section className="max-w-[600px] mx-auto min-w-0">
@@ -404,6 +402,9 @@ function ProfilePage() {
                   />
                 </div>
               </ProfileSection>
+
+              {/* Preferencia de idioma (justo después de Vehículos) */}
+              <PreferencesCard canUpdate={canUpdate} />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">

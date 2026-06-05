@@ -106,6 +106,32 @@ vi.mock('@ceedcv-maya/shared-ui-react', () => ({
   }) => <textarea id={id} rows={rows} data-testid={`textarea-${id}`} {...props} />,
 }))
 
+// Idiomas: mock fijo (evita el chain useLanguages → api/http → oidcAdapter → AuthService).
+vi.mock('../../languages/useLanguages', () => ({
+  useLanguages: () => ({
+    languages: [
+      { code: 'es', name: 'Español', is_default: true },
+      { code: 'va', name: 'Valencià', is_default: false },
+      { code: 'en', name: 'English', is_default: false },
+    ],
+    defaultLocale: 'es',
+    loading: false,
+  }),
+}))
+
+// Hooks de datos (react-query) y contexto académico: stubs sin red ni QueryClient.
+vi.mock('../api/academicContextApi', () => ({
+  useMyAcademicContext: () => ({ data: undefined, isLoading: false, error: null }),
+}))
+
+vi.mock('../api/employeeApi', () => ({
+  useMyEmployeeData: () => ({ data: undefined }),
+}))
+
+vi.mock('@ceedcv-maya/shared-profile-react', () => ({
+  UserAcademicContext: () => null,
+}))
+
 // --- Imports after mocks ---
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
@@ -195,10 +221,12 @@ describe('ProfilePage', () => {
       expect(screen.getByText('Juan')).toBeTruthy()
     })
 
-    it('deshabilita el selector de idioma sin profile.update', () => {
+    it('no permite acceder al selector de idioma sin profile.update', () => {
       hasPermissionMock.mockImplementation((slug: string) => slug === 'profile.show')
       render(<ProfilePage />)
-      expect(screen.getByRole('combobox')).toHaveProperty('disabled', true)
+      // Sin permiso de edición no hay botón de editar ni, por tanto, selector.
+      expect(screen.queryByText('profile.edit')).toBeNull()
+      expect(screen.queryByRole('combobox')).toBeNull()
     })
   })
 
@@ -236,9 +264,9 @@ describe('ProfilePage', () => {
       expect(screen.getByText('profile.edit')).toBeTruthy()
     })
 
-    it('muestra la tarjeta de preferencias con selector de idioma', () => {
+    it('no muestra el selector de idioma en modo visualización', () => {
       render(<ProfilePage />)
-      expect(screen.getByRole('combobox')).toBeTruthy()
+      expect(screen.queryByRole('combobox')).toBeNull()
     })
 
     it('llama navigate(-1) al hacer clic en back', () => {
@@ -264,14 +292,14 @@ describe('ProfilePage', () => {
     it('muestra botones de cancelar y guardar', () => {
       render(<ProfilePage />)
       fireEvent.click(screen.getByText('profile.edit'))
-      expect(screen.getByText('profile.cancel')).toBeTruthy()
+      expect(screen.getByText('actions.cancel')).toBeTruthy()
       expect(screen.getByText('profile.save')).toBeTruthy()
     })
 
     it('cancela la edición al hacer clic en cancelar', () => {
       render(<ProfilePage />)
       fireEvent.click(screen.getByText('profile.edit'))
-      fireEvent.click(screen.getByText('profile.cancel'))
+      fireEvent.click(screen.getByText('actions.cancel'))
       expect(screen.getByText('profile.title')).toBeTruthy()
       expect(screen.queryByText('profile.editTitle')).toBeNull()
     })
@@ -327,17 +355,20 @@ describe('ProfilePage', () => {
     })
   })
 
-  describe('PreferencesCard — cambio de idioma', () => {
-    it('muestra las opciones de idioma', () => {
+  describe('PreferencesCard — cambio de idioma (en edición)', () => {
+    const enterEdit = () => fireEvent.click(screen.getByText('profile.edit'))
+
+    it('muestra las opciones de idioma en edición', () => {
       render(<ProfilePage />)
-      const select = screen.getByRole('combobox')
-      expect(select).toBeTruthy()
+      enterEdit()
+      expect(screen.getByRole('combobox')).toBeTruthy()
     })
 
     it('llama updateMyLocale al cambiar el idioma con profile.update', async () => {
       hasPermissionMock.mockImplementation(() => true)
       mockUpdateMyLocale.mockResolvedValueOnce(undefined)
       render(<ProfilePage />)
+      enterEdit()
       const select = screen.getByRole('combobox')
       await act(async () => {
         fireEvent.change(select, { target: { value: 'en' } })
@@ -345,18 +376,17 @@ describe('ProfilePage', () => {
       expect(mockUpdateMyLocale).toHaveBeenCalledWith('en')
     })
 
-    it('no llama updateMyLocale sin profile.update', async () => {
+    it('no expone el selector sin profile.update', () => {
       hasPermissionMock.mockImplementation((slug: string) => slug === 'profile.show')
       render(<ProfilePage />)
-      const select = screen.getByRole('combobox')
-      await act(async () => {
-        fireEvent.change(select, { target: { value: 'en' } })
-      })
+      // El selector vive en el formulario de edición, inaccesible sin permiso.
+      expect(screen.queryByRole('combobox')).toBeNull()
       expect(mockUpdateMyLocale).not.toHaveBeenCalled()
     })
 
     it('no llama updateMyLocale cuando el idioma seleccionado es el actual', async () => {
       render(<ProfilePage />)
+      enterEdit()
       const select = screen.getByRole('combobox')
       await act(async () => {
         fireEvent.change(select, { target: { value: 'es' } })
@@ -367,6 +397,7 @@ describe('ProfilePage', () => {
     it('no lanza error cuando updateMyLocale falla', async () => {
       mockUpdateMyLocale.mockRejectedValueOnce(new Error('Server error'))
       render(<ProfilePage />)
+      enterEdit()
       const select = screen.getByRole('combobox')
       await act(async () => {
         fireEvent.change(select, { target: { value: 'en' } })
