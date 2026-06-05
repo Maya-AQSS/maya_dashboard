@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b6e9ced6ca245568b0d413af9bd230a",
+    "content-hash": "1ae9e79fa2210a6010f0b5c6f0bffee2",
     "packages": [
         {
             "name": "brick/math",
@@ -137,7 +137,7 @@
         },
         {
             "name": "ceedcv-maya/shared-auth-laravel",
-            "version": "v0.8.0",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maya-AQSS/shared-auth-laravel.git",
@@ -209,7 +209,7 @@
         },
         {
             "name": "ceedcv-maya/shared-http-laravel",
-            "version": "v0.8.0",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maya-AQSS/shared-http-laravel.git",
@@ -265,7 +265,7 @@
         },
         {
             "name": "ceedcv-maya/shared-messaging-laravel",
-            "version": "v0.8.0",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maya-AQSS/shared-messaging-laravel.git",
@@ -338,7 +338,7 @@
         },
         {
             "name": "ceedcv-maya/shared-platform-laravel",
-            "version": "v0.8.0",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maya-AQSS/shared-platform-laravel.git",
@@ -391,16 +391,16 @@
         },
         {
             "name": "ceedcv-maya/shared-profile-laravel",
-            "version": "v0.8.0",
+            "version": "v0.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Maya-AQSS/shared-profile-laravel.git",
-                "reference": "12fe4bd61f60cef5597499c8728b42e2205acfd4"
+                "reference": "b865a3689310374473bbe43b155207c99dc351ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Maya-AQSS/shared-profile-laravel/zipball/12fe4bd61f60cef5597499c8728b42e2205acfd4",
-                "reference": "12fe4bd61f60cef5597499c8728b42e2205acfd4",
+                "url": "https://api.github.com/repos/Maya-AQSS/shared-profile-laravel/zipball/b865a3689310374473bbe43b155207c99dc351ff",
+                "reference": "b865a3689310374473bbe43b155207c99dc351ff",
                 "shasum": ""
             },
             "require": {
@@ -450,15 +450,21 @@
                 "issues": "https://github.com/Maya-AQSS/maya_platform/issues",
                 "source": "https://github.com/Maya-AQSS/shared-profile-laravel"
             },
-            "time": "2026-06-01T13:49:34+00:00"
+            "time": "2026-06-05T14:24:57+00:00"
         },
         {
             "name": "ceedcv-maya/shared-translations-laravel",
-            "version": "0.1.0",
+            "version": "v0.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Maya-AQSS/shared-translations-laravel.git",
+                "reference": "c2361ef652502587779fb3329d5932653bcd633f"
+            },
             "dist": {
-                "type": "path",
-                "url": "../../maya_platform/packages/php/shared-translations-laravel",
-                "reference": "a1bb2a1ea6d92003b9d1e51a8eda3bfd9a7970dc"
+                "type": "zip",
+                "url": "https://api.github.com/repos/Maya-AQSS/shared-translations-laravel/zipball/c2361ef652502587779fb3329d5932653bcd633f",
+                "reference": "c2361ef652502587779fb3329d5932653bcd633f",
+                "shasum": ""
             },
             "require": {
                 "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
@@ -479,6 +485,7 @@
                     "Maya\\Translations\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -492,11 +499,11 @@
             "description": "Polymorphic translations for Laravel: a single translations table + HasTranslations trait to store per-locale field values for any model (panel alerts, messages, …).",
             "homepage": "https://github.com/Maya-AQSS/shared-translations-laravel",
             "keywords": [
+                "Maya",
                 "ceedcv",
                 "i18n",
                 "laravel",
                 "locale",
-                "maya",
                 "polymorphic",
                 "translations"
             ],
@@ -504,10 +511,7 @@
                 "issues": "https://github.com/Maya-AQSS/maya_platform/issues",
                 "source": "https://github.com/Maya-AQSS/shared-translations-laravel"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2026-06-05T15:01:15+00:00"
         },
         {
             "name": "clue/redis-protocol",
