@@ -3,6 +3,7 @@ import { EditorContentHtml, sanitizeEditorHtml } from '@ceedcv-maya/shared-edito
 import { useParams, useNavigate } from 'react-router-dom'
 import { Badge, Button, PageTitle, Spinner, formatDateTime, useToast } from '@ceedcv-maya/shared-ui-react'
 import { useLocale, useNotificationText } from '@ceedcv-maya/shared-i18n-react'
+import { readI18nMeta } from '../notificationI18n'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
@@ -73,11 +74,24 @@ export default function NotificationDetailPage() {
     onError: () => toast({ tone: 'danger', title: t('notifications.markReadError') }),
   })
 
+  const i18nMeta = readI18nMeta(notification?.metadata)
   const resolvedTitle = notification
-    ? resolveText({ key: notification.title_key, fallback: notification.title, params: notification.params })
+    ? resolveText({
+        key: notification.title_key,
+        fallback: notification.title,
+        params: notification.params,
+        localized: i18nMeta.title,
+        localizedDefault: i18nMeta.default,
+      })
     : ''
   const resolvedBody = notification
-    ? resolveText({ key: notification.body_key, fallback: notification.body ?? '', params: notification.params })
+    ? resolveText({
+        key: notification.body_key,
+        fallback: notification.body ?? '',
+        params: notification.params,
+        localized: i18nMeta.body,
+        localizedDefault: i18nMeta.default,
+      })
     : ''
 
   const pageTitle = useMemo(() => {

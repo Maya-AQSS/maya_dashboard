@@ -3,9 +3,18 @@ import type { AlertAudienceFields } from './alertAudience'
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info'
 export type AlertSource = 'manual' | 'scheduled'
 
+/** Traducciones por campo: { field: { locale: value } }. */
+export interface PanelAlertTranslations {
+  text?: Record<string, string>
+  action_label?: Record<string, string>
+}
+
 export interface PanelAlert extends AlertAudienceFields {
   id: number
+  /** Texto del idioma por defecto (espejo de translations.text[default_locale]). */
   text: string
+  default_locale: string
+  translations: PanelAlertTranslations
   severity: Severity
   action_label: string | null
   action_url: string | null
@@ -31,9 +40,14 @@ export interface PanelAlertFilters {
 }
 
 export interface CreatePanelAlertInput {
-  text: string
+  /** Idioma del texto base; debe estar presente en translations.text. */
+  default_locale: string
+  /** Contenido por idioma: { text: { locale: value }, action_label?: { locale: value } }. */
+  translations: {
+    text: Record<string, string>
+    action_label?: Record<string, string>
+  }
   severity: Severity
-  action_label?: string | null
   action_url?: string | null
   visible_from: string
   visible_until?: string | null

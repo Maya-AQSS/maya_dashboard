@@ -15,6 +15,7 @@ import { UserAcademicContext } from '@ceedcv-maya/shared-profile-react'
 import { updateMyLocale } from '../../../api/auth'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
+import { useLanguages } from '../../languages/useLanguages'
 import { useMyAcademicContext } from '../api/academicContextApi'
 import { useMyEmployeeData } from '../api/employeeApi'
 import { updateProfile } from '../api/profileApi'
@@ -425,7 +426,10 @@ function ProfilePage() {
  * en el ecosistema (no hay selector en el sidebar).
  */
 function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
-  const { t, locale, setLocale, localeOptions } = useLocale()
+  const { t, locale, setLocale } = useLocale()
+  // Idiomas disponibles desde el catálogo (Odoo res.lang) en vez de la lista
+  // hardcodeada; degrada a es/va/en si el endpoint no está disponible.
+  const { languages } = useLanguages()
   const [savingLocale, setSavingLocale] = useState(false)
 
   // Cambio de idioma: aplica PRIMERO el cambio local (i18next + cookie
@@ -463,9 +467,9 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
           onChange={(e) => void handleLocaleChange(e.target.value)}
           className="max-w-[260px]"
         >
-          {localeOptions.map((opt: { code: string; label: string }) => (
+          {languages.map((opt) => (
             <option key={opt.code} value={opt.code}>
-              {opt.label}
+              {opt.name}
             </option>
           ))}
         </Select>

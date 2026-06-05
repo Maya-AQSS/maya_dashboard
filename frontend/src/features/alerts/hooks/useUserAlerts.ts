@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useFichajeAlerts } from './useFichajeAlerts'
 import { getActivePanelAlerts } from '../../panel-alerts/api/panelAlertsApi'
 import { useCriticalAlerts } from '../../notifications/hooks/useCriticalAlerts'
@@ -13,6 +14,20 @@ function panelSeverityToColor(sev: string): 'red' | 'amber' | 'blue' {
   if (sev === 'critical' || sev === 'high') return 'red'
   if (sev === 'medium') return 'amber'
   return 'blue'
+}
+
+/** Elige la traducción del locale actual; cae al idioma por defecto y al espejo escalar. */
+function pickLocalized(
+  map: Record<string, string> | undefined,
+  locale: string,
+  defaultLocale: string,
+  fallback: string,
+): string {
+  if (map) {
+    if (map[locale]) return map[locale]
+    if (map[defaultLocale]) return map[defaultLocale]
+  }
+  return fallback
 }
 
 const DISMISSED_KEY = 'maya:dismissed-alerts'
@@ -56,6 +71,7 @@ function saveDismissed(ids: Set<string>): void {
  */
 export function useUserAlerts() {
   const { token, user } = useAuth()
+  const { locale } = useLocale()
   const { alerts: fichajeAlerts, clockIn } = useFichajeAlerts()
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed)
 
@@ -70,15 +86,18 @@ export function useUserAlerts() {
   const { alerts: rawCriticalAlerts, loading: loadingCritical } = useCriticalAlerts()
 
   const panelAlerts = useMemo<AlertItem[]>(
-    () => rawPanelAlerts.map((a) => ({
-      id: `panel:${a.id}`,
-      color: panelSeverityToColor(a.severity),
-      text: a.text,
-      actionLabel: a.action_label,
-      actionUrl: a.action_url ?? undefined,
-      canDismiss: true,
-    })),
-    [rawPanelAlerts],
+    () => rawPanelAlerts.map((a) => {
+      const dl = a.default_locale ?? 'es'
+      return {
+        id: `panel:${a.id}`,
+        color: panelSeverityToColor(a.severity),
+        text: pickLocalized(a.translations?.text, locale, dl, a.text),
+        actionLabel: pickLocalized(a.translations?.action_label, locale, dl, a.action_label ?? '') || a.action_label,
+        actionUrl: a.action_url ?? undefined,
+        canDismiss: true,
+      }
+    }),
+    [rawPanelAlerts, locale],
   )
 
   const criticalAlerts = useMemo<AlertItem[]>(

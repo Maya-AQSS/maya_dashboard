@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Select,
@@ -18,6 +18,7 @@ import {
   type AlertAudienceFormState,
 } from '../types/alertAudience'
 import type { CreatePanelAlertInput, PanelAlert, Severity } from '../types/panelAlert'
+import { useLanguages } from '../../languages/useLanguages'
 
 interface Props {
   initial?: PanelAlert | null
@@ -28,13 +29,45 @@ interface Props {
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low', 'info']
 
+type LocaleMap = Record<string, string>
+
+/** Mapa inicial de un campo: usa translations si existe, si no el escalar legacy. */
+function initialMap(
+  fromTranslations: Record<string, string> | undefined,
+  legacyValue: string | null | undefined,
+  defaultLocale: string,
+): LocaleMap {
+  if (fromTranslations && Object.keys(fromTranslations).length > 0) return { ...fromTranslations }
+  if (legacyValue) return { [defaultLocale]: legacyValue }
+  return {}
+}
+
+/** Solo entradas con texto no vacío. */
+function nonEmpty(map: LocaleMap): LocaleMap {
+  const out: LocaleMap = {}
+  for (const [k, v] of Object.entries(map)) {
+    if (v && v.trim() !== '') out[k] = v
+  }
+  return out
+}
+
 export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) {
   const { t } = useLocale()
   const { isDark } = useDarkMode()
+  const { languages, defaultLocale: catalogDefault } = useLanguages()
 
-  const [text, setText] = useState(initial?.text ?? '')
+  // El idioma por defecto es el de la alerta (edición) o el del catálogo (alta).
+  const defaultLocale = initial?.default_locale ?? catalogDefault
+
+  const [textByLocale, setTextByLocale] = useState<LocaleMap>(() =>
+    initialMap(initial?.translations.text, initial?.text, defaultLocale),
+  )
+  const [labelByLocale, setLabelByLocale] = useState<LocaleMap>(() =>
+    initialMap(initial?.translations.action_label, initial?.action_label, defaultLocale),
+  )
+  const [activeLang, setActiveLang] = useState(defaultLocale)
+
   const [severity, setSeverity] = useState<Severity>(initial?.severity ?? 'medium')
-  const [actionLabel, setActionLabel] = useState(initial?.action_label ?? '')
   const [actionUrl, setActionUrl] = useState(initial?.action_url ?? '')
   const [visibleFrom, setVisibleFrom] = useState(toDatetimeLocalValue(initial?.visible_from))
   const [visibleUntil, setVisibleUntil] = useState(toDatetimeLocalValue(initial?.visible_until))
@@ -48,23 +81,36 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (initial) {
-      setAudience(audienceFormStateFromApi(initial))
-      setText(initial.text)
-      setSeverity(initial.severity)
-      setActionLabel(initial.action_label ?? '')
-      setActionUrl(initial.action_url ?? '')
-      setVisibleFrom(toDatetimeLocalValue(initial.visible_from))
-      setVisibleUntil(toDatetimeLocalValue(initial.visible_until))
-      setScheduleCron(initial.schedule_cron ?? '')
-      setDurationMinutes(initial.duration_minutes != null ? String(initial.duration_minutes) : '')
+    if (!initial) return
+    const dl = initial.default_locale ?? catalogDefault
+    setAudience(audienceFormStateFromApi(initial))
+    setTextByLocale(initialMap(initial.translations.text, initial.text, dl))
+    setLabelByLocale(initialMap(initial.translations.action_label, initial.action_label, dl))
+    setActiveLang(dl)
+    setSeverity(initial.severity)
+    setActionUrl(initial.action_url ?? '')
+    setVisibleFrom(toDatetimeLocalValue(initial.visible_from))
+    setVisibleUntil(toDatetimeLocalValue(initial.visible_until))
+    setScheduleCron(initial.schedule_cron ?? '')
+    setDurationMinutes(initial.duration_minutes != null ? String(initial.duration_minutes) : '')
+  }, [initial, catalogDefault])
+
+  // Asegura que el idioma activo siga siendo válido si cambia el catálogo.
+  const langCodes = useMemo(() => languages.map((l) => l.code), [languages])
+  useEffect(() => {
+    if (!langCodes.includes(activeLang) && langCodes.length > 0) {
+      setActiveLang(defaultLocale)
     }
-  }, [initial])
+  }, [langCodes, activeLang, defaultLocale])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (!text.trim()) { setError(t('panelAlerts.validation.textRequired')); return }
+    if (!(textByLocale[defaultLocale] ?? '').trim()) {
+      setError(t('panelAlerts.validation.textRequired'))
+      setActiveLang(defaultLocale)
+      return
+    }
     if (!visibleFrom) { setError(t('panelAlerts.validation.visibleFromRequired')); return }
     const audienceError = validateAudienceForm(audience, {
       teamRequired: t('panelAlerts.validation.teamRequired'),
@@ -73,11 +119,16 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
       moduleRequired: t('panelAlerts.validation.moduleRequired'),
     })
     if (audienceError) { setError(audienceError); return }
+
+    const labels = nonEmpty(labelByLocale)
     try {
       await onSubmit({
-        text: text.trim(),
+        default_locale: defaultLocale,
+        translations: {
+          text: nonEmpty(textByLocale),
+          ...(Object.keys(labels).length > 0 ? { action_label: labels } : {}),
+        },
         severity,
-        action_label: actionLabel.trim() || null,
         action_url: actionUrl.trim() || null,
         visible_from: datetimeLocalToIso(visibleFrom)!,
         visible_until: visibleUntil ? datetimeLocalToIso(visibleUntil) : null,
@@ -92,11 +143,54 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Pestañas de idioma: el por defecto es obligatorio (*), el resto opcional. */}
+      <div className="flex flex-wrap gap-1 border-b border-ui-border dark:border-ui-dark-border">
+        {languages.map((l) => {
+          const filled = (textByLocale[l.code] ?? '').trim() !== ''
+          const isActive = l.code === activeLang
+          return (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => setActiveLang(l.code)}
+              className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                isActive
+                  ? 'border-odoo-purple text-odoo-purple'
+                  : 'border-transparent text-text-secondary dark:text-text-dark-secondary hover:text-text-primary'
+              }`}
+            >
+              {l.name}
+              {l.code === defaultLocale && <span className="text-danger"> *</span>}
+              {filled && l.code !== defaultLocale && <span className="ml-1 text-success">●</span>}
+            </button>
+          )
+        })}
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
-          {t('panelAlerts.fields.text')} <span className="text-danger">*</span>
+          {t('panelAlerts.fields.text')}
+          {activeLang === defaultLocale && <span className="text-danger"> *</span>}
         </label>
-        <MayaEditor mode="lite" isDark={isDark} initialContent={text} onChange={setText} />
+        <MayaEditor
+          key={activeLang}
+          mode="lite"
+          isDark={isDark}
+          initialContent={textByLocale[activeLang] ?? ''}
+          onChange={(v) => setTextByLocale((prev) => ({ ...prev, [activeLang]: v }))}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
+          {t('panelAlerts.fields.actionLabel')}
+        </label>
+        <TextInput
+          fieldSize="sm"
+          value={labelByLocale[activeLang] ?? ''}
+          onChange={(e) => setLabelByLocale((prev) => ({ ...prev, [activeLang]: e.target.value }))}
+          placeholder={t('panelAlerts.fields.actionLabelPlaceholder')}
+        />
       </div>
 
       <div>
@@ -114,30 +208,17 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
-            {t('panelAlerts.fields.actionLabel')}
-          </label>
-          <TextInput
-            fieldSize="sm"
-            value={actionLabel}
-            onChange={(e) => setActionLabel(e.target.value)}
-            placeholder={t('panelAlerts.fields.actionLabelPlaceholder')}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
-            {t('panelAlerts.fields.actionUrl')}
-          </label>
-          <TextInput
-            fieldSize="sm"
-            type="url"
-            value={actionUrl}
-            onChange={(e) => setActionUrl(e.target.value)}
-            placeholder="https://..."
-          />
-        </div>
+      <div>
+        <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
+          {t('panelAlerts.fields.actionUrl')}
+        </label>
+        <TextInput
+          fieldSize="sm"
+          type="url"
+          value={actionUrl}
+          onChange={(e) => setActionUrl(e.target.value)}
+          placeholder="https://..."
+        />
       </div>
 
       <AlertAudienceFields value={audience} onChange={setAudience} disabled={loading} />

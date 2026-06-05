@@ -17,6 +17,7 @@ import {
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale, useNotificationText } from '@ceedcv-maya/shared-i18n-react'
+import { readI18nMeta } from '../notificationI18n'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { getUnreadCount } from '../api/notificationsApi'
@@ -151,7 +152,13 @@ export default function NotificationsPage() {
         header: t('notifications.fields.title'),
         cell: (n) => (
           <EditorContentHtml
-            html={resolveText({ key: n.title_key, fallback: n.title, params: n.params })}
+            html={resolveText({
+              key: n.title_key,
+              fallback: n.title,
+              params: n.params,
+              localized: readI18nMeta(n.metadata).title,
+              localizedDefault: readI18nMeta(n.metadata).default,
+            })}
             className={`line-clamp-2 text-sm [&_p]:m-0 ${
               n.read_at
                 ? 'text-text-secondary dark:text-text-dark-secondary'
@@ -272,7 +279,13 @@ export default function NotificationsPage() {
               />
               <div className="flex-1 min-w-0">
                 <EditorContentHtml
-                  html={resolveText({ key: n.title_key, fallback: n.title, params: n.params })}
+                  html={resolveText({
+                    key: n.title_key,
+                    fallback: n.title,
+                    params: n.params,
+                    localized: readI18nMeta(n.metadata).title,
+                    localizedDefault: readI18nMeta(n.metadata).default,
+                  })}
                   className={`text-sm truncate line-clamp-1 [&_p]:inline [&_p]:m-0 ${
                     n.read_at
                       ? 'text-text-secondary dark:text-text-dark-secondary'
@@ -290,9 +303,15 @@ export default function NotificationsPage() {
             </div>
           )}
           flipCardRender={(n) => ({
-            back: n.body_key || n.body ? (
+            back: n.body_key || n.body || readI18nMeta(n.metadata).body ? (
               <EditorContentHtml
-                html={resolveText({ key: n.body_key, fallback: n.body ?? '', params: n.params })}
+                html={resolveText({
+                  key: n.body_key,
+                  fallback: n.body ?? '',
+                  params: n.params,
+                  localized: readI18nMeta(n.metadata).body,
+                  localizedDefault: readI18nMeta(n.metadata).default,
+                })}
                 className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4 [&_p]:m-0"
               />
             ) : (
