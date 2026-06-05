@@ -16,7 +16,7 @@ import {
   useToast,
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
-import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { useLocale, useNotificationText } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { getUnreadCount } from '../api/notificationsApi'
@@ -36,6 +36,7 @@ const SEVERITY_BADGE: Record<NotificationSeverity, 'danger' | 'warning' | 'info'
 
 export default function NotificationsPage() {
   const { t, dateLocale } = useLocale()
+  const resolveText = useNotificationText()
   const navigate = useNavigate()
   const { toast } = useToast()
   const { hasPermission } = useUserProfile()
@@ -150,7 +151,7 @@ export default function NotificationsPage() {
         header: t('notifications.fields.title'),
         cell: (n) => (
           <EditorContentHtml
-            html={n.title}
+            html={resolveText({ key: n.title_key, fallback: n.title, params: n.params })}
             className={`line-clamp-2 text-sm [&_p]:m-0 ${
               n.read_at
                 ? 'text-text-secondary dark:text-text-dark-secondary'
@@ -204,7 +205,7 @@ export default function NotificationsPage() {
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dateLocale, t],
+    [dateLocale, t, resolveText],
   )
 
   const totalPages = meta?.last_page ?? 1
@@ -271,7 +272,7 @@ export default function NotificationsPage() {
               />
               <div className="flex-1 min-w-0">
                 <EditorContentHtml
-                  html={n.title}
+                  html={resolveText({ key: n.title_key, fallback: n.title, params: n.params })}
                   className={`text-sm truncate line-clamp-1 [&_p]:inline [&_p]:m-0 ${
                     n.read_at
                       ? 'text-text-secondary dark:text-text-dark-secondary'
@@ -289,9 +290,9 @@ export default function NotificationsPage() {
             </div>
           )}
           flipCardRender={(n) => ({
-            back: n.body ? (
+            back: n.body_key || n.body ? (
               <EditorContentHtml
-                html={n.body}
+                html={resolveText({ key: n.body_key, fallback: n.body ?? '', params: n.params })}
                 className="text-sm text-text-secondary dark:text-text-dark-secondary leading-relaxed line-clamp-4 [&_p]:m-0"
               />
             ) : (

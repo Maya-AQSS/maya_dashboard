@@ -2,7 +2,7 @@ import { type ReactNode, useMemo } from 'react'
 import { EditorContentHtml, sanitizeEditorHtml } from '@ceedcv-maya/shared-editor-react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Badge, Button, PageTitle, Spinner, formatDateTime, useToast } from '@ceedcv-maya/shared-ui-react'
-import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { useLocale, useNotificationText } from '@ceedcv-maya/shared-i18n-react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
@@ -53,6 +53,7 @@ export default function NotificationDetailPage() {
   const notifId = id != null && /^\d+$/.test(id) ? Number(id) : undefined
   const navigate = useNavigate()
   const { t, dateLocale } = useLocale()
+  const resolveText = useNotificationText()
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { hasPermission } = useUserProfile()
@@ -72,15 +73,20 @@ export default function NotificationDetailPage() {
     onError: () => toast({ tone: 'danger', title: t('notifications.markReadError') }),
   })
 
+  const resolvedTitle = notification
+    ? resolveText({ key: notification.title_key, fallback: notification.title, params: notification.params })
+    : ''
+  const resolvedBody = notification
+    ? resolveText({ key: notification.body_key, fallback: notification.body ?? '', params: notification.params })
+    : ''
+
   const pageTitle = useMemo(() => {
     if (!notification) return t('notifications.pageTitle')
-    const plain =
-      editorHtmlToPlainText(notification.title) ||
-      editorHtmlToPlainText(notification.body ?? '')
+    const plain = editorHtmlToPlainText(resolvedTitle) || editorHtmlToPlainText(resolvedBody)
     return plain || `#${notification.id}`
-  }, [notification, t])
+  }, [notification, t, resolvedTitle, resolvedBody])
 
-  const messageHtml = notification?.body ?? notification?.title ?? ''
+  const messageHtml = resolvedBody || resolvedTitle
 
   if (!canShow) {
     return (
