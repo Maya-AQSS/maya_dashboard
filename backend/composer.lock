@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a60fa2f08be6c4c51382dac77dddde7e",
+    "content-hash": "4b6e9ced6ca245568b0d413af9bd230a",
     "packages": [
         {
             "name": "brick/math",
@@ -451,6 +451,63 @@
                 "source": "https://github.com/Maya-AQSS/shared-profile-laravel"
             },
             "time": "2026-06-01T13:49:34+00:00"
+        },
+        {
+            "name": "ceedcv-maya/shared-translations-laravel",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../../maya_platform/packages/php/shared-translations-laravel",
+                "reference": "a1bb2a1ea6d92003b9d1e51a8eda3bfd9a7970dc"
+            },
+            "require": {
+                "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/database": "^11.0 || ^12.0 || ^13.0",
+                "illuminate/support": "^11.0 || ^12.0 || ^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Maya\\Translations\\Providers\\SharedTranslationsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Maya\\Translations\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "CEEDCV",
+                    "email": "info@ceedcv.es",
+                    "homepage": "https://ceedcv.es"
+                }
+            ],
+            "description": "Polymorphic translations for Laravel: a single translations table + HasTranslations trait to store per-locale field values for any model (panel alerts, messages, …).",
+            "homepage": "https://github.com/Maya-AQSS/shared-translations-laravel",
+            "keywords": [
+                "ceedcv",
+                "i18n",
+                "laravel",
+                "locale",
+                "maya",
+                "polymorphic",
+                "translations"
+            ],
+            "support": {
+                "issues": "https://github.com/Maya-AQSS/maya_platform/issues",
+                "source": "https://github.com/Maya-AQSS/shared-translations-laravel"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "clue/redis-protocol",
