@@ -8,9 +8,14 @@ use App\Models\PanelAlert;
 
 final readonly class PanelAlertDto
 {
+    /**
+     * @param  array<string, array<string, string>>  $translations  { field: { locale: value } }
+     */
     public function __construct(
         public int $id,
         public string $text,
+        public string $defaultLocale,
+        public array $translations,
         public string $severity,
         public ?string $actionLabel,
         public ?string $actionUrl,
@@ -36,6 +41,8 @@ final readonly class PanelAlertDto
         return new self(
             id: (int) $m->id,
             text: (string) $m->text,
+            defaultLocale: (string) ($m->default_locale ?? 'es'),
+            translations: $m->translationsMap(),
             severity: (string) $m->severity,
             actionLabel: $m->action_label,
             actionUrl: $m->action_url,

@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\PanelAlerts;
 
 use App\Http\Requests\Concerns\ValidatesAlertAudience;
+use App\Http\Requests\Concerns\ValidatesPanelAlertTranslations;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePanelAlertRequest extends FormRequest
 {
     use ValidatesAlertAudience;
+    use ValidatesPanelAlertTranslations;
 
     public function authorize(): bool
     {
@@ -30,6 +33,11 @@ class UpdatePanelAlertRequest extends FormRequest
             'visible_until' => ['sometimes', 'nullable', 'date', 'after:visible_from'],
             'schedule_cron' => ['sometimes', 'nullable', 'string', 'max:64'],
             'duration_minutes' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:525600'],
-        ], $this->alertAudienceRules());
+        ], $this->translationRules(creating: false), $this->alertAudienceRules());
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(fn (Validator $v) => $this->assertDefaultLocaleTextPresent($v));
     }
 }

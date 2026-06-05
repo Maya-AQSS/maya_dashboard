@@ -26,7 +26,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
         string $sortBy,
         string $sortDir,
     ): LengthAwarePaginator {
-        $query = PanelAlert::query();
+        $query = PanelAlert::query()->with('translations');
 
         if (! $includeExpired) {
             $query->active();
@@ -60,6 +60,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
     public function activeNow(int $limit, string $userId): Collection
     {
         return PanelAlert::query()
+            ->with('translations')
             ->active()
             ->orderByDesc('visible_from')
             ->limit($limit * 3)
@@ -73,7 +74,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
 
     public function findOrFail(int $id): PanelAlert
     {
-        return PanelAlert::findOrFail($id);
+        return PanelAlert::with('translations')->findOrFail($id);
     }
 
     public function findDtoOrFail(int $id): PanelAlertDto
@@ -86,7 +87,7 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
      */
     public function allRecurring(): Collection
     {
-        return PanelAlert::query()->recurring()->orderBy('id')->get();
+        return PanelAlert::query()->with('translations')->recurring()->orderBy('id')->get();
     }
 
     public function create(array $attributes): PanelAlert

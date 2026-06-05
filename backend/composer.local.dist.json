@@ -35,6 +35,13 @@
             "options": {
                 "symlink": true
             }
+        },
+        "shared-translations-local": {
+            "type": "path",
+            "url": "../../maya_platform/packages/php/shared-translations-laravel",
+            "options": {
+                "symlink": true
+            }
         }
     }
 }

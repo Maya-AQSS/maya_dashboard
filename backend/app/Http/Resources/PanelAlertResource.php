@@ -24,6 +24,8 @@ class PanelAlertResource extends JsonResource
         return [
             'id' => $dto->id,
             'text' => $dto->text,
+            'default_locale' => $dto->defaultLocale,
+            'translations' => $dto->translations,
             'severity' => $dto->severity,
             'action_label' => $dto->actionLabel,
             'action_url' => $dto->actionUrl,

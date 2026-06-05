@@ -10,14 +10,20 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Maya\Translations\Concerns\HasTranslations;
 
 #[ObservedBy([PanelAlertObserver::class])]
 class PanelAlert extends Model
 {
     use HasFactory;
+    use HasTranslations;
+
+    /** Campos traducibles vía la tabla polimórfica `translations`. */
+    protected array $translatable = ['text', 'action_label'];
 
     protected $fillable = [
         'text',
+        'default_locale',
         'severity',
         'action_label',
         'action_url',

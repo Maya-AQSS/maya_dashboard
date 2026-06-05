@@ -36,12 +36,27 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
         $title = Str::limit(strip_tags($alert->text), 120, '…');
         $isCritical = in_array($alert->severity, ['critical', 'high'], true);
 
+        // Variantes por idioma del contenido libre. El worker no conoce el
+        // locale del destinatario, así que enviamos TODAS las traducciones en
+        // metadata.i18n y el frontend elige `me.locale` → default. El title/body
+        // sueltos quedan en el idioma por defecto (fallback de lectura + email).
+        $textByLocale = $alert->translations['text'] ?? [$alert->defaultLocale => $alert->text];
+        $i18n = [
+            'default_locale' => $alert->defaultLocale,
+            'title' => array_map(
+                static fn (string $v): string => Str::limit(strip_tags($v), 120, '…'),
+                $textByLocale,
+            ),
+            'body' => $textByLocale,
+        ];
+
         $metadata = [
             'panel_alert_id' => $alert->id,
             'severity' => $alert->severity,
             'source' => $alert->source,
             'action_label' => $alert->actionLabel,
             'action_url' => $alert->actionUrl,
+            'i18n' => $i18n,
         ];
 
         $recipientCount = 0;

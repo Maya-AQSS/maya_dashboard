@@ -56,11 +56,13 @@ use App\Services\Notifications\NotificationRuleService;
 use App\Services\Notifications\NotificationSampleService;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
 use App\Services\PanelAlerts\PanelAlertService;
+use App\Models\PanelAlert;
 use App\Models\User;
 use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationService;
 use App\Support\FdwTeardown;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Event;
@@ -68,6 +70,7 @@ use Illuminate\Support\ServiceProvider;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
 use Maya\Profile\Repositories\Contracts\UserProfileResolverInterface;
+use Maya\Translations\Migrations as TranslationMigrations;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -136,6 +139,15 @@ class AppServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(ProfileMigrations::academicCatalogs());
         $this->loadMigrationsFrom(ProfileMigrations::teams());
         $this->loadMigrationsFrom(ProfileMigrations::userPermissions());
+        // Catálogo de idiomas activos (Odoo res.lang) para GET /api/v1/languages.
+        $this->loadMigrationsFrom(ProfileMigrations::languages());
+        // Tabla polimórfica de traducciones (alertas multiidioma y futuros mensajes).
+        $this->loadMigrationsFrom(TranslationMigrations::translations());
+
+        // Morph alias estable para la tabla `translations` (evita guardar el FQCN).
+        Relation::enforceMorphMap([
+            'panel_alert' => PanelAlert::class,
+        ]);
 
         // db:wipe no elimina vistas ni foreign tables FDW (las crea el paquete
         // shared-profile). Las limpiamos antes de migrate:fresh/db:wipe para que
