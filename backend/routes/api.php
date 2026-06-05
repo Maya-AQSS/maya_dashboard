@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Notifications\NotificationDefinitionController;
 use App\Http\Controllers\Api\V1\Notifications\NotificationRuleController;
 use App\Http\Controllers\Api\V1\PanelAlerts\PanelAlertController;
 use Illuminate\Support\Facades\Route;
+use Maya\Profile\Controllers\LanguageController;
 use Maya\Profile\Controllers\MeController;
 use Maya\Profile\Routing\AcademicContextRoutes;
 
@@ -42,6 +43,9 @@ Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/locale', [MeController::class, 'updateLocale'])
         ->middleware('permission:profile.update');
+
+    // Idiomas activos (Odoo res.lang) — selector de perfil y formularios multiidioma.
+    Route::get('/languages', [LanguageController::class, 'index']);
 
     // Contexto académico del propio usuario (perfil).
     AcademicContextRoutes::registerMe();
