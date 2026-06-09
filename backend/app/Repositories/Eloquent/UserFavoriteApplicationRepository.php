@@ -8,6 +8,7 @@ use App\Models\Application;
 use App\Models\User;
 use App\Repositories\Contracts\UserFavoriteApplicationRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Maya\Profile\Database\ViewPermissionGateQuery;
 
 final class UserFavoriteApplicationRepository implements UserFavoriteApplicationRepositoryInterface
 {
@@ -15,7 +16,10 @@ final class UserFavoriteApplicationRepository implements UserFavoriteApplication
     {
         $user = User::query()->findOrFail($userId);
 
-        return $user->favoriteApplications()->paginate($perPage);
+        $favorites = $user->favoriteApplications();
+        ViewPermissionGateQuery::apply($favorites->getQuery(), $userId);
+
+        return $favorites->paginate($perPage);
     }
 
     public function attach(string $userId, int $applicationId): Application
