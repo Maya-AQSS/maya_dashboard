@@ -170,7 +170,7 @@ it('returns the unread notification count', function () {
     $response = $this->getJson('/api/v1/notifications/unread-count');
 
     $response->assertOk();
-    expect($response->json('unread'))->toBe(2);
+    expect($response->json('data.unread'))->toBe(2);
 });
 
 it('returns zero unread count when all notifications are read', function () {
@@ -180,14 +180,14 @@ it('returns zero unread count when all notifications are read', function () {
     $response = $this->getJson('/api/v1/notifications/unread-count');
 
     $response->assertOk();
-    expect($response->json('unread'))->toBe(0);
+    expect($response->json('data.unread'))->toBe(0);
 });
 
 it('returns zero unread count when user has no notifications', function () {
     $response = $this->getJson('/api/v1/notifications/unread-count');
 
     $response->assertOk();
-    expect($response->json('unread'))->toBe(0);
+    expect($response->json('data.unread'))->toBe(0);
 });
 
 it('unread count only counts own notifications', function () {
@@ -199,7 +199,7 @@ it('unread count only counts own notifications', function () {
     $response = $this->getJson('/api/v1/notifications/unread-count');
 
     $response->assertOk();
-    expect($response->json('unread'))->toBe(1);
+    expect($response->json('data.unread'))->toBe(1);
 });
 
 // ─── markRead ─────────────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ it('marks a notification as read', function () {
     $response = $this->postJson("/api/v1/notifications/{$notification->id}/read");
 
     $response->assertOk();
-    expect($response->json('read_at'))->not->toBeNull();
+    expect($response->json('data.read_at'))->not->toBeNull();
     $notification->refresh();
     expect($notification->read_at)->not->toBeNull();
 });
@@ -253,7 +253,7 @@ it('marks all user notifications as read', function () {
     $response = $this->postJson('/api/v1/notifications/mark-all-read');
 
     $response->assertOk();
-    expect($response->json('updated'))->toBe(3);
+    expect($response->json('data.updated'))->toBe(3);
 
     $remaining = Notification::where('recipient_id', $this->userId)->whereNull('read_at')->count();
     expect($remaining)->toBe(0);
@@ -265,7 +265,7 @@ it('markAllRead returns 0 when all notifications are already read', function () 
     $response = $this->postJson('/api/v1/notifications/mark-all-read');
 
     $response->assertOk();
-    expect($response->json('updated'))->toBe(0);
+    expect($response->json('data.updated'))->toBe(0);
 });
 
 it('markAllRead only affects own notifications', function () {
@@ -276,7 +276,7 @@ it('markAllRead only affects own notifications', function () {
     $response = $this->postJson('/api/v1/notifications/mark-all-read');
 
     $response->assertOk();
-    expect($response->json('updated'))->toBe(1);
+    expect($response->json('data.updated'))->toBe(1);
 
     // Other user's notification should still be unread
     $otherNotif->refresh();
