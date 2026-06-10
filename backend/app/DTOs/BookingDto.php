@@ -26,7 +26,16 @@ final readonly class BookingDto
      */
     public static function fromRow(array|object $row): self
     {
-        $row = is_object($row) ? get_object_vars($row) : $row;
+        // Un modelo Eloquent guarda los datos en `$attributes` (protegido):
+        // get_object_vars() desde este scope solo vería flags públicos (exists,
+        // incrementing, …) y dejaría todos los campos vacíos. Usar
+        // attributesToArray() (con casts). stdClass (filas crudas FDW) sigue
+        // por get_object_vars().
+        if ($row instanceof \Illuminate\Database\Eloquent\Model) {
+            $row = $row->attributesToArray();
+        } elseif (is_object($row)) {
+            $row = get_object_vars($row);
+        }
 
         return new self(
             id: (string) ($row['id'] ?? ''),

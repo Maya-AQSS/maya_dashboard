@@ -19,7 +19,9 @@ class ListApplicationsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:200'],
+            // Sin tope de validación: el controlador clampa a 200 (min(...,200)).
+            // Con 'max:200' un per_page mayor daba 422 y el clamp quedaba muerto.
+            'per_page' => ['nullable', 'integer', 'min:1'],
             'search' => ['nullable', 'string', 'max:255'],
         ];
     }

@@ -39,7 +39,9 @@ class ListNotificationsRequest extends PaginatedFilterRequest
             isCritical: $this->input('is_critical') !== null ? (bool) $this->input('is_critical') : null,
             acknowledged: $this->input('acknowledged') !== null ? (bool) $this->input('acknowledged') : null,
             page: $this->getPage(),
-            perPage: $this->getPerPage() > 0 ? $this->getPerPage() : 25,
+            // getPerPage() (base compartida) cae a 15 cuando no se envía per_page;
+            // honrar 25 como default del dominio salvo valor explícito del cliente.
+            perPage: $this->filled('per_page') ? $this->getPerPage() : 25,
             sortBy: $this->getSortBy() ?? 'created_at',
             sortDir: $this->getSortDir(),
             search: $this->input('search') ?: null,
