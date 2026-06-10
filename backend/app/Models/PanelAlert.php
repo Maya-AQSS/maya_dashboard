@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Casts\AsAudience;
+use App\Eloquent\Relations\StringKeyMorphMany;
 use App\Observers\PanelAlertObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Maya\Translations\Concerns\HasTranslations;
+use Maya\Translations\Models\Translation;
 
 #[ObservedBy([PanelAlertObserver::class])]
 class PanelAlert extends Model
@@ -74,5 +76,22 @@ class PanelAlert extends Model
     public function isRecurring(): bool
     {
         return $this->schedule_cron !== null;
+    }
+
+    /**
+     * La FK polimórfica `translations.translatable_id` es VARCHAR pero la PK de
+     * este modelo es bigint. Inyectamos StringKeyMorphMany para que la
+     * comparación se bindee como string (Postgres es estricto: `varchar = int`
+     * no tiene operador). Acotado a la relación con Translation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<*>  $query
+     */
+    protected function newMorphMany(Builder $query, Model $parent, $type, $id, $localKey)
+    {
+        if ($query->getModel() instanceof Translation) {
+            return new StringKeyMorphMany($query, $parent, $type, $id, $localKey);
+        }
+
+        return parent::newMorphMany($query, $parent, $type, $id, $localKey);
     }
 }
