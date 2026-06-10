@@ -108,11 +108,17 @@ it('enriches with academic data from fdw stubs', function () {
     sort($moduleIds);
     expect($moduleIds)->toBe(['M_ENG_1', 'M_MAT_1']);
 
+    // El resolver separa equipos de trabajo (is_department=false) de los
+    // departamentos (is_department=true): T1 → team_ids, T2 → department_ids.
     $teamIds = $dto->extra['team_ids'];
     sort($teamIds);
-    expect($teamIds)->toBe(['T1', 'T2']);
+    expect($teamIds)->toBe(['T1']);
 
-    // `teams[]` no se incluye en /me cross-app — solo `team_ids`.
+    $departmentIds = $dto->extra['department_ids'];
+    sort($departmentIds);
+    expect($departmentIds)->toBe(['T2']);
+
+    // `teams[]` no se incluye en /me cross-app — solo team_ids/department_ids.
     expect(array_key_exists('teams', $dto->extra))->toBeFalse();
 });
 
