@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('panel_alerts', function (Blueprint $table) {
             $table->id();
             $table->text('text');
+            $table->string('default_locale', 12)->default('es');
             $table->enum('severity', ['critical', 'high', 'medium', 'low', 'info']);
             $table->string('action_label', 255)->nullable();
             $table->string('action_url', 2048)->nullable();
