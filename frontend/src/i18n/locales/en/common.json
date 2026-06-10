@@ -140,17 +140,19 @@
       "blockUnavailable": "Academic data is temporarily unavailable for this block.",
       "emptyState": "No assignments",
       "blocks": {
+        "academic": "Academic context",
         "studyTypes": "Study types",
         "studies": "Studies",
         "modules": "Modules",
-        "teams": "Teams / Departments"
+        "teams": "Teams / Departments",
+        "departments": "Departments",
+        "workTeams": "Teams",
+        "unclassified": "Unclassified"
       },
       "headers": {
         "code": "Code",
         "name": "Name",
-        "id": "ID",
-        "type": "Type",
-        "department": "Department"
+        "id": "ID"
       }
     }
   },

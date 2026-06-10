@@ -79,8 +79,8 @@ function EmployeeField({
 
 function ProfileSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
-      <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
+    <div className="rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card shadow-card p-5">
+      <h4 className="m-0 mb-4 pb-2.5 border-b border-ui-border dark:border-ui-dark-border text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-text-dark-secondary">
         {title}
       </h4>
       {children}
@@ -97,23 +97,6 @@ function ProfileRow({ label, value }: { label: string; value: string | null | un
     <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-1 sm:gap-3 items-baseline">
       <dt className="m-0 text-sm font-medium text-text-secondary dark:text-text-dark-secondary">{label}</dt>
       <dd className="m-0 text-base text-text-primary dark:text-text-dark-primary">{value || '—'}</dd>
-    </div>
-  )
-}
-
-function TeamBadgeList({ items }: { items: Array<{ name: string; code?: string }> }) {
-  if (!items.length) return <span className="text-sm text-text-secondary dark:text-text-dark-secondary">—</span>
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item, index) => (
-        <span
-          key={item.code || item.name || `team-${index}`}
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-ui-border dark:bg-ui-dark-border text-text-primary dark:text-text-dark-primary"
-        >
-          {item.code && <span className="opacity-60">{item.code}</span>}
-          {item.name}
-        </span>
-      ))}
     </div>
   )
 }
@@ -138,14 +121,19 @@ const KEYS_LABELS: Record<string, string> = {
 function ProfilePage() {
   const { user: authUser } = useAuth()
   const user = authUser as ProfileUser | null
-  const { hasPermission } = useUserProfile()
+  const { profile, hasPermission } = useUserProfile()
   const canShow = hasPermission(DASHBOARD_PERMISSIONS.profileShow)
   const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.profileUpdate)
-  const { t, locale } = useLocale()
+  // Solo admins ven los identificadores internos (UUID/md5) en el contexto académico.
+  const isAdmin = (profile?.roles ?? []).includes('admin')
+  const { t, locale, setLocale } = useLocale()
   const { languages } = useLanguages()
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  // Idioma "pendiente" mientras se edita: solo se aplica al guardar, no al
+  // cambiar el select (evita que la UI cambie de idioma a mitad de edición).
+  const [pendingLocale, setPendingLocale] = useState<string>(locale)
 
   // Nombre legible del idioma actual para la vista de solo-lectura.
   const currentLanguageName = useMemo(
@@ -159,10 +147,14 @@ function ProfilePage() {
     loadErrorPrefix: t('profile.academicContext.loadErrorPrefix'),
     sectionAriaLabel: t('profile.academicContext.sectionAriaLabel'),
     blockLabels: {
-      study_types: t('profile.academicContext.blocks.studyTypes'),
+      academic: t('profile.academicContext.blocks.academic'),
+      teams: t('profile.academicContext.blocks.teams'),
+      studyTypes: t('profile.academicContext.blocks.studyTypes'),
       studies: t('profile.academicContext.blocks.studies'),
       modules: t('profile.academicContext.blocks.modules'),
-      teams: t('profile.academicContext.blocks.teams'),
+      departments: t('profile.academicContext.blocks.departments'),
+      workTeams: t('profile.academicContext.blocks.workTeams'),
+      unclassified: t('profile.academicContext.blocks.unclassified'),
     },
     unavailableBadge: t('profile.academicContext.unavailableBadge'),
     blockUnavailable: t('profile.academicContext.blockUnavailable'),
@@ -171,8 +163,6 @@ function ProfilePage() {
       code: t('profile.academicContext.headers.code'),
       name: t('profile.academicContext.headers.name'),
       id: t('profile.academicContext.headers.id'),
-      type: t('profile.academicContext.headers.type'),
-      department: t('profile.academicContext.headers.department'),
     },
   }), [t])
 
@@ -191,15 +181,6 @@ function ProfilePage() {
     useMyAcademicContext()
 
   const { data: employeeData } = useMyEmployeeData()
-
-  const departments = useMemo(
-    () => (academicContext?.teams ?? []).filter((t) => t.is_department),
-    [academicContext],
-  )
-  const workTeams = useMemo(
-    () => (academicContext?.teams ?? []).filter((t) => !t.is_department),
-    [academicContext],
-  )
 
   if (!user) {
     return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
@@ -225,6 +206,7 @@ function ProfilePage() {
       car_registration_number_2: employeeData?.car_registration_number_2 ?? '',
       car_registration_number_3: employeeData?.car_registration_number_3 ?? '',
     })
+    setPendingLocale(locale)
     setSaveError(null)
     setIsEditing(true)
   }
@@ -243,6 +225,18 @@ function ProfilePage() {
       if (!updatedUser) {
         setSaveError(t('profile.saveError'))
         return
+      }
+
+      // Aplica el cambio de idioma SOLO al guardar (no al cambiar el select).
+      // El endpoint es best-effort: la fuente de verdad provisional es el
+      // cambio local (i18next + cookie cross-app + cache) que hace `setLocale`.
+      if (pendingLocale !== locale) {
+        setLocale(pendingLocale)
+        try {
+          await updateMyLocale(pendingLocale)
+        } catch {
+          /* persistencia best-effort — no bloquea el guardado del perfil */
+        }
       }
 
       setIsEditing(false)
@@ -267,101 +261,132 @@ function ProfilePage() {
         }
         onBack={() => navigate(-1)}
         actions={
-          !isEditing && canUpdate ? (
-            <Button variant="primary" size="sm" onClick={handleEdit} className="w-full sm:w-auto">
-              {t('profile.edit')}
-            </Button>
-          ) : null
+          isEditing
+            ? canUpdate
+              ? (
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleCancel}
+                      disabled={saving}
+                    >
+                      {t('actions.cancel')}
+                    </Button>
+                    <Button
+                      type="submit"
+                      form="profile-edit-form"
+                      variant="primary"
+                      size="sm"
+                      disabled={saving}
+                      loading={saving}
+                    >
+                      {saving ? t('actions.saving') : t('profile.save')}
+                    </Button>
+                  </div>
+                )
+              : null
+            : canUpdate
+              ? (
+                  <Button variant="primary" size="sm" onClick={handleEdit} className="w-full sm:w-auto">
+                    {t('profile.edit')}
+                  </Button>
+                )
+              : null
         }
       />
 
       {!isEditing ? (
-        <section className="max-w-[600px] mx-auto flex flex-col gap-4 sm:gap-6">
-          {/* Datos básicos */}
-          <ProfileSection title={t('profile.basicData')}>
-            <ProfileDl>
-              <ProfileRow label={t('auth.name')} value={user.name} />
-              <ProfileRow label={t('auth.surname')} value={user.surname} />
-              <ProfileRow label={t('profile.dni')} value={user.dni} />
-              <ProfileRow label={t('auth.email')} value={user.email} />
-              <ProfileRow label={t('profile.phone')} value={user.phone} />
-            </ProfileDl>
-          </ProfileSection>
+        <section className="max-w-[980px] mx-auto">
+          {/* Rejilla de dos columnas: rompe la verticalidad y equilibra alturas
+              (identidad+laboral a la izquierda; administración+vehículos+
+              preferencias a la derecha). En móvil colapsa a una sola columna. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+            <div className="flex flex-col gap-5">
+              {/* Datos básicos */}
+              <ProfileSection title={t('profile.basicData')}>
+                <ProfileDl>
+                  <ProfileRow label={t('auth.name')} value={user.name} />
+                  <ProfileRow label={t('auth.surname')} value={user.surname} />
+                  <ProfileRow label={t('profile.dni')} value={user.dni} />
+                  <ProfileRow label={t('auth.email')} value={user.email} />
+                  <ProfileRow label={t('profile.personalEmail')} value={employeeData?.personal_email} />
+                  <ProfileRow label={t('profile.phone')} value={user.phone} />
+                </ProfileDl>
+              </ProfileSection>
 
-          {/* Datos laborales */}
-          <ProfileSection title={t('profile.employeeData')}>
-            <ProfileDl>
-              <ProfileRow
-                label={t('profile.positionType')}
-                value={employeeData?.position_type ? (POSITION_TYPE_LABELS[employeeData.position_type] ?? employeeData.position_type) : null}
-              />
-              <ProfileRow label={t('profile.supervisor')} value={employeeData?.supervisor_name} />
-              <ProfileRow label={t('profile.mentor')} value={employeeData?.mentor_name} />
-              <ProfileRow label={t('profile.personalEmail')} value={employeeData?.personal_email} />
-            </ProfileDl>
-          </ProfileSection>
+              {/* Datos laborales */}
+              <ProfileSection title={t('profile.employeeData')}>
+                <ProfileDl>
+                  <ProfileRow
+                    label={t('profile.positionType')}
+                    value={employeeData?.position_type ? (POSITION_TYPE_LABELS[employeeData.position_type] ?? employeeData.position_type) : null}
+                  />
+                  <ProfileRow label={t('profile.supervisor')} value={employeeData?.supervisor_name} />
+                  <ProfileRow label={t('profile.mentor')} value={employeeData?.mentor_name} />
+                </ProfileDl>
+              </ProfileSection>
+            </div>
 
-          {/* Departamentos */}
-          <ProfileSection title={t('profile.departments')}>
-            <TeamBadgeList items={departments.map((d) => ({ name: d.name, code: d.code }))} />
-          </ProfileSection>
+            <div className="flex flex-col gap-5">
+              {/* Administración interna */}
+              <ProfileSection title={t('profile.adminData')}>
+                <ProfileDl>
+                  <ProfileRow label={t('profile.idCardRfid')} value={employeeData?.id_card_rfid} />
+                  <ProfileRow
+                    label={t('profile.keys')}
+                    value={employeeData?.keys ? (KEYS_LABELS[employeeData.keys] ?? employeeData.keys) : null}
+                  />
+                  <ProfileRow label={t('profile.dateKeysHandover')} value={employeeData?.date_keys_handover} />
+                  <ProfileRow label={t('profile.dateKeysReturn')} value={employeeData?.date_keys_return} />
+                  <ProfileRow label={t('profile.iban')} value={employeeData?.iban} />
+                </ProfileDl>
+              </ProfileSection>
 
-          {/* Equipos */}
-          <ProfileSection title={t('profile.workTeams')}>
-            <TeamBadgeList items={workTeams.map((d) => ({ name: d.name, code: d.code }))} />
-          </ProfileSection>
+              {/* Vehículos */}
+              <ProfileSection title={t('profile.vehicles')}>
+                <ProfileDl>
+                  <ProfileRow label={t('profile.carRegistration1')} value={employeeData?.car_registration_number_1} />
+                  <ProfileRow label={t('profile.carRegistration2')} value={employeeData?.car_registration_number_2} />
+                  <ProfileRow label={t('profile.carRegistration3')} value={employeeData?.car_registration_number_3} />
+                </ProfileDl>
+              </ProfileSection>
 
-          {/* Administración interna */}
-          <ProfileSection title={t('profile.adminData')}>
-            <ProfileDl>
-              <ProfileRow label={t('profile.idCardRfid')} value={employeeData?.id_card_rfid} />
-              <ProfileRow
-                label={t('profile.keys')}
-                value={employeeData?.keys ? (KEYS_LABELS[employeeData.keys] ?? employeeData.keys) : null}
-              />
-              <ProfileRow label={t('profile.dateKeysHandover')} value={employeeData?.date_keys_handover} />
-              <ProfileRow label={t('profile.dateKeysReturn')} value={employeeData?.date_keys_return} />
-              <ProfileRow label={t('profile.iban')} value={employeeData?.iban} />
-            </ProfileDl>
-          </ProfileSection>
+              {/* Preferencias (solo lectura): idioma actual en texto */}
+              <ProfileSection title={t('userMenu.preferences') || 'Preferencias'}>
+                <ProfileDl>
+                  <ProfileRow label={t('profile.language') || 'Idioma'} value={currentLanguageName} />
+                </ProfileDl>
+              </ProfileSection>
+            </div>
+          </div>
 
-          {/* Vehículos */}
-          <ProfileSection title={t('profile.vehicles')}>
-            <ProfileDl>
-              <ProfileRow label={t('profile.carRegistration1')} value={employeeData?.car_registration_number_1} />
-              <ProfileRow label={t('profile.carRegistration2')} value={employeeData?.car_registration_number_2} />
-              <ProfileRow label={t('profile.carRegistration3')} value={employeeData?.car_registration_number_3} />
-            </ProfileDl>
-          </ProfileSection>
-
-          {/* Preferencias (solo lectura): idioma actual en texto */}
-          <ProfileSection title={t('userMenu.preferences') || 'Preferencias'}>
-            <ProfileDl>
-              <ProfileRow label={t('profile.language') || 'Idioma'} value={currentLanguageName} />
-            </ProfileDl>
-          </ProfileSection>
-
+          {/* Contexto académico — ancho completo bajo la rejilla. Su `my-6`
+              propio aporta la separación con la rejilla. */}
           <UserAcademicContext
             data={academicContext}
             isLoading={loadingAcademic}
             error={academicError instanceof Error ? academicError : null}
             texts={academicContextTexts}
+            showIds={isAdmin}
           />
         </section>
       ) : (
-        <section className="max-w-[600px] mx-auto min-w-0">
+        <section className="max-w-[980px] mx-auto min-w-0">
           {saveError && (
             <p className="mb-4 py-2 px-3 text-sm text-danger dark:text-danger bg-danger-light dark:bg-danger-dark/30 rounded-lg" role="alert">
               {saveError}
             </p>
           )}
           <form
+            id="profile-edit-form"
             onSubmit={(e) => void onSubmit(e)}
           >
-            <div className="flex flex-col gap-4 mb-5">
-              {/* Email personal */}
-              <ProfileSection title={t('profile.personalEmail')}>
-                <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start mb-5">
+              <div className="flex flex-col gap-5">
+                {/* Email personal */}
+                <ProfileSection title={t('profile.personalEmail')}>
                   <EmployeeField
                     name="personal_email"
                     label={t('profile.personalEmail')}
@@ -370,12 +395,10 @@ function ProfilePage() {
                     errors={errors}
                     optionalLabel={t('values.optional')}
                   />
-                </div>
-              </ProfileSection>
+                </ProfileSection>
 
-              {/* IBAN */}
-              <ProfileSection title={t('profile.iban')}>
-                <div className="flex flex-col gap-4">
+                {/* IBAN */}
+                <ProfileSection title={t('profile.iban')}>
                   <EmployeeField
                     name="iban"
                     label={t('profile.iban')}
@@ -384,50 +407,48 @@ function ProfilePage() {
                     placeholder="ES76 2077 0024 0031 0257 5701"
                     optionalLabel={t('values.optional')}
                   />
-                </div>
-              </ProfileSection>
+                </ProfileSection>
 
-              {/* Vehículos */}
-              <ProfileSection title={t('profile.vehicles')}>
-                <div className="flex flex-col gap-4">
-                  <EmployeeField
-                    name="car_registration_number_1"
-                    label={t('profile.carRegistration1')}
-                    register={register}
-                    errors={errors}
-                    placeholder="1234ABC"
-                    optionalLabel={t('values.optional')}
-                  />
-                  <EmployeeField
-                    name="car_registration_number_2"
-                    label={t('profile.carRegistration2')}
-                    register={register}
-                    errors={errors}
-                    placeholder="1234ABC"
-                    optionalLabel={t('values.optional')}
-                  />
-                  <EmployeeField
-                    name="car_registration_number_3"
-                    label={t('profile.carRegistration3')}
-                    register={register}
-                    errors={errors}
-                    placeholder="1234ABC"
-                    optionalLabel={t('values.optional')}
-                  />
-                </div>
-              </ProfileSection>
+                {/* Preferencia de idioma. El cambio NO se aplica al instante:
+                    queda pendiente y se confirma al pulsar Guardar. */}
+                <PreferencesCard
+                  canUpdate={canUpdate}
+                  value={pendingLocale}
+                  onChange={setPendingLocale}
+                />
+              </div>
 
-              {/* Preferencia de idioma (justo después de Vehículos) */}
-              <PreferencesCard canUpdate={canUpdate} />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button type="button" variant="secondary" size="sm" onClick={handleCancel} disabled={saving} className="w-full sm:w-auto">
-                {t('actions.cancel')}
-              </Button>
-              <Button type="submit" variant="primary" size="sm" disabled={saving} loading={saving} className="w-full sm:w-auto">
-                {saving ? t('actions.saving') : t('profile.save')}
-              </Button>
+              <div className="flex flex-col gap-5">
+                {/* Vehículos */}
+                <ProfileSection title={t('profile.vehicles')}>
+                  <div className="flex flex-col gap-4">
+                    <EmployeeField
+                      name="car_registration_number_1"
+                      label={t('profile.carRegistration1')}
+                      register={register}
+                      errors={errors}
+                      placeholder="1234ABC"
+                      optionalLabel={t('values.optional')}
+                    />
+                    <EmployeeField
+                      name="car_registration_number_2"
+                      label={t('profile.carRegistration2')}
+                      register={register}
+                      errors={errors}
+                      placeholder="1234ABC"
+                      optionalLabel={t('values.optional')}
+                    />
+                    <EmployeeField
+                      name="car_registration_number_3"
+                      label={t('profile.carRegistration3')}
+                      register={register}
+                      errors={errors}
+                      placeholder="1234ABC"
+                      optionalLabel={t('values.optional')}
+                    />
+                  </div>
+                </ProfileSection>
+              </div>
             </div>
           </form>
         </section>
@@ -439,31 +460,24 @@ function ProfilePage() {
 /**
  * Tarjeta de preferencias en el perfil. Único punto de cambio de idioma
  * en el ecosistema (no hay selector en el sidebar).
+ *
+ * Controlada: el select solo refleja `value` y notifica `onChange`. El cambio
+ * real de idioma (i18next + cookie cross-app + endpoint) lo aplica el padre al
+ * guardar el formulario — nunca al cambiar el select.
  */
-function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
-  const { t, locale, setLocale } = useLocale()
+function PreferencesCard({
+  canUpdate,
+  value,
+  onChange,
+}: {
+  canUpdate: boolean
+  value: string
+  onChange: (next: string) => void
+}) {
+  const { t } = useLocale()
   // Idiomas disponibles desde el catálogo (Odoo res.lang) en vez de la lista
   // hardcodeada; degrada a es/va/en si el endpoint no está disponible.
   const { languages } = useLanguages()
-  const [savingLocale, setSavingLocale] = useState(false)
-
-  // Cambio de idioma: aplica PRIMERO el cambio local (i18next + cookie
-  // cross-app + cache) — la cookie `maya_session_overrides.locale` es la
-  // fuente de verdad provisional hasta que exista persistencia real en Odoo.
-  // Tras eso, llama al endpoint en best-effort (hoy es no-op vía
-  // NoopLocaleWriter, mañana persistirá en Odoo sin tocar este código).
-  const handleLocaleChange = async (next: string) => {
-    if (!canUpdate || next === locale || savingLocale) return
-    setSavingLocale(true)
-    setLocale(next)
-    try {
-      await updateMyLocale(next)
-    } catch (error) {
-      // removed debug log
-    } finally {
-      setSavingLocale(false)
-    }
-  }
 
   return (
     <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
@@ -477,9 +491,9 @@ function PreferencesCard({ canUpdate }: { canUpdate: boolean }) {
         <Select
           id="profile-locale-select"
           fieldSize="md"
-          value={locale}
-          disabled={savingLocale || !canUpdate}
-          onChange={(e) => void handleLocaleChange(e.target.value)}
+          value={value}
+          disabled={!canUpdate}
+          onChange={(e) => onChange(e.target.value)}
           className="max-w-[260px]"
         >
           {languages.map((opt) => (

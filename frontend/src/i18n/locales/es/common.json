@@ -140,17 +140,19 @@
       "blockUnavailable": "Datos académicos temporalmente no disponibles para este bloque.",
       "emptyState": "Sin asignaciones",
       "blocks": {
+        "academic": "Contexto académico",
         "studyTypes": "Tipos de estudio",
         "studies": "Estudios",
         "modules": "Módulos",
-        "teams": "Equipos / Departamentos"
+        "teams": "Equipos / Departamentos",
+        "departments": "Departamentos",
+        "workTeams": "Equipos",
+        "unclassified": "Sin clasificar"
       },
       "headers": {
         "code": "Código",
         "name": "Nombre",
-        "id": "ID",
-        "type": "Tipo",
-        "department": "Departamento"
+        "id": "ID"
       }
     }
   },

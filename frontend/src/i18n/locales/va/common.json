@@ -140,17 +140,19 @@
       "blockUnavailable": "Dades acadèmiques temporalment no disponibles per a aquest bloc.",
       "emptyState": "Sense assignacions",
       "blocks": {
+        "academic": "Context acadèmic",
         "studyTypes": "Tipus d'estudi",
         "studies": "Estudis",
         "modules": "Mòduls",
-        "teams": "Equips / Departaments"
+        "teams": "Equips / Departaments",
+        "departments": "Departaments",
+        "workTeams": "Equips",
+        "unclassified": "Sense classificar"
       },
       "headers": {
         "code": "Codi",
         "name": "Nom",
-        "id": "ID",
-        "type": "Tipus",
-        "department": "Departament"
+        "id": "ID"
       }
     }
   },
