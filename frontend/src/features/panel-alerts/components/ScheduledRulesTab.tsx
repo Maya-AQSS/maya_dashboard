@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
 import {
   Badge,
   Button,
@@ -12,7 +14,7 @@ import {
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
-import { useNotificationRules } from '../hooks/useNotificationRules'
+import { listNotificationRules, updateNotificationRule, deleteNotificationRule } from '../api/notificationRulesApi'
 import { fireNotificationSample } from '../api/notificationSampleApi'
 import type { NotificationRule } from '../types/notificationRule'
 
@@ -24,38 +26,64 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const { t } = useLocale()
   const { show: toast } = useToast()
   const navigate = useNavigate()
-  const { rules, loading, error, onUpdate, onDelete } = useNotificationRules()
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
+  const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:notification-rules-table' })
 
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const table = useServerTable({
+    defaults: { search: '' },
+    sortableColumns: ['name', 'source_app', 'schedule_cron'],
+    storageKey: 'maya:dashboard:notification-rules-table',
+    defaultSort: { columnId: 'name', direction: 'asc' },
+  })
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    let list = rules
-    if (q) {
-      list = list.filter((r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.evaluator_key.toLowerCase().includes(q) ||
-        r.source_app.toLowerCase().includes(q),
-      )
-    }
-    if (sortBy) {
-      const dir = sortBy.direction === 'asc' ? 1 : -1
-      list = [...list].sort((a, b) => {
-        const av = String((a as Record<string, unknown>)[sortBy.columnId] ?? '')
-        const bv = String((b as Record<string, unknown>)[sortBy.columnId] ?? '')
-        return av.localeCompare(bv) * dir
-      })
-    }
-    return list
-  }, [rules, search, sortBy])
+  const [searchInput, setSearchInput] = useState('')
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const pageRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['notification-rules', table.queryParams],
+    queryFn: () => listNotificationRules({
+      page: table.queryParams.page,
+      per_page: table.queryParams.per_page,
+      search: table.queryParams.search || undefined,
+      sort_by: table.queryParams.sort_by,
+      sort_dir: table.queryParams.sort_dir,
+    }),
+    staleTime: 30_000,
+  })
+
+  const rules = response?.data ?? []
+  const meta = response?.meta
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchInput(value)
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    searchDebounceRef.current = setTimeout(() => {
+      table.setFilter('search', value || undefined)
+    }, 400)
+  }
+
+  const handleUpdate = async (id: number, data: { enabled: boolean }) => {
+    try {
+      await updateNotificationRule(id, data)
+      toast({ tone: 'success', title: t('systemNotifications.toggleSuccess') })
+    } catch {
+      toast({ tone: 'danger', title: t('systemNotifications.toggleError') })
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteNotificationRule(id)
+      toast({ tone: 'success', title: t('scheduledRules.deleteSuccess') })
+    } catch {
+      toast({ tone: 'danger', title: t('scheduledRules.deleteError') })
+    }
+  }
+
+  const totalPages = meta?.last_page ?? 1
+  const safeCurrentPage = meta?.current_page ?? table.page
 
   const columns: ColumnDef<NotificationRule>[] = useMemo(() => {
     const cols: ColumnDef<NotificationRule>[] = [
@@ -68,20 +96,21 @@ export function ScheduledRulesTab({ canManage }: Props) {
             <code className="block text-xs font-mono text-text-secondary dark:text-text-dark-secondary">{r.evaluator_key}</code>
           </div>
         ),
-        alwaysVisible: true,
         sortable: true,
+        alwaysVisible: true,
       },
       {
         id: 'source_app',
         header: t('scheduledRules.fields.sourceApp'),
         cell: (r) => <Badge variant="neutral" size="sm">{r.source_app}</Badge>,
-        width: '150px',
         sortable: true,
+        width: '150px',
       },
       {
         id: 'schedule_cron',
         header: t('scheduledRules.fields.scheduleCron'),
         cell: (r) => <code className="text-xs font-mono">{r.schedule_cron}</code>,
+        sortable: true,
         width: '130px',
       },
       {
@@ -131,9 +160,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
               size="xs"
               onClick={(e) => {
                 e.stopPropagation()
-                onUpdate({ id: r.id, data: { enabled: !r.enabled } })
-                  .then(() => toast({ tone: 'success', title: t('systemNotifications.toggleSuccess') }))
-                  .catch(() => toast({ tone: 'danger', title: t('systemNotifications.toggleError') }))
+                handleUpdate(r.id, { enabled: !r.enabled })
               }}
             >
               {r.enabled ? t('systemNotifications.disable') : t('systemNotifications.enable')}
@@ -144,9 +171,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
               onClick={(e) => {
                 e.stopPropagation()
                 if (!window.confirm(t('scheduledRules.confirmDelete'))) return
-                onDelete(r.id)
-                  .then(() => toast({ tone: 'success', title: t('scheduledRules.deleteSuccess') }))
-                  .catch(() => toast({ tone: 'danger', title: t('scheduledRules.deleteError') }))
+                handleDelete(r.id)
               }}
             >
               {t('actions.delete')}
@@ -160,40 +185,38 @@ export function ScheduledRulesTab({ canManage }: Props) {
 
     return cols
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canManage, t, navigate, onUpdate, onDelete, toast])
+  }, [canManage, t, navigate, toast])
 
   return (
     <div className="space-y-4">
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-
       <DataTable
         columns={columns}
-        rows={pageRows}
-        loading={loading}
+        rows={rules}
+        loading={isLoading}
         rowKey={(r) => r.id}
         hiddenColumnIds={hiddenIds}
         onToggleHiddenColumn={toggleHidden}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        pageSize={pageSize}
-        onPageSizeChange={(size) => { setPageSize(size); setPage(1) }}
+        sortBy={table.sortBy}
+        onSortChange={table.onSortChange}
+        pageSize={table.pageSize}
+        onPageSizeChange={table.onPageSizeChange}
         emptyMessage={t('scheduledRules.empty')}
-        filtersActiveCount={search ? 1 : 0}
-        onClearFilters={() => { setSearch(''); setPage(1) }}
+        filtersActiveCount={table.filtersActiveCount}
+        onClearFilters={table.resetFilters}
         filtersPanel={
           <FilterField label={t('scheduledRules.searchLabel')}>
             <TextInput
               fieldSize="sm"
               type="search"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              value={searchInput}
+              onChange={handleSearchChange}
               placeholder={t('scheduledRules.searchPlaceholder')}
             />
           </FilterField>
         }
       />
 
-      <Pagination currentPage={safePage} totalPages={totalPages} onChange={setPage} />
+      <Pagination currentPage={safeCurrentPage} totalPages={totalPages} onChange={table.onPageChange} />
     </div>
   )
 }

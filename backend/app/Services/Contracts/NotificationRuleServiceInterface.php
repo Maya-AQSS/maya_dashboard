@@ -14,6 +14,11 @@ interface NotificationRuleServiceInterface
      */
     public function paginate(int $perPage, ?string $sourceApp, ?string $evaluatorKey): PaginatedDto;
 
+    /**
+     * @return PaginatedDto<NotificationRuleDto>
+     */
+    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): PaginatedDto;
+
     public function find(int $id): NotificationRuleDto;
 
     /**

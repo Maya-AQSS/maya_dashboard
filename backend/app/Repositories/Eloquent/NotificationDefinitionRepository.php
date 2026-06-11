@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\NotificationDefinition;
 use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,6 +23,32 @@ final class NotificationDefinitionRepository implements NotificationDefinitionRe
             ->orderBy('source_app')
             ->orderBy('key')
             ->get();
+    }
+
+    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): Paginator
+    {
+        $query = NotificationDefinition::query();
+
+        if ($category !== null) {
+            $query->where('category', $category);
+        }
+
+        if ($sourceApp !== null) {
+            $query->where('source_app', $sourceApp);
+        }
+
+        if ($search !== null) {
+            $q = "%{$search}%";
+            $query->where(function ($q) use ($search) {
+                $q->where('label', 'ilike', "%{$search}%")
+                    ->orWhere('key', 'ilike', "%{$search}%")
+                    ->orWhere('source_app', 'ilike', "%{$search}%");
+            });
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        return $query->simplePaginate($perPage, ['*'], 'page', $page);
     }
 
     public function findOrFail(int $id): NotificationDefinition

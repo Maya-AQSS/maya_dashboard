@@ -196,6 +196,13 @@ export default function NotificationsPage() {
         width: '180px',
       },
       {
+        id: 'read_at',
+        header: t('notifications.fields.readAt'),
+        cell: (n) => (n.read_at ? formatDateTime(n.read_at, dateLocale) : '—'),
+        sortable: true,
+        width: '180px',
+      },
+      {
         id: 'actions',
         header: '',
         cell: (n) => (

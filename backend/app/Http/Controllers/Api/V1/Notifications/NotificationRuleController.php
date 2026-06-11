@@ -29,15 +29,25 @@ class NotificationRuleController extends Controller
 
     public function index(ListNotificationRulesRequest $request): JsonResponse
     {
-        $perPage = max(1, (int) ($request->validated('per_page') ?? 25));
+        $page = max(1, (int) ($request->validated('page') ?? 1));
+        $perPage = max(1, min((int) ($request->validated('per_page') ?? 25), 100));
+        $sourceApp = $request->validated('source_app') ?: null;
+        $evaluatorKey = $request->validated('evaluator_key') ?: null;
+        $search = $request->validated('search') ?: null;
+        $sortBy = $request->validated('sort_by', 'name');
+        $sortDir = $request->validated('sort_dir', 'asc');
 
-        $page = $this->rules->paginate(
+        $paginated = $this->rules->paginateWithFilters(
+            $page,
             $perPage,
-            $request->validated('source_app') ?: null,
-            $request->validated('evaluator_key') ?: null,
+            $sourceApp,
+            $evaluatorKey,
+            $search,
+            $sortBy,
+            $sortDir,
         );
 
-        return $this->paginated($page, NotificationRuleResource::class, $request);
+        return $this->paginated($paginated, NotificationRuleResource::class, $request);
     }
 
     public function show(int $id): JsonResponse
