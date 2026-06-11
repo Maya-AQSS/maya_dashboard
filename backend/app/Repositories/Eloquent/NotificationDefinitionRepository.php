@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\NotificationDefinition;
 use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -25,7 +26,7 @@ final class NotificationDefinitionRepository implements NotificationDefinitionRe
             ->get();
     }
 
-    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): Paginator
+    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): LengthAwarePaginator
     {
         $query = NotificationDefinition::query();
 
@@ -48,7 +49,7 @@ final class NotificationDefinitionRepository implements NotificationDefinitionRe
 
         $query->orderBy($sortBy, $sortDir);
 
-        return $query->simplePaginate($perPage, ['*'], 'page', $page);
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function findOrFail(int $id): NotificationDefinition

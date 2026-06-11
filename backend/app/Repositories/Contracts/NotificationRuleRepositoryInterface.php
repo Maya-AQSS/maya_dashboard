@@ -6,7 +6,6 @@ namespace App\Repositories\Contracts;
 
 use App\Models\NotificationRule;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator;
 
 interface NotificationRuleRepositoryInterface
 {
@@ -16,9 +15,9 @@ interface NotificationRuleRepositoryInterface
     public function paginate(int $perPage, ?string $sourceApp, ?string $evaluatorKey): LengthAwarePaginator;
 
     /**
-     * @return Paginator<NotificationRule>
+     * @return LengthAwarePaginator<NotificationRule>
      */
-    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): Paginator;
+    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): LengthAwarePaginator;
 
     public function findOrFail(int $id): NotificationRule;
 

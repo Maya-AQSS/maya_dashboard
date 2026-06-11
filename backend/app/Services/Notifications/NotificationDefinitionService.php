@@ -7,6 +7,7 @@ namespace App\Services\Notifications;
 use App\DTOs\NotificationDefinitionDto;
 use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
 use App\Services\Contracts\NotificationDefinitionServiceInterface;
+use App\Models\NotificationDefinition;
 use Illuminate\Support\Collection;
 use Maya\Http\Pagination\PaginatedDto;
 
@@ -33,7 +34,10 @@ final class NotificationDefinitionService implements NotificationDefinitionServi
     {
         $paginated = $this->definitions->paginateWithFilters($page, $perPage, $category, $sourceApp, $search, $sortBy, $sortDir);
 
-        return $paginated->mapItems(fn ($model) => NotificationDefinitionDto::fromModel($model));
+        return PaginatedDto::fromPaginator(
+            $paginated,
+            fn (NotificationDefinition $model) => NotificationDefinitionDto::fromModel($model),
+        );
     }
 
     public function setEnabled(int $id, bool $enabled): NotificationDefinitionDto

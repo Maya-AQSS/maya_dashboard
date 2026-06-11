@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
 import {
   ConfirmDialog,
@@ -36,7 +36,8 @@ const FAVORITE_OPTIONS = [
 function ApplicationsListPage() {
   const { t } = useLocale()
   const { user } = useAuth()
-  const { toggleFavorite: toggleFavFromContext } = useFavoritesContext()
+  const queryClient = useQueryClient()
+  const { add: addFavorite, remove: removeFavorite } = useFavoritesContext()
 
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:applications-table' })
@@ -82,20 +83,20 @@ function ApplicationsListPage() {
     }, 400)
   }
 
-  const handleToggleFavorite = (id: string) => {
-    toggleFavFromContext(id)
-  }
-
   const handleFavoriteClick = (app: App, e: React.MouseEvent) => {
     e.stopPropagation()
     setConfirmApp(app)
   }
 
-  const handleConfirmToggle = () => {
-    if (confirmApp) {
-      handleToggleFavorite(confirmApp.id)
-      setConfirmApp(null)
+  const handleConfirmToggle = async () => {
+    if (!confirmApp) return
+    setConfirmApp(null)
+    if (confirmApp.isFavorite) {
+      await removeFavorite(confirmApp.id)
+    } else {
+      await addFavorite(confirmApp.id)
     }
+    queryClient.invalidateQueries({ queryKey: ['applications', user?.sub] })
   }
 
   const columns: ColumnDef<App>[] = [

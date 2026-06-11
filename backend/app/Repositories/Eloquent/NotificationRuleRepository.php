@@ -7,7 +7,6 @@ namespace App\Repositories\Eloquent;
 use App\Models\NotificationRule;
 use App\Repositories\Contracts\NotificationRuleRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator;
 
 final class NotificationRuleRepository implements NotificationRuleRepositoryInterface
 {
@@ -23,7 +22,7 @@ final class NotificationRuleRepository implements NotificationRuleRepositoryInte
             ->paginate($perPage);
     }
 
-    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): Paginator
+    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): LengthAwarePaginator
     {
         $query = NotificationRule::query();
 
@@ -46,7 +45,7 @@ final class NotificationRuleRepository implements NotificationRuleRepositoryInte
 
         $query->orderBy($sortBy, $sortDir);
 
-        return $query->simplePaginate($perPage, ['*'], 'page', $page);
+        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     public function findOrFail(int $id): NotificationRule
