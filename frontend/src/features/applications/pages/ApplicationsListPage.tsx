@@ -1,4 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
 import {
   ConfirmDialog,
   DataTable,
@@ -12,8 +14,10 @@ import {
   useTablePreferences,
   type ColumnDef,
 } from '@ceedcv-maya/shared-ui-react'
-import useApplicationsData from '../hooks/useApplicationsData'
+import { listApplications } from '../api/applicationsApi'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
+import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 
 type App = {
   id: string
@@ -21,26 +25,6 @@ type App = {
   description: string
   documentationUrl: string
   isFavorite: boolean
-}
-
-type Filters = {
-  search: string
-  favorite: '' | 'yes' | 'no'
-}
-
-function applyFilters(apps: App[], filters: Filters): App[] {
-  return apps.filter((app) => {
-    if (filters.search) {
-      const q = filters.search.toLowerCase()
-      const match =
-        app.name?.toLowerCase().includes(q) ||
-        app.description?.toLowerCase().includes(q)
-      if (!match) return false
-    }
-    if (filters.favorite === 'yes' && !app.isFavorite) return false
-    if (filters.favorite === 'no' && app.isFavorite) return false
-    return true
-  })
 }
 
 const FAVORITE_OPTIONS = [
@@ -51,45 +35,55 @@ const FAVORITE_OPTIONS = [
 
 function ApplicationsListPage() {
   const { t } = useLocale()
-  const { apps, loading, error, toggleFavorite } = useApplicationsData()
-  const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
+  const { user } = useAuth()
+  const { toggleFavorite: toggleFavFromContext } = useFavoritesContext()
+
+  const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:applications-table' })
 
-  const [filters, setFilters] = useState<Filters>({ search: '', favorite: '' })
+  const table = useServerTable({
+    defaults: { search: '', favorite: '' },
+    sortableColumns: ['name', 'description', 'updated_at'],
+    storageKey: 'maya:dashboard:applications-table',
+    defaultSort: { columnId: 'name', direction: 'asc' },
+  })
+
   const [searchInput, setSearchInput] = useState('')
-  const [page, setPage] = useState(1)
+  const [confirmApp, setConfirmApp] = useState<App | null>(null)
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [confirmApp, setConfirmApp] = useState<App | null>(null)
+  // Server-side query
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['applications', user?.sub, table.queryParams],
+    queryFn: () => {
+      if (!user?.sub) throw new Error('User not authenticated')
+      return listApplications(user.sub, {
+        page: table.queryParams.page,
+        per_page: table.queryParams.per_page,
+        search: table.queryParams.search || undefined,
+        favorite: (table.queryParams.favorite as 'yes' | 'no') || undefined,
+        sort_by: table.queryParams.sort_by,
+        sort_dir: table.queryParams.sort_dir,
+      })
+    },
+    enabled: !!user?.sub,
+    staleTime: 30_000,
+  })
 
-  const filtered = useMemo(() => applyFilters(apps as App[], filters), [apps, filters])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const pageSlice = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
-
-  const filtersActiveCount = [filters.search, filters.favorite].filter(Boolean).length
+  // Backend data already has isFavorite (mapped via mapApplicationFromApi)
+  const apps = response?.data ?? []
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchInput(value)
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
     searchDebounceRef.current = setTimeout(() => {
-      setFilters((f) => ({ ...f, search: value }))
-      setPage(1)
+      table.setFilter('search', value || undefined)
     }, 400)
   }
 
-  const clearFilters = () => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    setSearchInput('')
-    setFilters({ search: '', favorite: '' })
-    setPage(1)
-  }
-
-  const handleFilterChange = (patch: Partial<Filters>) => {
-    setFilters((f) => ({ ...f, ...patch }))
-    setPage(1)
+  const handleToggleFavorite = (id: string) => {
+    toggleFavFromContext(id)
   }
 
   const handleFavoriteClick = (app: App, e: React.MouseEvent) => {
@@ -99,13 +93,12 @@ function ApplicationsListPage() {
 
   const handleConfirmToggle = () => {
     if (confirmApp) {
-      toggleFavorite(confirmApp.id)
+      handleToggleFavorite(confirmApp.id)
       setConfirmApp(null)
     }
   }
 
-  const columns: ColumnDef<App>[] = useMemo(
-    () => [
+  const columns: ColumnDef<App>[] = [
       {
         id: 'name',
         header: t('nav.applications') === 'Aplicaciones' ? 'Nombre' : 'Name',
@@ -144,20 +137,8 @@ function ApplicationsListPage() {
         align: 'center',
         width: '72px',
       },
-    ],
-    [t],
-  )
+    ]
 
-  if (error) {
-    return (
-      <>
-        <PageTitle title={t('nav.applications')} />
-        <div role="alert" className="rounded-lg border border-warning/40 bg-warning-light/40 dark:bg-warning-dark/10 px-4 py-3 text-sm text-warning-dark dark:text-warning-light">
-          {error}
-        </div>
-      </>
-    )
-  }
 
   return (
     <>
@@ -166,18 +147,15 @@ function ApplicationsListPage() {
       <div className="space-y-4">
         <DataTable
           columns={columns}
-          rows={pageSlice}
-          loading={loading && apps.length === 0}
+          rows={apps}
+          loading={isLoading}
           rowKey={(app) => app.id}
           hiddenColumnIds={hiddenIds}
           onToggleHiddenColumn={toggleHidden}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          pageSize={pageSize}
-          onPageSizeChange={(size) => {
-            setPageSize(size)
-            setPage(1)
-          }}
+          sortBy={table.sortBy}
+          onSortChange={table.onSortChange}
+          pageSize={table.pageSize}
+          onPageSizeChange={table.onPageSizeChange}
           defaultView="cards"
           viewStorageKey="maya:dashboard:applications-table"
           emptyMessage={t('applications.noApplications')}
@@ -250,8 +228,8 @@ function ApplicationsListPage() {
               </button>
             </div>
           )}
-          filtersActiveCount={filtersActiveCount}
-          onClearFilters={clearFilters}
+          filtersActiveCount={table.filtersActiveCount}
+          onClearFilters={table.resetFilters}
           filtersStorageKey="maya:dashboard:applications-table"
           onRowClick={(app) => {
             if (app.documentationUrl && app.documentationUrl !== '#') {
@@ -272,8 +250,8 @@ function ApplicationsListPage() {
               <FilterField label={t('applications.favorite')}>
                 <Select
                   fieldSize="sm"
-                  value={filters.favorite}
-                  onChange={(e) => handleFilterChange({ favorite: e.target.value as Filters['favorite'] })}
+                  value={table.filters.favorite}
+                  onChange={(e) => table.setFilter('favorite', e.target.value || undefined)}
                 >
                   {FAVORITE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -285,10 +263,14 @@ function ApplicationsListPage() {
         />
 
         <Pagination
-          currentPage={safePage}
-          totalPages={totalPages}
-          onChange={setPage}
-          info={`${t('applications.page')} ${safePage} ${t('applications.of')} ${totalPages} — ${filtered.length} ${t('nav.applications').toLowerCase()}`}
+          currentPage={response?.meta?.current_page ?? table.page}
+          totalPages={response?.meta?.last_page ?? 1}
+          onChange={table.onPageChange}
+          info={
+            response?.meta?.from != null && response?.meta?.to != null
+              ? `${t('applications.page')} ${response.meta.current_page} ${t('applications.of')} ${response.meta.last_page} — ${response.meta.total} ${t('nav.applications').toLowerCase()}`
+              : undefined
+          }
         />
       </div>
 

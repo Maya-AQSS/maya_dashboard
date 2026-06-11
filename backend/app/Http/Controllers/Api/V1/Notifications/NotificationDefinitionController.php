@@ -26,12 +26,25 @@ class NotificationDefinitionController extends Controller
 
     public function index(ListNotificationDefinitionsRequest $request): JsonResponse
     {
-        $items = $this->definitions->list(
-            $request->validated('category') ?: null,
-            $request->validated('source_app') ?: null,
+        $page = max(1, (int) ($request->validated('page') ?? 1));
+        $perPage = max(1, min((int) ($request->validated('per_page') ?? 25), 100));
+        $category = $request->validated('category') ?: null;
+        $sourceApp = $request->validated('source_app') ?: null;
+        $search = $request->validated('search') ?: null;
+        $sortBy = $request->validated('sort_by', 'label');
+        $sortDir = $request->validated('sort_dir', 'asc');
+
+        $paginated = $this->definitions->paginate(
+            $page,
+            $perPage,
+            $category,
+            $sourceApp,
+            $search,
+            $sortBy,
+            $sortDir,
         );
 
-        return $this->okData(NotificationDefinitionResource::collection($items));
+        return $this->paginated($paginated, NotificationDefinitionResource::class, $request);
     }
 
     public function update(UpdateNotificationDefinitionRequest $request, int $id): JsonResponse

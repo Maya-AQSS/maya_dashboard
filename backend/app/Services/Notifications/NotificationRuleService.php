@@ -33,6 +33,16 @@ final class NotificationRuleService implements NotificationRuleServiceInterface
         );
     }
 
+    /**
+     * @return PaginatedDto<NotificationRuleDto>
+     */
+    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): PaginatedDto
+    {
+        $paginated = $this->rules->paginateWithFilters($page, $perPage, $sourceApp, $evaluatorKey, $search, $sortBy, $sortDir);
+
+        return $paginated->mapItems(fn (NotificationRule $r): NotificationRuleDto => NotificationRuleDto::fromModel($r));
+    }
+
     public function find(int $id): NotificationRuleDto
     {
         return NotificationRuleDto::fromModel($this->rules->findOrFail($id));

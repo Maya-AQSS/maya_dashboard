@@ -8,6 +8,7 @@ use App\DTOs\NotificationDefinitionDto;
 use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
 use App\Services\Contracts\NotificationDefinitionServiceInterface;
 use Illuminate\Support\Collection;
+use Maya\Http\Pagination\PaginatedDto;
 
 final class NotificationDefinitionService implements NotificationDefinitionServiceInterface
 {
@@ -23,6 +24,16 @@ final class NotificationDefinitionService implements NotificationDefinitionServi
         return $this->definitions->list($category, $sourceApp)
             ->map(fn ($model) => NotificationDefinitionDto::fromModel($model))
             ->values();
+    }
+
+    /**
+     * @return PaginatedDto<NotificationDefinitionDto>
+     */
+    public function paginate(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): PaginatedDto
+    {
+        $paginated = $this->definitions->paginateWithFilters($page, $perPage, $category, $sourceApp, $search, $sortBy, $sortDir);
+
+        return $paginated->mapItems(fn ($model) => NotificationDefinitionDto::fromModel($model));
     }
 
     public function setEnabled(int $id, bool $enabled): NotificationDefinitionDto

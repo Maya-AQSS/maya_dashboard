@@ -24,10 +24,23 @@ class ApplicationController extends Controller
     public function index(ListApplicationsRequest $request): JsonResponse
     {
         $user = $this->resolveKeycloakUser($request);
-        $perPage = max(1, min((int) ($request->validated('per_page') ?? 100), 200));
+        $page = max(1, (int) ($request->validated('page') ?? 1));
+        $perPage = max(1, min((int) ($request->validated('per_page') ?? 25), 200));
+        $search = $request->validated('search');
+        $favorite = $request->validated('favorite');
+        $sortBy = $request->validated('sort_by', 'name');
+        $sortDir = $request->validated('sort_dir', 'asc');
 
-        $page = $this->applications->listForUser((string) $user->id, $perPage);
+        $paginated = $this->applications->listForUserWithFilters(
+            (string) $user->id,
+            $page,
+            $perPage,
+            $search,
+            $favorite,
+            $sortBy,
+            $sortDir,
+        );
 
-        return $this->paginated($page, ApplicationResource::class, $request);
+        return $this->paginated($paginated, ApplicationResource::class, $request);
     }
 }

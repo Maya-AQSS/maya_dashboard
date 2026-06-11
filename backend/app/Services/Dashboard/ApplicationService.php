@@ -26,4 +26,30 @@ final class ApplicationService implements ApplicationServiceInterface
             fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app),
         );
     }
+
+    /**
+     * @return PaginatedDto<ApplicationDto>
+     */
+    public function listForUserWithFilters(
+        string $userId,
+        int $page,
+        int $perPage,
+        ?string $search = null,
+        ?string $favorite = null,
+        string $sortBy = 'name',
+        string $sortDir = 'asc',
+    ): PaginatedDto {
+        return PaginatedDto::fromPaginator(
+            $this->applications->paginateActiveWithFilters(
+                $userId,
+                $page,
+                $perPage,
+                $search,
+                $favorite,
+                $sortBy,
+                $sortDir,
+            ),
+            fn (Application $app): ApplicationDto => ApplicationDto::fromModel($app),
+        );
+    }
 }

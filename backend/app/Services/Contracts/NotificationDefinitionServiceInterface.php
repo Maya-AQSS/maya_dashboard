@@ -6,6 +6,7 @@ namespace App\Services\Contracts;
 
 use App\DTOs\NotificationDefinitionDto;
 use Illuminate\Support\Collection;
+use Maya\Http\Pagination\PaginatedDto;
 
 interface NotificationDefinitionServiceInterface
 {
@@ -13,6 +14,11 @@ interface NotificationDefinitionServiceInterface
      * @return Collection<int, NotificationDefinitionDto>
      */
     public function list(?string $category = null, ?string $sourceApp = null): Collection;
+
+    /**
+     * @return PaginatedDto<NotificationDefinitionDto>
+     */
+    public function paginate(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): PaginatedDto;
 
     public function setEnabled(int $id, bool $enabled): NotificationDefinitionDto;
 
