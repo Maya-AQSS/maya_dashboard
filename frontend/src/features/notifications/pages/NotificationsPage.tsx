@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
 import { useQuery } from '@tanstack/react-query'
 import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
@@ -39,6 +40,7 @@ export default function NotificationsPage() {
   const { t, dateLocale } = useLocale()
   const resolveText = useNotificationText()
   const navigate = useNavigate()
+  const location = useLocation()
   const { toast } = useToast()
   const { hasPermission } = useUserProfile()
 
@@ -77,7 +79,7 @@ export default function NotificationsPage() {
     if (canUpdate && !n.read_at) onMarkRead(n.id).catch(() => undefined)
     // Always open the notification detail; the related resource (n.url) is an
     // explicit "Ver" action inside the detail.
-    navigate(`/notifications/${n.id}`)
+    navigate(`/notifications/${n.id}`, { state: buildBackState(location) })
   }
 
   const handleDelete = (n: Notification) => {

@@ -1,7 +1,8 @@
 import { type ReactNode, useMemo } from 'react'
 import { EditorContentHtml, sanitizeEditorHtml } from '@ceedcv-maya/shared-editor-react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Badge, Button, PageTitle, Spinner, formatDateTime, useToast } from '@ceedcv-maya/shared-ui-react'
+import { useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
+import { BackButton, Badge, Button, PageTitle, Spinner, formatDateTime, useToast } from '@ceedcv-maya/shared-ui-react'
 import { useLocale, useNotificationText } from '@ceedcv-maya/shared-i18n-react'
 import { readI18nMeta } from '../notificationI18n'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -53,6 +54,7 @@ export default function NotificationDetailPage() {
   const { id } = useParams<{ id: string }>()
   const notifId = id != null && /^\d+$/.test(id) ? Number(id) : undefined
   const navigate = useNavigate()
+  const { goBack } = useBackNavigation({ fallback: '/notifications' })
   const { t, dateLocale } = useLocale()
   const resolveText = useNotificationText()
   const { toast } = useToast()
@@ -105,7 +107,7 @@ export default function NotificationDetailPage() {
   if (!canShow) {
     return (
       <>
-        <PageTitle title={t('notifications.pageTitle')} onBack={() => navigate('/notifications')} />
+        <PageTitle title={t('notifications.pageTitle')} onBack={() => goBack()} />
         <p className="text-text-primary dark:text-text-dark-primary" role="status">
           {t('notifications.noPermission')}
         </p>
@@ -116,7 +118,7 @@ export default function NotificationDetailPage() {
   if (isLoading) {
     return (
       <>
-        <PageTitle title={t('notifications.pageTitle')} onBack={() => navigate('/notifications')} />
+        <PageTitle title={t('notifications.pageTitle')} onBack={() => goBack()} />
         <div className="flex justify-center py-16">
           <Spinner size="lg" />
         </div>
@@ -127,18 +129,16 @@ export default function NotificationDetailPage() {
   if (error || !notification) {
     return (
       <>
-        <PageTitle title={t('notifications.pageTitle')} onBack={() => navigate('/notifications')} />
+        <PageTitle title={t('notifications.pageTitle')} onBack={() => goBack()} />
         <p role="alert" className="text-danger text-sm">
           {t('notifications.loadError')}
         </p>
-        <Button
+        <BackButton
           variant="outline"
-          size="sm"
-          onClick={() => navigate('/notifications')}
+          onClick={() => goBack()}
+          label={t('notifications.backToList')}
           className="mt-4"
-        >
-          {t('notifications.backToList')}
-        </Button>
+        />
       </>
     )
   }
@@ -150,7 +150,7 @@ export default function NotificationDetailPage() {
       <PageTitle
         title={pageTitle}
         subtitle={`#${notification.id} · ${notificationAppLabel(t, notification.app)} · ${notification.type}`}
-        onBack={() => navigate('/notifications')}
+        onBack={() => goBack()}
         actions={
           <div className="flex flex-col sm:flex-row gap-2">
             {resourceTarget ? (

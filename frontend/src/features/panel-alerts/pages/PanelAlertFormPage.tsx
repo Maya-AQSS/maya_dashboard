@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { PageTitle, useToast } from '@ceedcv-maya/shared-ui-react'
+import { useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
@@ -13,9 +14,9 @@ export default function PanelAlertFormPage() {
   const isCreate = !id
   const { t } = useLocale()
   const { show: toast } = useToast()
-  const navigate = useNavigate()
   const { hasPermission } = useUserProfile()
   const location = useLocation()
+  const { goBack } = useBackNavigation({ fallback: '/panel-alerts?tab=alerts' })
 
   const canCreate = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsCreate)
   const canUpdate = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsUpdate)
@@ -50,10 +51,10 @@ export default function PanelAlertFormPage() {
         setInitial(found)
       } else if (id) {
         // Record not found, redirect
-        navigate('/panel-alerts?tab=alerts', { replace: true })
+        goBack({ replace: true })
       }
     }
-  }, [id, isCreate, location.state, alerts, alertsLoading, navigate])
+  }, [id, isCreate, location.state, alerts, alertsLoading, goBack])
 
   const { onCreate, onUpdate } = usePanelAlerts({ page: 1, per_page: 100 })
 
@@ -67,7 +68,7 @@ export default function PanelAlertFormPage() {
         await onUpdate({ id: Number(id), data })
         toast({ tone: 'success', title: t('panelAlerts.updateSuccess') })
       }
-      navigate('/panel-alerts?tab=alerts', { replace: true })
+      goBack({ replace: true })
     } catch {
       toast({ tone: 'danger', title: t('panelAlerts.createError') })
     } finally {
@@ -80,7 +81,7 @@ export default function PanelAlertFormPage() {
       <>
         <PageTitle
           title={isCreate ? t('panelAlerts.newAlert') : t('panelAlerts.editAlert')}
-          onBack={() => navigate('/panel-alerts?tab=alerts')}
+          onBack={() => goBack()}
           backLabel={t('actions.back')}
         />
         <p className="text-text-primary dark:text-text-dark-primary" role="status">
@@ -94,7 +95,7 @@ export default function PanelAlertFormPage() {
     <div className="px-4 py-6 sm:px-6 lg:px-8">
       <PageTitle
         title={isCreate ? t('panelAlerts.newAlert') : t('panelAlerts.editAlert')}
-        onBack={() => navigate('/panel-alerts?tab=alerts')}
+        onBack={() => goBack()}
         backLabel={t('actions.back')}
       />
 
@@ -103,7 +104,7 @@ export default function PanelAlertFormPage() {
           <PanelAlertForm
             initial={initial}
             onSubmit={handleSubmit}
-            onCancel={() => navigate('/panel-alerts?tab=alerts')}
+            onCancel={() => goBack()}
             loading={loading}
           />
         </div>

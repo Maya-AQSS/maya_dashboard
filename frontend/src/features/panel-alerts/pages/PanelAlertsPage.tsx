@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { buildBackState, useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
 import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
@@ -37,6 +38,8 @@ export default function PanelAlertsPage() {
   const { t, dateLocale } = useLocale()
   const { show: toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { goBack } = useBackNavigation({ fallback: '/' })
   const { hasPermission } = useUserProfile()
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -153,7 +156,7 @@ export default function PanelAlertsPage() {
                 <Button
                   variant="outline"
                   size="xs"
-                  onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/alertas/${a.id}`, { state: { record: a } }) }}
+                  onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/alertas/${a.id}`, { state: { record: a, ...buildBackState(location) } }) }}
                 >
                   {t('actions.edit')}
                 </Button>
@@ -211,7 +214,7 @@ export default function PanelAlertsPage() {
   if (!canIndexAlerts) {
     return (
       <>
-        <PageTitle title={t('panelAlerts.pageTitle')} onBack={() => navigate('/')} />
+        <PageTitle title={t('panelAlerts.pageTitle')} onBack={() => goBack()} />
         <p className="text-text-primary dark:text-text-dark-primary" role="status">
           {t('panelAlerts.noPermission')}
         </p>
@@ -226,11 +229,11 @@ export default function PanelAlertsPage() {
         subtitle={t('panelAlerts.pageSubtitle')}
         actions={
           activeTab === 'alerts' && canCreateAlert ? (
-            <Button onClick={() => navigate('/panel-alerts/alertas/nueva')}>
+            <Button onClick={() => navigate('/panel-alerts/alertas/nueva', { state: buildBackState(location) })}>
               + {t('actions.create')}
             </Button>
           ) : activeTab === 'rules' && canCreateAlert ? (
-            <Button onClick={() => navigate('/panel-alerts/reglas/nueva')}>
+            <Button onClick={() => navigate('/panel-alerts/reglas/nueva', { state: buildBackState(location) })}>
               + {t('actions.create')}
             </Button>
           ) : undefined

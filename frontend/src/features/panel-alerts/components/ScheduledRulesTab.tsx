@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
+import { buildBackState, useServerTable } from '@ceedcv-maya/shared-hooks-react'
 import {
   Badge,
   Button,
@@ -26,6 +26,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const { t } = useLocale()
   const { show: toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { hiddenIds, toggleHidden } =
@@ -151,7 +152,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
             <Button
               variant="outline"
               size="xs"
-              onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/reglas/${r.id}`, { state: { record: r } }) }}
+              onClick={(e) => { e.stopPropagation(); navigate(`/panel-alerts/reglas/${r.id}`, { state: { record: r, ...buildBackState(location) } }) }}
             >
               {t('actions.edit')}
             </Button>

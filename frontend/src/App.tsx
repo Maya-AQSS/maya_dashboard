@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
-import { Route, Routes, useNavigate } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '@ceedcv-maya/shared-layout-react'
 import { NotificationsBell, SidebarFavorites } from '@ceedcv-maya/shared-sidebar-react'
@@ -7,6 +7,7 @@ import { useKeycloakLocaleSync } from '@ceedcv-maya/shared-i18n-react'
 import { useAuth, useOidcSession } from '@ceedcv-maya/shared-auth-react'
 import { useLogoutWithoutLoginPermission } from '@ceedcv-maya/shared-profile-react'
 import { useRealtimeNotifications } from '@ceedcv-maya/shared-realtime-react'
+import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
 import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
@@ -110,6 +111,7 @@ function AppWithLayout() {
   const navItems = useNavItems()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
+  const location = useLocation()
   useKeycloakLocaleSync()
   useRealtimeNotifications({ userId: (user?.sub as string | undefined) ?? null })
 
@@ -131,14 +133,18 @@ function AppWithLayout() {
         userEmail={userEmail}
         userInitials={userInitials}
         onLogout={logout}
-        onProfile={canShowProfile ? () => navigate('/profile') : undefined}
+        onProfile={
+          canShowProfile
+            ? () => navigate('/profile', { state: buildBackState(location) })
+            : undefined
+        }
         favoritesSlot={
           <SidebarFavorites label={t('nav.favorites')} dashboardApiUrl={DASHBOARD_API_URL} />
         }
         notificationsSlot={
           <NotificationsBell
             dashboardApiUrl={DASHBOARD_API_URL}
-            onNavigate={(n) => navigate(`/notifications/${n.id}`)}
+            onNavigate={(n) => navigate(`/notifications/${n.id}`, { state: buildBackState(location) })}
           />
         }
       >

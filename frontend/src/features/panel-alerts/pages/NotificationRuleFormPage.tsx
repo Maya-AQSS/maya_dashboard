@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { PageTitle, useToast } from '@ceedcv-maya/shared-ui-react'
+import { useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
@@ -13,8 +14,8 @@ export default function NotificationRuleFormPage() {
   const isCreate = !id
   const { t } = useLocale()
   const { show: toast } = useToast()
-  const navigate = useNavigate()
   const location = useLocation()
+  const { goBack } = useBackNavigation({ fallback: '/panel-alerts?tab=rules' })
   const { hasPermission } = useUserProfile()
 
   const canCreate = hasPermission(DASHBOARD_PERMISSIONS.panelAlertsCreate)
@@ -37,9 +38,9 @@ export default function NotificationRuleFormPage() {
     if (!rulesLoading) {
       const found = rules.find((r) => String(r.id) === id)
       if (found) setInitial(found)
-      else if (id) navigate('/panel-alerts?tab=rules', { replace: true })
+      else if (id) goBack({ replace: true })
     }
-  }, [id, isCreate, location.state, rules, rulesLoading, navigate])
+  }, [id, isCreate, location.state, rules, rulesLoading, goBack])
 
   const handleSubmit = async (data: CreateNotificationRuleInput) => {
     setLoading(true)
@@ -51,7 +52,7 @@ export default function NotificationRuleFormPage() {
         await onUpdate({ id: Number(id), data })
         toast({ tone: 'success', title: t('scheduledRules.saveSuccess') })
       }
-      navigate('/panel-alerts?tab=rules', { replace: true })
+      goBack({ replace: true })
     } catch (err) {
       toast({ tone: 'danger', title: err instanceof Error ? err.message : t('scheduledRules.errorSave') })
     } finally {
@@ -64,7 +65,7 @@ export default function NotificationRuleFormPage() {
   if (!canPerform) {
     return (
       <>
-        <PageTitle title={title} onBack={() => navigate('/panel-alerts?tab=rules')} backLabel={t('actions.back')} />
+        <PageTitle title={title} onBack={() => goBack()} backLabel={t('actions.back')} />
         <p className="text-text-primary dark:text-text-dark-primary" role="status">{t('panelAlerts.noPermission')}</p>
       </>
     )
@@ -72,13 +73,13 @@ export default function NotificationRuleFormPage() {
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-8">
-      <PageTitle title={title} onBack={() => navigate('/panel-alerts?tab=rules')} backLabel={t('actions.back')} />
+      <PageTitle title={title} onBack={() => goBack()} backLabel={t('actions.back')} />
       <div className="mt-6">
         <div className="rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card p-6">
           <NotificationRuleForm
             initial={initial}
             onSubmit={handleSubmit}
-            onCancel={() => navigate('/panel-alerts?tab=rules')}
+            onCancel={() => goBack()}
             loading={loading}
           />
         </div>

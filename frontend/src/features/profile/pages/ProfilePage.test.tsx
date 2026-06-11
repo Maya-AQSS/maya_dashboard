@@ -6,6 +6,7 @@ import React from 'react'
 
 vi.mock('react-router-dom', () => ({
   useNavigate: vi.fn(() => vi.fn()),
+  useLocation: vi.fn(() => ({ pathname: '/profile', search: '', state: null })),
 }))
 
 vi.mock('@ceedcv-maya/shared-auth-react', () => ({
@@ -269,10 +270,10 @@ describe('ProfilePage', () => {
       expect(screen.queryByRole('combobox')).toBeNull()
     })
 
-    it('llama navigate(-1) al hacer clic en back', () => {
+    it('navega al dashboard al hacer clic en back sin estado previo', () => {
       render(<ProfilePage />)
       fireEvent.click(screen.getByTestId('back-button'))
-      expect(mockNavigate).toHaveBeenCalledWith(-1)
+      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: false, state: undefined })
     })
   })
 

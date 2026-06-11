@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
 import { useForm, type UseFormRegister, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth, type AuthUser } from '@ceedcv-maya/shared-auth-react'
@@ -128,7 +128,7 @@ function ProfilePage() {
   const isAdmin = (profile?.roles ?? []).includes('admin')
   const { t, locale, setLocale } = useLocale()
   const { languages } = useLanguages()
-  const navigate = useNavigate()
+  const { goBack } = useBackNavigation({ fallback: '/' })
   const [isEditing, setIsEditing] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   // Idioma "pendiente" mientras se edita: solo se aplica al guardar, no al
@@ -189,7 +189,7 @@ function ProfilePage() {
   if (!canShow) {
     return (
       <>
-        <PageTitle title={t('profile.title')} onBack={() => navigate(-1)} />
+        <PageTitle title={t('profile.title')} onBack={() => goBack()} />
         <p className="text-text-primary dark:text-text-dark-primary" role="status">
           {t('profile.noPermission')}
         </p>
@@ -259,7 +259,7 @@ function ProfilePage() {
                 name: [user.name, user.surname].filter(Boolean).join(' ') || user.name,
               })
         }
-        onBack={() => navigate(-1)}
+        onBack={() => goBack()}
         actions={
           isEditing
             ? canUpdate
