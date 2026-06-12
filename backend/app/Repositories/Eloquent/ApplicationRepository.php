@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Application;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
+use App\Support\Search\AccentSearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Maya\Profile\Database\ViewPermissionGateQuery;
 
@@ -38,13 +39,9 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
             ->select('applications.*')
             ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite');
 
-        // Search filter
+        // Search filter (accent-insensitive — ver changes.md)
         if ($search) {
-            $q = "%{$search}%";
-            $query = $query->where(function ($w) use ($q) {
-                $w->where('applications.name', 'ilike', $q)
-                  ->orWhere('applications.description', 'ilike', $q);
-            });
+            AccentSearch::apply($query, ['applications.name', 'applications.description'], $search);
         }
 
         // Favorite filter

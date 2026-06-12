@@ -6,8 +6,9 @@ namespace App\Repositories\Eloquent;
 
 use App\DTOs\NotificationFilterDto;
 use App\Models\Notification;
-use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\NotificationRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Support\Search\AccentSearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class NotificationRepository implements NotificationRepositoryInterface
@@ -15,6 +16,7 @@ final class NotificationRepository implements NotificationRepositoryInterface
     public function __construct(
         private readonly UserRepositoryInterface $users,
     ) {}
+
     public function paginateForRecipient(string $recipientId, NotificationFilterDto $filter): LengthAwarePaginator
     {
         $allowedSortColumns = ['created_at', 'read_at'];
@@ -36,17 +38,15 @@ final class NotificationRepository implements NotificationRepositoryInterface
         }
 
         if ($filter->search !== null && $filter->search !== '') {
-            $pattern = '%' . $filter->search . '%';
-            $query->where(function ($q) use ($pattern): void {
-                // Alertas manuales guardan texto libre en title/body; las notificaciones
-                // de sistema lo guardan como claves i18n (title_key/body_key) + params,
-                // por lo que también buscamos en esas columnas y en el JSON de params.
-                $q->whereRaw('title ilike ?', [$pattern])
-                  ->orWhereRaw('body ilike ?', [$pattern])
-                  ->orWhereRaw('title_key ilike ?', [$pattern])
-                  ->orWhereRaw('body_key ilike ?', [$pattern])
-                  ->orWhereRaw('params::text ilike ?', [$pattern]);
-            });
+            // Alertas manuales guardan texto libre en title/body; las notificaciones
+            // de sistema lo guardan como claves i18n (title_key/body_key) + params,
+            // por lo que también buscamos en esas columnas y en el JSON de params.
+            // Búsqueda accent-insensitive — ver changes.md.
+            AccentSearch::apply(
+                $query,
+                ['title', 'body', 'title_key', 'body_key', 'params::text'],
+                $filter->search,
+            );
         }
 
         if ($filter->dateFrom !== null) {
@@ -54,7 +54,7 @@ final class NotificationRepository implements NotificationRepositoryInterface
         }
 
         if ($filter->dateTo !== null) {
-            $query->where('created_at', '<=', $filter->dateTo . ' 23:59:59');
+            $query->where('created_at', '<=', $filter->dateTo.' 23:59:59');
         }
 
         if ($filter->scope !== null && $filter->scope !== '') {

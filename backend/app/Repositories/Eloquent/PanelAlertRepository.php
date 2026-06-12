@@ -9,6 +9,7 @@ use App\DTOs\PanelAlertDto;
 use App\Models\PanelAlert;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\PanelAlertRepositoryInterface;
+use App\Support\Search\AccentSearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -37,7 +38,8 @@ final class PanelAlertRepository implements PanelAlertRepositoryInterface
         }
 
         if ($search !== null && $search !== '') {
-            $query->where('text', 'ilike', '%'.$search.'%');
+            // Búsqueda accent-insensitive — ver changes.md.
+            AccentSearch::apply($query, ['text'], $search);
         }
 
         $allowedSortColumns = ['visible_from', 'visible_until', 'created_at', 'severity'];

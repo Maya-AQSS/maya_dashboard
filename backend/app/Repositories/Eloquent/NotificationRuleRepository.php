@@ -6,6 +6,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\NotificationRule;
 use App\Repositories\Contracts\NotificationRuleRepositoryInterface;
+use App\Support\Search\AccentSearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class NotificationRuleRepository implements NotificationRuleRepositoryInterface
@@ -35,12 +36,8 @@ final class NotificationRuleRepository implements NotificationRuleRepositoryInte
         }
 
         if ($search !== null) {
-            $q = "%{$search}%";
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('evaluator_key', 'ilike', "%{$search}%")
-                    ->orWhere('source_app', 'ilike', "%{$search}%");
-            });
+            // Búsqueda accent-insensitive — ver changes.md.
+            AccentSearch::apply($query, ['name', 'evaluator_key', 'source_app'], $search);
         }
 
         $query->orderBy($sortBy, $sortDir);
