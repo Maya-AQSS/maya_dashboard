@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\PanelAlert;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Repositories\Contracts\AttendanceRepositoryInterface;
@@ -26,7 +27,6 @@ use App\Repositories\Eloquent\PanelAlertRepository;
 use App\Repositories\Eloquent\UserDashboardLayoutRepository;
 use App\Repositories\Eloquent\UserFavoriteApplicationRepository;
 use App\Repositories\Eloquent\UserRepository;
-use Maya\Profile\Migrations as ProfileMigrations;
 use App\Repositories\Resolvers\DashboardProfileResolver;
 use App\Services\Alerts\AlertAudienceService;
 use App\Services\Alerts\AlertAudienceValidator;
@@ -52,23 +52,18 @@ use App\Services\Dashboard\UserDashboardLayoutService;
 use App\Services\Dashboard\UserFavoriteApplicationService;
 use App\Services\Notifications\AttendanceReminderService;
 use App\Services\Notifications\NotificationDefinitionService;
+use App\Services\Notifications\NotificationIngestionService;
 use App\Services\Notifications\NotificationRuleService;
 use App\Services\Notifications\NotificationSampleService;
+use App\Services\Notifications\NotificationService;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
 use App\Services\PanelAlerts\PanelAlertService;
-use App\Models\PanelAlert;
-use App\Models\User;
-use App\Services\Notifications\NotificationIngestionService;
-use App\Services\Notifications\NotificationService;
-use App\Support\FdwTeardown;
-use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
+use Maya\Platform\Support\RegistersFdwBootstrap;
+use Maya\Profile\Migrations as ProfileMigrations;
 use Maya\Profile\Repositories\Contracts\UserProfileResolverInterface;
 use Maya\Translations\Migrations as TranslationMigrations;
 
@@ -127,55 +122,39 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Migraciones FDW compartidas del paquete `maya/shared-profile-laravel`:
-        //   - academicAssignments: user_study_types, user_studies, user_course_modules
-        //   - teams: teams, team_members
-        //   - userPermissions: user_resolved_permissions (la vista remota se
-        //     configura por app en `database.fdw.user_permissions.remote_view`).
-        // dms carga solo los dos primeros grupos (tiene su propio modelo de
-        // permisos basado en `permission_code`).
-        $this->loadMigrationsFrom(ProfileMigrations::users());
-        $this->loadMigrationsFrom(ProfileMigrations::academicAssignments());
-        $this->loadMigrationsFrom(ProfileMigrations::academicCatalogs());
-        $this->loadMigrationsFrom(ProfileMigrations::teams());
-        $this->loadMigrationsFrom(ProfileMigrations::userPermissions());
-        // Catálogo de idiomas activos (Odoo res.lang) para GET /api/v1/languages.
-        $this->loadMigrationsFrom(ProfileMigrations::languages());
-        // Tabla polimórfica de traducciones (alertas multiidioma y futuros mensajes).
-        $this->loadMigrationsFrom(TranslationMigrations::translations());
+        // Bootstrap FDW/broadcast/guard compartido (shared-platform-laravel):
+        //   - Migraciones FDW de `shared-profile-laravel`:
+        //       · academicAssignments: user_study_types, user_studies, user_course_modules
+        //       · teams: teams, team_members
+        //       · userPermissions: user_resolved_permissions (la vista remota se
+        //         configura por app en `database.fdw.user_permissions.remote_view`).
+        //       · languages: catálogo de idiomas activos (Odoo res.lang) para
+        //         GET /api/v1/languages — extra de dashboard.
+        //       · translations: tabla polimórfica de traducciones (alertas
+        //         multiidioma) — extra de dashboard, de shared-translations-laravel.
+        //   - Limpieza FDW antes de migrate:fresh/db:wipe (db:wipe no elimina
+        //     vistas ni foreign tables FDW; sin esto el rewrite de la vista
+        //     `teams` falla con «cannot drop columns from view»).
+        //   - Broadcasting auth endpoint protegido por JWT bajo /api/v1 (anula el
+        //     `/broadcasting/auth` por defecto con middleware `web` de sesión).
+        //   - Guard JWT stateless `jwt-token`: resuelve App\Models\User desde el
+        //     atributo 'jwt_user' que JwtMiddleware deposita tras validar el token.
+        RegistersFdwBootstrap::register($this, [
+            'broadcastMiddleware' => ['api', 'auth.keycloak'],
+            'profileMigrations' => [
+                ProfileMigrations::users(),
+                ProfileMigrations::academicAssignments(),
+                ProfileMigrations::academicCatalogs(),
+                ProfileMigrations::teams(),
+                ProfileMigrations::userPermissions(),
+                ProfileMigrations::languages(),
+                TranslationMigrations::translations(),
+            ],
+        ]);
 
         // Morph alias estable para la tabla `translations` (evita guardar el FQCN).
         Relation::enforceMorphMap([
             'panel_alert' => PanelAlert::class,
         ]);
-
-        // db:wipe no elimina vistas ni foreign tables FDW (las crea el paquete
-        // shared-profile). Las limpiamos antes de migrate:fresh/db:wipe para que
-        // la reconstrucción sea reproducible (si no, el rewrite de la vista
-        // `teams` falla con «cannot drop columns from view»).
-        Event::listen(CommandStarting::class, static function (CommandStarting $event): void {
-            if (in_array($event->command, ['migrate:fresh', 'db:wipe'], true)) {
-                FdwTeardown::dropAllInPublicSchema();
-            }
-        });
-
-        // Broadcasting auth endpoint protegido por JWT y bajo prefijo /api/v1 para
-        // consistencia con el resto de la API. Anula el `/broadcasting/auth` que
-        // Laravel registra por defecto con middleware `web` (basado en sesión).
-        Broadcast::routes([
-            'prefix' => 'api/v1',
-            'middleware' => ['api', 'auth.keycloak'],
-        ]);
-
-        // Guard JWT stateless: resuelve el usuario desde el atributo 'jwt_user'
-        // que JwtMiddleware deposita en el request tras validar el token.
-        Auth::viaRequest('jwt-token', function ($request) {
-            $profile = $request->attributes->get('jwt_user');
-            if (! is_array($profile) || empty($profile['id'])) {
-                return null;
-            }
-
-            return User::query()->find($profile['id']);
-        });
     }
 }
