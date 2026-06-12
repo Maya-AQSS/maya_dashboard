@@ -1,3 +1,4 @@
+import { buildQueryString } from '@ceedcv-maya/shared-auth-react'
 import { apiGetJson, mapApiError } from '../../../api/http'
 import { mapApplicationFromApi } from './applicationMapper'
 
@@ -40,15 +41,16 @@ async function listApplications(userId: string, params: ListApplicationsParams) 
   if (!userId) throw new Error('applications.errorLoad')
 
   try {
-    const qs = new URLSearchParams()
-    if (params.page) qs.set('page', String(params.page))
-    if (params.per_page) qs.set('per_page', String(params.per_page))
-    if (params.search) qs.set('search', params.search)
-    if (params.favorite) qs.set('favorite', params.favorite)
-    if (params.sort_by) qs.set('sort_by', params.sort_by)
-    if (params.sort_dir) qs.set('sort_dir', params.sort_dir)
+    const qs = buildQueryString({
+      page: params.page,
+      per_page: params.per_page,
+      search: params.search,
+      favorite: params.favorite,
+      sort_by: params.sort_by,
+      sort_dir: params.sort_dir,
+    })
 
-    const url = `/dashboard/user/${encodeURIComponent(userId)}/applications${qs.toString() ? `?${qs.toString()}` : ''}`
+    const url = `/dashboard/user/${encodeURIComponent(userId)}/applications${qs}`
     const payload = await apiGetJson<ApplicationsPayload>(url)
     const apps = Array.isArray(payload?.data) ? payload.data : []
     return { data: apps.map(mapApplicationFromApi), meta: payload?.meta }

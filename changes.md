@@ -88,3 +88,12 @@ NO se registran aquí salvo nota explícita.
 - **Impacto en cliente**: no observable en local/testing; en producción las
   URLs generadas pasan a `https://` (ya lo eran vía proxy).
 - **Decidido por**: agente dashboard (anotado por transparencia).
+
+## [F3.2] Navegación a "Mi perfil" pasa a recarga completa
+- **Fecha**: 2026-06-12
+- **Severidad**: MEDIUM
+- **Qué cambió**: antes `navigate('/profile', { state: buildBackState(location) })` (SPA, con back-state); ahora el shell compartido usa `window.location.assign(dashboardUrl + '/profile')` (recarga completa, sin back-state). El botón Volver del perfil ya no retorna a la página previa.
+- **Por qué**: MayaAppShell no expone aún un `onProfileNavigate`; gap documentado en App.tsx y candidato a prop nueva en maya_platform.
+- **Endpoint(s)/pantalla(s) afectados**: enlace "Mi perfil" del menú de usuario.
+- **Impacto en cliente**: observable sí (UX de navegación, no datos).
+- **Decidido por**: agente F3.2 (gap del shell), documentado en review final F6.

@@ -1,3 +1,4 @@
+import { buildQueryString } from '@ceedcv-maya/shared-auth-react'
 import { apiGetJson, apiFetchJson } from '../../../api/http'
 import type {
   CreateNotificationRuleInput,
@@ -25,15 +26,14 @@ interface ListFilters {
 }
 
 export async function listNotificationRules(filters?: ListFilters): Promise<PaginatedNotificationRules> {
-  const params = new URLSearchParams()
-  if (filters?.page) params.append('page', String(filters.page))
-  if (filters?.per_page) params.append('per_page', String(filters.per_page))
-  if (filters?.search) params.append('search', filters.search)
-  if (filters?.sort_by) params.append('sort_by', filters.sort_by)
-  if (filters?.sort_dir) params.append('sort_dir', filters.sort_dir)
-
-  const qs = params.toString()
-  const url = `/notification-rules${qs ? `?${qs}` : ''}`
+  const qs = buildQueryString({
+    page: filters?.page,
+    per_page: filters?.per_page,
+    search: filters?.search,
+    sort_by: filters?.sort_by,
+    sort_dir: filters?.sort_dir,
+  })
+  const url = `/notification-rules${qs}`
   const raw = await apiGetJson<FlatPaginatedResponse>(url)
   return {
     data: raw.data,

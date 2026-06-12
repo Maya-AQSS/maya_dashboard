@@ -1,3 +1,4 @@
+import { buildQueryString } from '@ceedcv-maya/shared-auth-react'
 import { apiGetJson, apiFetchJson } from '../../../api/http'
 import type {
   CreatePanelAlertInput,
@@ -18,16 +19,16 @@ interface FlatPaginatedResponse {
 }
 
 export async function listPanelAlerts(filters: PanelAlertFilters = {}): Promise<PaginatedPanelAlerts> {
-  const params = new URLSearchParams()
-  if (filters.page) params.set('page', String(filters.page))
-  if (filters.per_page) params.set('per_page', String(filters.per_page))
-  if (filters.severity) params.set('severity', filters.severity)
-  if (filters.search) params.set('search', filters.search)
-  if (filters.include_expired) params.set('include_expired', '1')
-  if (filters.sort_by) params.set('sort_by', filters.sort_by)
-  if (filters.sort_dir) params.set('sort_dir', filters.sort_dir)
-  const qs = params.toString()
-  const raw = await apiGetJson<FlatPaginatedResponse>(`/panel-alerts?${qs}`)
+  const qs = buildQueryString({
+    page: filters.page,
+    per_page: filters.per_page,
+    severity: filters.severity,
+    search: filters.search,
+    include_expired: filters.include_expired,
+    sort_by: filters.sort_by,
+    sort_dir: filters.sort_dir,
+  })
+  const raw = await apiGetJson<FlatPaginatedResponse>(`/panel-alerts${qs}`)
   return {
     data: raw.data,
     meta: {

@@ -58,7 +58,8 @@ describe('notificationsApi', () => {
 
       const result = await listNotifications()
 
-      expect(apiGetJson).toHaveBeenCalledWith(expect.stringContaining('/notifications?'))
+      // Sin filtros, buildQueryString devuelve '' → URL limpia sin '?' colgante.
+      expect(apiGetJson).toHaveBeenCalledWith('/notifications')
       expect(result).toEqual({
         data: [],
         meta: { current_page: 1, last_page: 1, per_page: 25, total: 0, from: null, to: null },

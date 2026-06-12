@@ -1,3 +1,4 @@
+import { buildQueryString } from '@ceedcv-maya/shared-auth-react'
 import { apiFetchJson, apiGetJson, mapApiError } from '../../../api/http'
 import type { Notification, NotificationListFilters, PaginatedNotifications } from '../types/notification'
 
@@ -12,23 +13,27 @@ interface FlatPaginatedResponse {
 }
 
 export async function listNotifications(filters: NotificationListFilters = {}): Promise<PaginatedNotifications> {
-  const qs = new URLSearchParams()
-  if (filters.page != null) qs.set('page', String(filters.page))
-  if (filters.per_page != null) qs.set('per_page', String(filters.per_page))
-  if (filters.type) qs.set('type', filters.type)
-  if (filters.app) qs.set('app', filters.app)
-  if (filters.unread_only != null) qs.set('unread_only', filters.unread_only ? '1' : '0')
-  if (filters.search) qs.set('search', filters.search)
-  if (filters.date_from) qs.set('date_from', filters.date_from)
-  if (filters.date_to) qs.set('date_to', filters.date_to)
-  if (filters.sort_by) qs.set('sort_by', filters.sort_by)
-  if (filters.sort_dir) qs.set('sort_dir', filters.sort_dir)
-  if (filters.scope) qs.set('scope', filters.scope)
-  if (filters.is_critical != null) qs.set('is_critical', filters.is_critical ? '1' : '0')
-  if (filters.acknowledged != null) qs.set('acknowledged', filters.acknowledged ? '1' : '0')
+  // Los flags tri-estado (true/false/sin filtrar) se precomputan como '1'/'0':
+  // buildQueryString omite `false`, pero aquí el '0' explícito filtra en el backend.
+  const toFlag = (v: boolean | null | undefined) => (v == null ? undefined : v ? '1' : '0')
+  const qs = buildQueryString({
+    page: filters.page,
+    per_page: filters.per_page,
+    type: filters.type,
+    app: filters.app,
+    unread_only: toFlag(filters.unread_only),
+    search: filters.search,
+    date_from: filters.date_from,
+    date_to: filters.date_to,
+    sort_by: filters.sort_by,
+    sort_dir: filters.sort_dir,
+    scope: filters.scope,
+    is_critical: toFlag(filters.is_critical),
+    acknowledged: toFlag(filters.acknowledged),
+  })
 
   try {
-    const raw = await apiGetJson<FlatPaginatedResponse>(`/notifications?${qs}`)
+    const raw = await apiGetJson<FlatPaginatedResponse>(`/notifications${qs}`)
     return {
       data: raw.data,
       meta: {
