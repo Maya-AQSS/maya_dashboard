@@ -17,6 +17,23 @@ vi.mock('react-i18next', () => ({
 vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
   useOidcSession: vi.fn(),
+  // 0.16.0: src/lib/peerService y src/api/http re-exportan del paquete;
+  // App.tsx los importa en module-eval, así que el mock debe stubearlos.
+  peerOrigin: vi.fn(() => 'https://dashboard-api.maya.test'),
+  resolveServiceUrl: vi.fn(() => 'https://dashboard-api.maya.test'),
+  createOidcAdapter: vi.fn(() => ({
+    oidcAuthService: { keycloak: {} },
+    appendBearerAuthorization: vi.fn(),
+    triggerSignIn: vi.fn(),
+  })),
+  createServiceApiClient: vi.fn(() => ({
+    apiFetchJson: vi.fn(),
+    apiGetJson: vi.fn(),
+    buildApiUrl: vi.fn(),
+    getBearerToken: vi.fn(),
+  })),
+  mapApiError: vi.fn((_e: unknown, p: string, s = 'errorLoad') => new Error(`${p}.${s}`)),
+  ApiHttpError: class ApiHttpError extends Error {},
 }))
 
 vi.mock('@ceedcv-maya/shared-i18n-react', () => ({

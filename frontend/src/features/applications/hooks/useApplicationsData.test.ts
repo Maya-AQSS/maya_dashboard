@@ -5,6 +5,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   useAuth: vi.fn(),
+  // 0.16.0: módulos locales (peerService/oidcAdapter/http) re-exportan del
+  // paquete; el mock debe stubear lo que se evalúa al importar el hook.
+  peerOrigin: vi.fn(() => 'https://dashboard-api.maya.test'),
+  resolveServiceUrl: vi.fn(() => 'https://dashboard-api.maya.test'),
+  createOidcAdapter: vi.fn(() => ({
+    oidcAuthService: { keycloak: {} },
+    appendBearerAuthorization: vi.fn(),
+    triggerSignIn: vi.fn(),
+  })),
+  createServiceApiClient: vi.fn(() => ({
+    apiFetchJson: vi.fn(),
+    apiGetJson: vi.fn(),
+    buildApiUrl: vi.fn(),
+    getBearerToken: vi.fn(),
+  })),
+  mapApiError: vi.fn((_e: unknown, p: string, s = 'errorLoad') => new Error(`${p}.${s}`)),
+  ApiHttpError: class ApiHttpError extends Error {},
 }))
 
 vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
@@ -17,6 +34,18 @@ vi.mock('../api/applicationsApi', () => ({
 
 vi.mock('../../favorites/context/FavoritesContext', () => ({
   useFavoritesContext: vi.fn(),
+}))
+
+// El hook consume useUserProfile (contexto real del paquete); sin provider en
+// el wrapper lanzaría. hasPermission=true deja pasar todos los viewPermission.
+vi.mock('../../user-profile', () => ({
+  useUserProfile: vi.fn(() => ({
+    profile: null,
+    loading: false,
+    error: null,
+    refresh: vi.fn(),
+    hasPermission: vi.fn(() => true),
+  })),
 }))
 
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
