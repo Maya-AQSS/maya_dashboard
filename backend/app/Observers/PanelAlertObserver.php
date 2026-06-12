@@ -8,6 +8,7 @@ use App\Models\PanelAlert;
 use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maya\Auth\Support\JwtSubject;
 use Maya\Messaging\Publishers\AuditPublisher;
 
 /**
@@ -42,7 +43,7 @@ final class PanelAlertObserver
             $recipientCount = $this->notifications->notifyUsersOfNewAlert($alert->id);
 
             $this->publish('notified', $alert, previous: null, new: [
-                'type' => 'panel_alert.' . $alert->source,
+                'type' => 'panel_alert.'.$alert->source,
                 'recipient_count' => $recipientCount,
                 'severity' => $alert->severity,
                 'source' => $alert->source,
@@ -82,7 +83,7 @@ final class PanelAlertObserver
                 $recipientCount = $this->notifications->notifyUsersOfNewAlert($alertId);
 
                 $this->publish('renotified', $alert, previous: null, new: [
-                    'type' => 'panel_alert.' . $alert->source,
+                    'type' => 'panel_alert.'.$alert->source,
                     'recipient_count' => $recipientCount,
                     'severity' => $alert->severity,
                     'source' => $alert->source,
@@ -103,8 +104,7 @@ final class PanelAlertObserver
      */
     private function publish(string $action, PanelAlert $alert, ?array $previous, ?array $new): void
     {
-        $jwtUser = $this->request->attributes->get('jwt_user');
-        $userId = is_array($jwtUser) ? (string) ($jwtUser['id'] ?? 'system') : 'system';
+        $userId = JwtSubject::fromRequest($this->request) ?? 'system';
 
         $this->publisher->publish(
             applicationSlug: self::APPLICATION_SLUG,

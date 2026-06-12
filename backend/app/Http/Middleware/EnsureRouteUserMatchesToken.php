@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Maya\Auth\Support\JwtSubject;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -23,8 +24,7 @@ class EnsureRouteUserMatchesToken
             return $next($request);
         }
 
-        $jwtUser = $request->attributes->get('jwt_user');
-        if ($jwtUser === null) {
+        if ($request->attributes->get('jwt_user') === null) {
             if (! app()->environment('testing')) {
                 Log::warning('EnsureRouteUserMatchesToken: jwt_user is null', ['route' => $request->path()]);
             }
@@ -33,7 +33,9 @@ class EnsureRouteUserMatchesToken
             return $next($request);
         }
 
-        $authenticatedId = $jwtUser['id'] ?? $jwtUser['sub'] ?? null;
+        // `id` (claim normalizado por JwtMiddleware) con fallback a `sub` crudo.
+        $authenticatedId = JwtSubject::fromRequest($request)
+            ?? (JwtSubject::claims($request)['sub'] ?? null);
 
         if ($authenticatedId !== null && $routeUser !== $authenticatedId) {
             abort(403, 'Forbidden: authenticated user does not match the requested resource.');

@@ -6,6 +6,7 @@ namespace App\Http\Requests\Concerns;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Maya\Auth\Support\JwtSubject;
 
 /**
  * Defense-in-depth permission check inside FormRequests.
@@ -24,16 +25,14 @@ trait AuthorizesByPermission
 
     protected function userHasPermission(string $permission): bool
     {
-        $jwtUser = $this->attributes->get('jwt_user');
-
-        if ($jwtUser === null) {
+        if ($this->attributes->get('jwt_user') === null) {
             // JwtMiddleware bypassed (typically tests) — defer to middleware.
             return true;
         }
 
-        $userId = (string) ($jwtUser['id'] ?? '');
+        $userId = JwtSubject::fromRequest($this);
 
-        if ($userId === '') {
+        if ($userId === null) {
             return false;
         }
 
