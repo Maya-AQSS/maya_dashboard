@@ -1,251 +1,189 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
-import React from 'react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 
-// --- Mocks ---
+// --- Mocks (hoisted) ---
+
+/** Captura las props que App pasa a MayaAppShell para asserts de cableado. */
+const capturedShellProps: Record<string, unknown> = {}
+
+vi.mock('@ceedcv-maya/shared-layout-react', () => ({
+  MayaAppShell: ({ children, ...props }: { children: ReactNode } & Record<string, unknown>) => {
+    Object.assign(capturedShellProps, props)
+    return (
+      <div data-testid="maya-app-shell">
+        <span>{props.brandName as string}</span>
+        {children}
+      </div>
+    )
+  },
+}))
+
+const mockNavigate = vi.fn()
+const mockLocation = { pathname: '/', search: '', hash: '', state: null, key: 'test' }
 
 vi.mock('react-router-dom', () => ({
-  Route: ({ element }: { element: React.ReactNode }) => <>{element}</>,
-  Routes: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useNavigate: vi.fn(() => vi.fn()),
+  Route: () => null,
+  // Routes inerte: evita montar las páginas lazy (fuera del alcance de este test).
+  Routes: () => <div data-testid="routes" />,
+  useNavigate: () => mockNavigate,
+  useLocation: () => mockLocation,
 }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: vi.fn(() => ({ t: (k: string) => k })),
+  useTranslation: () => ({ t: (key: string) => key }),
 }))
 
 vi.mock('@ceedcv-maya/shared-auth-react', () => ({
-  useAuth: vi.fn(),
-  useOidcSession: vi.fn(),
-  // 0.16.0: src/lib/peerService y src/api/http re-exportan del paquete;
-  // App.tsx los importa en module-eval, así que el mock debe stubearlos.
-  peerOrigin: vi.fn(() => 'https://dashboard-api.maya.test'),
-  resolveServiceUrl: vi.fn(() => 'https://dashboard-api.maya.test'),
-  createOidcAdapter: vi.fn(() => ({
-    oidcAuthService: { keycloak: {} },
-    appendBearerAuthorization: vi.fn(),
-    triggerSignIn: vi.fn(),
-  })),
-  createServiceApiClient: vi.fn(() => ({
-    apiFetchJson: vi.fn(),
-    apiGetJson: vi.fn(),
-    buildApiUrl: vi.fn(),
-    getBearerToken: vi.fn(),
-  })),
-  mapApiError: vi.fn((_e: unknown, p: string, s = 'errorLoad') => new Error(`${p}.${s}`)),
-  ApiHttpError: class ApiHttpError extends Error {},
+  // ReturnToHandler (beforeLayout) consume useAuth.
+  useAuth: vi.fn(() => ({ isLoading: false, isAuthenticated: true, token: 'tok' })),
+  // src/lib/peerService re-exporta estos helpers del paquete compartido.
+  peerOrigin: (slug: string) => `https://${slug}.maya.test`,
+  resolveServiceUrl: (env: string | undefined, slug: string) =>
+    env?.trim() ? env : `https://${slug}.maya.test`,
 }))
 
-vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
-  useKeycloakLocaleSync: vi.fn(),
-  useLocale: vi.fn(),
-}))
-
-vi.mock('@ceedcv-maya/shared-layout-react', () => ({
-  AppLayout: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="app-layout">{children}</div>
-  ),
-}))
-
-vi.mock('@ceedcv-maya/shared-sidebar-react', () => ({
-  NotificationsBell: () => <div data-testid="notifications-bell" />,
-  SidebarFavorites: () => <div data-testid="sidebar-favorites" />,
+vi.mock('@ceedcv-maya/shared-hooks-react', () => ({
+  buildBackState: vi.fn(() => ({ backTo: { pathname: '/' } })),
 }))
 
 vi.mock('@ceedcv-maya/shared-ui-react', () => ({
-  Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
-    <button onClick={onClick}>{children}</button>
-  ),
-  ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SkeletonPage: () => <div data-testid="skeleton-page" />,
-  ToastProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
+
+const mockNavItems = [{ id: 'dashboard', label: 'Dashboard', path: '/' }]
 
 vi.mock('./components/layout', () => ({
-  useNavItems: vi.fn(() => []),
+  useNavItems: () => mockNavItems,
 }))
 
-vi.mock('./features/favorites/context/FavoritesContext', () => ({
-  FavoritesProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
+const mockHasPermission = vi.fn(() => true)
 
 vi.mock('./features/user-profile', () => ({
-  UserProfileProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  useUserProfile: vi.fn(() => ({
-    hasPermission: () => true,
-  })),
-}))
-
-// Lazy page mocks — loaded synchronously
-vi.mock('./features/dashboard/pages/DashboardPage', () => ({
-  default: () => <div data-testid="dashboard-page" />,
-}))
-
-vi.mock('./features/applications/pages/ApplicationsListPage', () => ({
-  default: () => <div data-testid="applications-page" />,
-}))
-
-vi.mock('./features/profile/pages/ProfilePage', () => ({
-  default: () => <div data-testid="profile-page" />,
-}))
-
-vi.mock('./shared/pages/NotFoundPage', () => ({
-  default: () => <div data-testid="not-found-page" />,
+  useUserProfile: () => ({ hasPermission: mockHasPermission }),
 }))
 
 // --- Imports after mocks ---
-import { useOidcSession, useAuth } from '@ceedcv-maya/shared-auth-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
 import App from './App'
 
-const mockUseOidcSession = vi.mocked(useOidcSession)
 const mockUseAuth = vi.mocked(useAuth)
 
-function setupSession({
-  isOidcLoading = false,
-  isOidcSignedIn = false,
-  beginSignIn = vi.fn(),
-  logout = vi.fn(),
-  user = null as null | { name?: string; preferred_username?: string; email?: string },
-} = {}) {
-  mockUseOidcSession.mockReturnValue({
-    isOidcLoading,
-    isOidcSignedIn,
-    beginSignIn,
-    logout,
-    user,
-  } as any)
-
-  mockUseAuth.mockReturnValue({
-    isLoading: false,
-    isAuthenticated: isOidcSignedIn,
-    token: 'tok',
-    user: user as any,
-  } as any)
-}
+/** Replica la resolución de URLs de App.tsx (dependen del env del slot). */
+const expectUrl = (env: string | undefined, slug: string) =>
+  env?.trim() ? env : `https://${slug}.maya.test`
 
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockHasPermission.mockReturnValue(true)
+    for (const key of Object.keys(capturedShellProps)) {
+      delete capturedShellProps[key]
+    }
   })
 
-  afterEach(() => {
-    vi.clearAllMocks()
+  it('renderiza MayaAppShell con la marca PortalCEED', () => {
+    render(<App />)
+
+    expect(screen.getByTestId('maya-app-shell')).toBeTruthy()
+    expect(screen.getByText('PortalCEED')).toBeTruthy()
+    expect(capturedShellProps.brandVersion).toBe('v1.0')
+    expect(capturedShellProps.brandLogoUrl).toBe('/favicon.png')
   })
 
-  describe('estado de carga OIDC', () => {
-    it('muestra pantalla de carga cuando isOidcLoading es true', () => {
-      setupSession({ isOidcLoading: true })
-      render(<App />)
-      expect(screen.getByText('Iniciando sesión…')).toBeTruthy()
-    })
+  it('configura el gate como portal: isDashboard + dashboard.login', () => {
+    render(<App />)
 
-    it('no muestra AppLayout durante la carga', () => {
-      setupSession({ isOidcLoading: true })
-      render(<App />)
-      expect(screen.queryByTestId('app-layout')).toBeNull()
-    })
+    expect(capturedShellProps.isDashboard).toBe(true)
+    expect(capturedShellProps.loginPermission).toBe('dashboard.login')
   })
 
-  describe('no autenticado', () => {
-    it('muestra mensaje de redirección cuando no está autenticado', () => {
-      setupSession({ isOidcLoading: false, isOidcSignedIn: false })
-      render(<App />)
-      expect(screen.getByText('Redirigiendo al inicio de sesión...')).toBeTruthy()
-    })
+  it('resuelve dashboardUrl y dashboardApiUrl con resolveServiceUrl', () => {
+    render(<App />)
 
-    it('llama beginSignIn cuando no está autenticado y no está cargando', () => {
-      const beginSignIn = vi.fn()
-      setupSession({ isOidcLoading: false, isOidcSignedIn: false, beginSignIn })
-      render(<App />)
-      expect(beginSignIn).toHaveBeenCalledTimes(1)
-    })
-
-    it('no llama beginSignIn mientras isOidcLoading es true', () => {
-      const beginSignIn = vi.fn()
-      setupSession({ isOidcLoading: true, isOidcSignedIn: false, beginSignIn })
-      render(<App />)
-      expect(beginSignIn).not.toHaveBeenCalled()
-    })
-
-    it('no muestra AppLayout cuando no está autenticado', () => {
-      setupSession({ isOidcLoading: false, isOidcSignedIn: false })
-      render(<App />)
-      expect(screen.queryByTestId('app-layout')).toBeNull()
-    })
+    expect(capturedShellProps.dashboardUrl).toBe(
+      expectUrl(import.meta.env.VITE_DASHBOARD_URL as string | undefined, 'dashboard'),
+    )
+    expect(capturedShellProps.dashboardApiUrl).toBe(
+      expectUrl(import.meta.env.VITE_DASHBOARD_API_URL as string | undefined, 'dashboard-api'),
+    )
   })
 
-  describe('autenticado', () => {
-    it('muestra AppLayout cuando está autenticado', () => {
-      setupSession({
-        isOidcSignedIn: true,
-        user: { name: 'María García', email: 'maria@example.com' },
-      })
+  it('pasa los nav items de useNavItems', () => {
+    render(<App />)
+
+    expect(capturedShellProps.navItems).toBe(mockNavItems)
+  })
+
+  it('pasa los mensajes de carga traducidos al shell', () => {
+    render(<App />)
+
+    expect(capturedShellProps.loadingInitializingMessage).toBe('auth.initializing')
+    expect(capturedShellProps.loadingRedirectingMessage).toBe('auth.redirecting')
+    expect(capturedShellProps.loadingProfileMessage).toBe('auth.initializing')
+    expect(capturedShellProps.loadingNoPermissionMessage).toBe('signingOutNoPermission')
+    expect(capturedShellProps.favoritesLabel).toBe('nav.favorites')
+  })
+
+  describe('showProfileLink según permiso profile.show', () => {
+    it('true cuando el usuario tiene el permiso', () => {
+      mockHasPermission.mockReturnValue(true)
       render(<App />)
-      expect(screen.getByTestId('app-layout')).toBeTruthy()
+
+      expect(mockHasPermission).toHaveBeenCalledWith('profile.show')
+      expect(capturedShellProps.showProfileLink).toBe(true)
     })
 
-    it('no muestra pantalla de carga cuando está autenticado', () => {
-      setupSession({ isOidcSignedIn: true })
+    it('false cuando el usuario no tiene el permiso', () => {
+      mockHasPermission.mockReturnValue(false)
       render(<App />)
-      expect(screen.queryByText('Iniciando sesión…')).toBeNull()
-    })
 
-    it('no muestra mensaje de redirección cuando está autenticado', () => {
-      setupSession({ isOidcSignedIn: true })
-      render(<App />)
-      expect(screen.queryByText('Redirigiendo al inicio de sesión...')).toBeNull()
+      expect(capturedShellProps.showProfileLink).toBe(false)
     })
   })
 
-  describe('isAllowedReturnUrl (via ReturnToHandler)', () => {
-    it('no redirige cuando no hay param return_to', () => {
+  it('onNotificationNavigate navega a la notificación con estado de retorno', () => {
+    render(<App />)
+
+    const onNavigate = capturedShellProps.onNotificationNavigate as (n: { id: string }) => void
+    onNavigate({ id: '42' })
+
+    expect(buildBackState).toHaveBeenCalledWith(mockLocation)
+    expect(mockNavigate).toHaveBeenCalledWith('/notifications/42', {
+      state: { backTo: { pathname: '/' } },
+    })
+  })
+
+  describe('ReturnToHandler (beforeLayout, SSO relay)', () => {
+    it('se pasa como beforeLayout y no redirige sin param return_to', () => {
+      render(<App />)
       const originalHref = window.location.href
-      setupSession({
-        isOidcSignedIn: true,
-        user: { name: 'Test' },
-      })
-      // mockUseAuth has isAuthenticated=true and token='tok'
-      mockUseAuth.mockReturnValue({
-        isLoading: false,
-        isAuthenticated: true,
-        token: 'tok',
-        user: null,
-      } as any)
 
+      expect(capturedShellProps.beforeLayout).toBeTruthy()
+      render(<>{capturedShellProps.beforeLayout as ReactNode}</>)
+
+      expect(window.location.href).toBe(originalHref)
+    })
+
+    it('no redirige mientras la sesión está cargando', () => {
+      mockUseAuth.mockReturnValue({
+        isLoading: true,
+        isAuthenticated: false,
+        token: null,
+      } as ReturnType<typeof useAuth>)
       render(<App />)
-      // No redirect happened
+      const originalHref = window.location.href
+
+      render(<>{capturedShellProps.beforeLayout as ReactNode}</>)
+
       expect(window.location.href).toBe(originalHref)
     })
   })
 
-  describe('ErrorFallback', () => {
-    it('renderiza el componente App sin lanzar errores', () => {
-      setupSession({ isOidcSignedIn: true })
-      const { container } = render(<App />)
-      expect(container.firstChild).not.toBeNull()
-    })
-  })
-})
+  it('renderiza las rutas como children del shell', () => {
+    render(<App />)
 
-describe('isAllowedReturnUrl (unidad pura)', () => {
-  // We test the exported behavior via App rendering — but we can also
-  // test the pure logic indirectly by asserting App doesn't crash on
-  // various URL patterns when window.location.search contains return_to
-  it('renderiza App correctamente cuando está autenticado (smoke test)', () => {
-    mockUseOidcSession.mockReturnValue({
-      isOidcLoading: false,
-      isOidcSignedIn: true,
-      beginSignIn: vi.fn(),
-      logout: vi.fn(),
-      user: null,
-    } as any)
-    mockUseAuth.mockReturnValue({
-      isLoading: false,
-      isAuthenticated: true,
-      token: 'tok',
-      user: null,
-    } as any)
-    const { container } = render(<App />)
-    expect(container.firstChild).not.toBeNull()
+    expect(screen.getByTestId('routes')).toBeTruthy()
   })
 })
