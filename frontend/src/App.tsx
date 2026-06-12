@@ -1,50 +1,27 @@
-import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { AppLayout } from '@ceedcv-maya/shared-layout-react'
-import { NotificationsBell, SidebarFavorites } from '@ceedcv-maya/shared-sidebar-react'
-import { useKeycloakLocaleSync } from '@ceedcv-maya/shared-i18n-react'
-import { useAuth, useOidcSession } from '@ceedcv-maya/shared-auth-react'
-import { useLogoutWithoutLoginPermission } from '@ceedcv-maya/shared-profile-react'
-import { useRealtimeNotifications } from '@ceedcv-maya/shared-realtime-react'
+import { MayaAppShell } from '@ceedcv-maya/shared-layout-react'
+import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
-import { Button, ErrorBoundary, SkeletonPage, ToastProvider } from '@ceedcv-maya/shared-ui-react'
+import { SkeletonPage } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
-import { FavoritesProvider } from './features/favorites/context/FavoritesContext'
-import { UserProfileProvider, useUserProfile } from './features/user-profile'
+import { useUserProfile } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
 import { DASHBOARD_PERMISSIONS } from './permissions'
-
-function ErrorFallback() {
-  const { t } = useTranslation('common')
-  const handleReload = () => {
-    const url = new URL(window.location.href)
-    url.searchParams.delete('crash')
-    window.location.assign(url.toString())
-  }
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-ui-body dark:bg-ui-dark-bg px-6">
-      <div className="w-full max-w-[560px] rounded-2xl border border-ui-border dark:border-ui-dark-border bg-ui-card dark:bg-ui-dark-card px-8 py-10 text-center shadow-[0_18px_25px_-10px_rgba(17,24,39,0.2),0_4px_8px_-2px_rgba(17,24,39,0.08)] dark:shadow-none">
-        <p className="text-4xl font-semibold text-odoo-purple m-0">Error</p>
-        <h1 className="mt-4 mb-2 text-2xl font-semibold text-text-primary dark:text-text-dark-primary">
-          {t('layout.errorBoundaryTitle')}
-        </h1>
-        <p className="m-0 text-sm sm:text-base text-text-secondary dark:text-text-dark-secondary">
-          {t('layout.errorBoundaryDescription')}
-        </p>
-        <div className="mt-6">
-          <Button variant="primary" size="md" onClick={handleReload}>
-            {t('layout.errorBoundaryReload')}
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 const DASHBOARD_API_URL = resolveServiceUrl(
   import.meta.env.VITE_DASHBOARD_API_URL as string | undefined,
   'dashboard-api',
+)
+
+// El dashboard ES el portal: dashboardUrl apunta a su propio origen, de modo
+// que el enlace "Mi perfil" del shell resuelve a la ruta local `/profile`.
+// Gap conocido: el shell navega con window.location.assign (recarga completa)
+// en lugar de navigate() + buildBackState — ver comentario en App().
+const DASHBOARD_URL = resolveServiceUrl(
+  import.meta.env.VITE_DASHBOARD_URL as string | undefined,
+  'dashboard',
 )
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,
@@ -104,121 +81,56 @@ function AppRoutes() {
   )
 }
 
-function AppWithLayout() {
-  const { logout, user } = useOidcSession()
-  const { hasPermission } = useUserProfile()
-  const canShowProfile = hasPermission(DASHBOARD_PERMISSIONS.profileShow)
-  const navItems = useNavItems()
-  const { t } = useTranslation('common')
-  const navigate = useNavigate()
-  const location = useLocation()
-  useKeycloakLocaleSync()
-  useRealtimeNotifications({ userId: (user?.sub as string | undefined) ?? null })
-
-  const displayName = ((user?.name ?? user?.preferred_username ?? '') as string).trim()
-  const userEmail = (user?.email as string | undefined) ?? undefined
-  const userInitials = displayName
-    ? displayName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
-    : 'U'
-
-  return (
-    <>
-      <ReturnToHandler />
-      <AppLayout
-        navItems={navItems}
-        brandName="PortalCEED"
-        brandVersion="v1.0"
-        brandLogoUrl="/favicon.png"
-        userName={displayName}
-        userEmail={userEmail}
-        userInitials={userInitials}
-        onLogout={logout}
-        onProfile={
-          canShowProfile
-            ? () => navigate('/profile', { state: buildBackState(location) })
-            : undefined
-        }
-        favoritesSlot={
-          <SidebarFavorites label={t('nav.favorites')} dashboardApiUrl={DASHBOARD_API_URL} />
-        }
-        notificationsSlot={
-          <NotificationsBell
-            dashboardApiUrl={DASHBOARD_API_URL}
-            onNavigate={(n) => navigate(`/notifications/${n.id}`, { state: buildBackState(location) })}
-          />
-        }
-      >
-        <AppRoutes />
-      </AppLayout>
-    </>
-  )
-}
-
-// Locale sync (Keycloak → i18n + cookie + `<html lang>`) lo cubre
-// `useKeycloakLocaleSync()` invocado desde `AppWithLayout`; el resto del
-// setup i18n vive en `src/i18n/index.ts` y `@ceedcv-maya/shared-i18n-react`.
-// ToastProvider envuelve AppWithLayout para que `useToast` esté disponible.
-function AppProviders({ children }: { children: ReactNode }) {
-  return (
-    <ToastProvider>
-      <ErrorBoundary fallback={<ErrorFallback />}>
-        <UserProfileProvider>
-          <FavoritesProvider>
-            {children}
-          </FavoritesProvider>
-        </UserProfileProvider>
-      </ErrorBoundary>
-    </ToastProvider>
-  )
-}
-
-function AuthLoadingScreen({ message }: { message: string }) {
-  return (
-    <div className="flex items-center justify-center h-screen bg-ui-body dark:bg-ui-dark-bg text-text-muted dark:text-text-dark-muted font-sans">
-      {message}
-    </div>
-  )
-}
-
-/** Requiere dashboard.login en /me; si falta, cierra sesión SSO. */
-function AppAfterProfile() {
-  const { t } = useTranslation('auth')
-  const { profileLoading, lacksLoginPermission } = useLogoutWithoutLoginPermission(
-    DASHBOARD_PERMISSIONS.login,
-  )
-
-  if (profileLoading) {
-    return <AuthLoadingScreen message={t('auth.initializing')} />
-  }
-
-  if (lacksLoginPermission) {
-    return <AuthLoadingScreen message={t('signingOutNoPermission')} />
-  }
-
-  return <AppWithLayout />
-}
-
+/**
+ * App shell unificado (@ceedcv-maya/shared-layout-react).
+ *
+ * El shell gestiona: init OIDC + redirect a login, gate de permiso
+ * (`dashboard.login` vía useLogoutWithoutLoginPermission — isDashboard:
+ * el portal no puede redirigirse a sí mismo), AppLayout con
+ * NotificationsBell/SidebarFavorites/resolveUserDisplay,
+ * useKeycloakLocaleSync y useRealtimeNotifications.
+ *
+ * Divergencias del dashboard expresadas con props del shell:
+ * - `isDashboard`: gate con logout en vez de redirect al portal.
+ * - `showProfileLink`: condicionado al permiso `profile.show`.
+ * - `onNotificationNavigate`: navegación SPA con estado de retorno.
+ * - `beforeLayout`: ReturnToHandler (SSO relay `?return_to`).
+ *
+ * Gap conocido (shell 0.16): el enlace "Mi perfil" usa
+ * `window.location.assign(dashboardUrl + '/profile')` — recarga completa y
+ * sin buildBackState. Antes era `navigate('/profile', { state })`. El shell
+ * no expone onProfileNavigate; pendiente de proponer en maya_platform.
+ */
 export default function App() {
   const { t } = useTranslation('auth')
-  const { isOidcLoading, isOidcSignedIn, beginSignIn } = useOidcSession()
-
-  useEffect(() => {
-    if (!isOidcLoading && !isOidcSignedIn) {
-      beginSignIn()
-    }
-  }, [isOidcLoading, isOidcSignedIn, beginSignIn])
-
-  if (isOidcLoading) {
-    return <AuthLoadingScreen message={t('auth.initializing')} />
-  }
-
-  if (!isOidcSignedIn) {
-    return <AuthLoadingScreen message={t('auth.redirecting')} />
-  }
+  const { t: tCommon } = useTranslation('common')
+  const navItems = useNavItems()
+  const { hasPermission } = useUserProfile()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   return (
-    <AppProviders>
-      <AppAfterProfile />
-    </AppProviders>
+    <MayaAppShell
+      brandName="PortalCEED"
+      brandVersion="v1.0"
+      brandLogoUrl="/favicon.png"
+      dashboardUrl={DASHBOARD_URL}
+      dashboardApiUrl={DASHBOARD_API_URL}
+      navItems={navItems}
+      loginPermission={DASHBOARD_PERMISSIONS.login}
+      isDashboard
+      showProfileLink={hasPermission(DASHBOARD_PERMISSIONS.profileShow)}
+      onNotificationNavigate={(notification) =>
+        navigate(`/notifications/${notification.id}`, { state: buildBackState(location) })
+      }
+      loadingInitializingMessage={t('auth.initializing')}
+      loadingRedirectingMessage={t('auth.redirecting')}
+      loadingProfileMessage={t('auth.initializing')}
+      loadingNoPermissionMessage={t('signingOutNoPermission')}
+      favoritesLabel={tCommon('nav.favorites')}
+      beforeLayout={<ReturnToHandler />}
+    >
+      <AppRoutes />
+    </MayaAppShell>
   )
 }
