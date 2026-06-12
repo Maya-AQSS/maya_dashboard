@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { Button } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
-import { useUserProfile, profileDisplayInitials } from '../../user-profile'
+import { resolveUserDisplay } from '@ceedcv-maya/shared-profile-react'
+import { useUserProfile } from '../../user-profile'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
 import { postClockIn, postClockOut } from '../../fichaje/api/clockInApi'
 import {
@@ -378,9 +379,12 @@ function DailyFichajesWidget() {
   const { profile } = useUserProfile()
   const queryClient = useQueryClient()
 
-  const displayName = profile?.name?.trim() || user?.name?.trim() || user?.email || ''
-  const displayInitials = profileDisplayInitials(profile)
-  const displaySubtitle = profile?.email || user?.email || ''
+  // Nombre/iniciales/email canónicos (0.16.0) con los fallbacks a email
+  // propios de este widget preservados.
+  const { userName, userInitials, userEmail } = resolveUserDisplay(profile, user ?? undefined)
+  const displayName = userName || user?.email || ''
+  const displayInitials = userInitials
+  const displaySubtitle = userEmail || user?.email || ''
 
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()))
   const selectedYmd = useMemo(() => toDateString(selectedDate), [selectedDate])
