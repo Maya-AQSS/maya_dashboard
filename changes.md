@@ -98,3 +98,30 @@ NO se registran aquí salvo nota explícita.
 - **Impacto en cliente**: restaura la UX previa a la migración.
 - **Dependencia**: requiere publicar maya_platform ≥0.16 con la nueva prop (mismo gating que el resto de la adopción 0.16).
 - **Decidido por**: usuario (decisión post-informe F6).
+
+## [V2.dashboard] BaseAuditObserver abstracto — dedup de 3 observers de auditoría
+
+- **Fecha**: 2026-06-13
+- **Severidad**: LOW (refactor interno, sin cambio de comportamiento)
+- **Qué cambió**: Se extrajo la lógica común (~95% idéntica) de `NotificationObserver`, `UserFavoriteApplicationObserver` y `UserDashboardLayoutObserver` a una clase abstracta `app/Observers/BaseAuditObserver.php` (ctor con `AuditPublisher`, `created/updated/deleted` con `DB::afterCommit`, `publish()` privado con `Auth::id() ?? 'system'` y `APPLICATION_SLUG = 'maya-dashboard'`). Las 3 subclases ahora solo declaran `entityType()`. `PanelAlertObserver` NO se incluye (diverge: JwtSubject, ip/userAgent, re-notificación).
+- **Por qué**: eliminar duplicación verbatim manteniendo idéntico el evento de auditoría emitido.
+- **Endpoint(s)/pantalla(s) afectados**: ninguno directo — los observers se disparan en CRUD de Notification/UserFavoriteApplication/UserDashboardLayout; el payload de auditoría publicado al bus es byte-idéntico.
+- **Impacto en cliente**: ninguno (sin pérdida de funcionalidad).
+
+## [V2.dashboard] ApplicationRepository::withFavoriteFlag — dedup del JOIN de favoritos
+
+- **Fecha**: 2026-06-13
+- **Severidad**: LOW (refactor interno, sin cambio de SQL emitido)
+- **Qué cambió**: El bloque `leftJoin('user_favorite_applications', …) + select('applications.*') + selectRaw('… IS NOT NULL as is_favorite')`, duplicado verbatim en `paginateActiveWithFilters` y `activeWithFavoriteFlagQuery`, se extrajo a un privado `withFavoriteFlag(Builder $q, string $userId): Builder`. Se preserva LITERAL el `selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite')` (columna cruda consumida como `(bool)($m->is_favorite ?? false)` en `ApplicationDto.php`).
+- **Por qué**: una sola fuente de verdad para la proyección de la flag de favorito.
+- **Endpoint(s)/pantalla(s) afectados**: `GET /api/v1/applications` (listado con flag de favorito). SQL resultante idéntico.
+- **Impacto en cliente**: ninguno.
+
+## [V2.dashboard] MessagingConfig::appSlug() — elimina helper privado duplicado
+
+- **Fecha**: 2026-06-13
+- **Severidad**: LOW (refactor interno)
+- **Qué cambió**: El privado idéntico `messagingAppSlug() => (string) config('messaging.app')` en `PanelAlertNotificationService` y `NotificationIngestionService` se reemplazó por la llamada estática del vendor `\Maya\Messaging\Support\MessagingConfig::appSlug()` (shared-messaging-laravel) y se eliminaron ambos privados.
+- **Por qué**: reutilizar el accessor compartido del paquete en vez de re-declararlo por servicio.
+- **Endpoint(s)/pantalla(s) afectados**: ingestión AMQP de notificaciones y notificación de panel-alerts (worker). Valor devuelto idéntico (mismo `config('messaging.app')`).
+- **Impacto en cliente**: ninguno.

@@ -14,6 +14,7 @@ use App\Support\NotificationContent;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
+use Maya\Messaging\Support\MessagingConfig;
 
 class NotificationIngestionService implements NotificationIngestionServiceInterface
 {
@@ -32,11 +33,6 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
         private readonly NotificationDefinitionServiceInterface $definitions,
     ) {}
 
-    private function messagingAppSlug(): string
-    {
-        return (string) config('messaging.app');
-    }
-
     public function ingest(array $payload, string $messageId): bool
     {
         try {
@@ -49,7 +45,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
                 [
                     'payload_keys' => array_keys($payload),
                 ],
-                $this->messagingAppSlug(),
+                MessagingConfig::appSlug(),
             );
 
             return false; // indica mensaje no-recuperable al consumer
@@ -64,7 +60,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
                 'Notification dropped: type disabled.',
                 self::CODE_TYPE_DISABLED,
                 ['type' => $dto->type, 'app' => $dto->app],
-                $this->messagingAppSlug(),
+                MessagingConfig::appSlug(),
             );
 
             return true; // descartada por configuración, no es un error
@@ -140,7 +136,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
                     'Notification persisted but broadcast failed: ' . $e->getMessage(),
                     'LAR-DASH-006',
                     ['type' => $dto->type],
-                    $this->messagingAppSlug(),
+                    MessagingConfig::appSlug(),
                 );
             }
         }
@@ -166,7 +162,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
                 'Notification skipped: recipient not found in users.',
                 self::CODE_RECIPIENT_NOT_FOUND,
                 ['recipient_keycloak_id' => $keycloakId],
-                $this->messagingAppSlug(),
+                MessagingConfig::appSlug(),
             );
 
             return null;

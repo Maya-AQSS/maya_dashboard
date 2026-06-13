@@ -8,6 +8,7 @@ use App\Models\Application;
 use App\Repositories\Contracts\ApplicationRepositoryInterface;
 use App\Support\Search\AccentSearch;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Maya\Profile\Database\ViewPermissionGateQuery;
 
 final class ApplicationRepository implements ApplicationRepositoryInterface
@@ -29,15 +30,7 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
         $query = Application::query()->where('applications.is_active', true);
         ViewPermissionGateQuery::apply($query, $userId);
 
-        $query = $query
-            ->leftJoin(
-                'user_favorite_applications',
-                fn ($join) => $join
-                    ->on('user_favorite_applications.application_id', '=', 'applications.id')
-                    ->where('user_favorite_applications.user_id', '=', $userId),
-            )
-            ->select('applications.*')
-            ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite');
+        $query = $this->withFavoriteFlag($query, $userId);
 
         // Search filter (accent-insensitive — ver changes.md)
         if ($search) {
@@ -67,6 +60,16 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
         $query = Application::query()->where('applications.is_active', true);
         ViewPermissionGateQuery::apply($query, $userId);
 
+        return $this->withFavoriteFlag($query, $userId)
+            ->orderBy('applications.name');
+    }
+
+    /**
+     * Añade el leftJoin a favoritos del usuario y proyecta la columna cruda
+     * `is_favorite` (NOT NULL → bool), consumida en ApplicationDto.
+     */
+    private function withFavoriteFlag(Builder $query, string $userId): Builder
+    {
         return $query
             ->leftJoin(
                 'user_favorite_applications',
@@ -75,7 +78,6 @@ final class ApplicationRepository implements ApplicationRepositoryInterface
                     ->where('user_favorite_applications.user_id', '=', $userId),
             )
             ->select('applications.*')
-            ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite')
-            ->orderBy('applications.name');
+            ->selectRaw('user_favorite_applications.application_id IS NOT NULL as is_favorite');
     }
 }

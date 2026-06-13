@@ -10,6 +10,7 @@ use App\Services\Contracts\PanelAlertNotificationServiceInterface;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\NotificationPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
+use Maya\Messaging\Support\MessagingConfig;
 use Throwable;
 
 final class PanelAlertNotificationService implements PanelAlertNotificationServiceInterface
@@ -22,11 +23,6 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
         private readonly AlertAudienceRepositoryInterface $audience,
         private readonly PanelAlertRepositoryInterface $alerts,
     ) {}
-
-    private function messagingAppSlug(): string
-    {
-        return (string) config('messaging.app');
-    }
 
     public function notifyUsersOfNewAlert(int $alertId): int
     {
@@ -70,7 +66,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
                     body: $alert->text,
                     channels: ['app'],
                     metadata: $metadata,
-                    app: $this->messagingAppSlug(),
+                    app: MessagingConfig::appSlug(),
                     isCritical: $isCritical,
                     scope: 'user',
                     severity: $alert->severity,
@@ -87,7 +83,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
                         'panel_alert_id' => $alert->id,
                         'recipient_keycloak_id' => $recipientId,
                     ],
-                    $this->messagingAppSlug(),
+                    MessagingConfig::appSlug(),
                 );
             }
         }
