@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
 import {
   Badge,
@@ -38,6 +38,7 @@ type Props = {
 export function SystemNotificationsTab({ canToggle }: Props) {
   const { t, dateLocale } = useLocale()
   const { show: toast } = useToast()
+  const queryClient = useQueryClient()
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { hiddenIds, toggleHidden } =
@@ -73,8 +74,8 @@ export function SystemNotificationsTab({ canToggle }: Props) {
     setToggling(true)
     try {
       await setNotificationDefinitionEnabled(id, !enabled)
-      // Refresh query
-      // Note: This is a simplified approach; a full implementation would use queryClient.invalidateQueries
+      // Refresca el catálogo para que el badge refleje el nuevo estado sin recargar.
+      await queryClient.invalidateQueries({ queryKey: ['notification-definitions'] })
       toast({ tone: 'success', title: t('systemNotifications.toggleSuccess') })
     } catch {
       toast({ tone: 'danger', title: t('systemNotifications.toggleError') })
