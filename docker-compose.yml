@@ -255,7 +255,7 @@ services:
       VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
       VITE_REVERB_PORT: 443
       VITE_REVERB_SCHEME: https
-      MAYA_DEV_OVERRIDE_DIR: /maya_platform/packages/js
+      MAYA_DEV_OVERRIDE_DIR: ${MAYA_DEV_OVERRIDE_DIR:-}
     depends_on:
       backend:
         condition: service_healthy
