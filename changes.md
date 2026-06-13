@@ -89,11 +89,12 @@ NO se registran aquí salvo nota explícita.
   URLs generadas pasan a `https://` (ya lo eran vía proxy).
 - **Decidido por**: agente dashboard (anotado por transparencia).
 
-## [F3.2] Navegación a "Mi perfil" pasa a recarga completa
+## [F3.2] Navegación a "Mi perfil" — regresión RESUELTA con `onProfileNavigate`
 - **Fecha**: 2026-06-12
-- **Severidad**: MEDIUM
-- **Qué cambió**: antes `navigate('/profile', { state: buildBackState(location) })` (SPA, con back-state); ahora el shell compartido usa `window.location.assign(dashboardUrl + '/profile')` (recarga completa, sin back-state). El botón Volver del perfil ya no retorna a la página previa.
-- **Por qué**: MayaAppShell no expone aún un `onProfileNavigate`; gap documentado en App.tsx y candidato a prop nueva en maya_platform.
+- **Severidad**: MEDIUM (resuelta)
+- **Qué cambió**: la migración al shell pasó "Mi perfil" de `navigate('/profile', { state: buildBackState(location) })` (SPA, con back-state) a `window.location.assign(dashboardUrl + '/profile')` (recarga completa). Ahora `MayaAppShell` expone la prop opcional `onProfileNavigate` (espejo de `onNotificationNavigate`); el dashboard la cablea con `navigate('/profile', { state: buildBackState(location) })`, restaurando la navegación SPA y el botón Volver. El fallback a recarga completa se mantiene para apps que no pasen la prop (retrocompatible).
+- **Por qué**: cerrar la regresión UX introducida en F3.2 sin acoplar el shell a react-router.
 - **Endpoint(s)/pantalla(s) afectados**: enlace "Mi perfil" del menú de usuario.
-- **Impacto en cliente**: observable sí (UX de navegación, no datos).
-- **Decidido por**: agente F3.2 (gap del shell), documentado en review final F6.
+- **Impacto en cliente**: restaura la UX previa a la migración.
+- **Dependencia**: requiere publicar maya_platform ≥0.16 con la nueva prop (mismo gating que el resto de la adopción 0.16).
+- **Decidido por**: usuario (decisión post-informe F6).
