@@ -17,8 +17,7 @@ const DASHBOARD_API_URL = resolveServiceUrl(
 
 // El dashboard ES el portal: dashboardUrl apunta a su propio origen, de modo
 // que el enlace "Mi perfil" del shell resuelve a la ruta local `/profile`.
-// Gap conocido: el shell navega con window.location.assign (recarga completa)
-// en lugar de navigate() + buildBackState — ver comentario en App().
+// La navegación SPA con back-state se cablea vía `onProfileNavigate` (ver App()).
 const DASHBOARD_URL = resolveServiceUrl(
   import.meta.env.VITE_DASHBOARD_URL as string | undefined,
   'dashboard',
@@ -94,12 +93,9 @@ function AppRoutes() {
  * - `isDashboard`: gate con logout en vez de redirect al portal.
  * - `showProfileLink`: condicionado al permiso `profile.show`.
  * - `onNotificationNavigate`: navegación SPA con estado de retorno.
+ * - `onProfileNavigate`: navegación SPA a `/profile` con back-state (en vez de
+ *   la recarga completa por defecto del shell).
  * - `beforeLayout`: ReturnToHandler (SSO relay `?return_to`).
- *
- * Gap conocido (shell 0.16): el enlace "Mi perfil" usa
- * `window.location.assign(dashboardUrl + '/profile')` — recarga completa y
- * sin buildBackState. Antes era `navigate('/profile', { state })`. El shell
- * no expone onProfileNavigate; pendiente de proponer en maya_platform.
  */
 export default function App() {
   const { t } = useTranslation('auth')
@@ -120,6 +116,9 @@ export default function App() {
       loginPermission={DASHBOARD_PERMISSIONS.login}
       isDashboard
       showProfileLink={hasPermission(DASHBOARD_PERMISSIONS.profileShow)}
+      onProfileNavigate={() =>
+        navigate('/profile', { state: buildBackState(location) })
+      }
       onNotificationNavigate={(notification) =>
         navigate(`/notifications/${notification.id}`, { state: buildBackState(location) })
       }
