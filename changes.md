@@ -125,3 +125,30 @@ NO se registran aquí salvo nota explícita.
 - **Por qué**: reutilizar el accessor compartido del paquete en vez de re-declararlo por servicio.
 - **Endpoint(s)/pantalla(s) afectados**: ingestión AMQP de notificaciones y notificación de panel-alerts (worker). Valor devuelto idéntico (mismo `config('messaging.app')`).
 - **Impacto en cliente**: ninguno.
+
+## [V2.dashboard] lib/dateUtils.formatYmd — dedup del formateador YYYY-MM-DD
+
+- **Fecha**: 2026-06-13
+- **Severidad**: LOW (refactor interno, sin cambio de comportamiento)
+- **Qué cambió**: Se creó `frontend/src/lib/dateUtils.ts` con `formatYmd(date): string` (YYYY-MM-DD en hora local: `getFullYear` + `getMonth()+1` padStart + `getDate` padStart). Se eliminaron las copias `toDateString`/`toYmd` en `useDailyFichajes.ts`, `bookingsApi.ts`, `pairEntries.ts`, `useFichajeAlerts.ts` y `DailyFichajesWidget.tsx`, todas reapuntadas a `formatYmd`.
+- **Por qué**: una sola fuente del formateo de fecha local; el helper estaba duplicado verbatim en 5 sitios.
+- **Endpoint(s)/pantalla(s) afectados**: widget de fichaje diario, calendario de bookings, alertas de fichaje. Mismo string de fecha producido.
+- **Impacto en cliente**: ninguno.
+
+## [V2.dashboard] hooks/useDebounce — dedup del patrón manual setTimeout/clearTimeout
+
+- **Fecha**: 2026-06-13
+- **Severidad**: LOW (refactor interno; comportamiento de debounce preservado, 400ms)
+- **Qué cambió**: Se creó `frontend/src/hooks/useDebounce.ts` (callback debounced estable con `.cancel()` y limpieza automática al desmontar). Se reemplazó el patrón manual `useRef<setTimeout> + clearTimeout + setTimeout` en 5 sitios: `SystemNotificationsTab.tsx`, `ScheduledRulesTab.tsx`, `ApplicationsListPage.tsx`, `PanelAlertsPage.tsx`, `NotificationsPage.tsx`. En `NotificationsPage` el `clearFilters` ahora llama `debouncedSetSearch.cancel()` (equivalente al `clearTimeout` previo) y se eliminó el `useEffect` de limpieza manual (lo cubre el hook).
+- **Por qué**: eliminar la repetición del patrón de debounce y centralizar la cancelación/limpieza.
+- **Endpoint(s)/pantalla(s) afectados**: cajas de búsqueda server-side de notificaciones, reglas programadas, panel-alerts y aplicaciones. Mismo retardo (400ms) y misma propagación del término.
+- **Impacto en cliente**: ninguno (comportamiento idéntico).
+
+## [V2.dashboard] applicationsApi — unificación del doble-fetch (getApplicationsData + listApplications)
+
+- **Fecha**: 2026-06-13
+- **Severidad**: MEDIUM (cambio de API interna del módulo + forma de retorno unificada)
+- **Qué cambió**: `getApplicationsData(userId, _token?)` (retorno `{ applications, meta }`, sin query string, `_token` ignorado) y `listApplications(userId, params)` (retorno `{ data, meta }`) golpeaban el MISMO endpoint `GET /dashboard/user/{id}/applications`. Se unificaron en una sola función `listApplications(userId, params = {})` con `params` OPCIONAL y forma de retorno estándar `{ data, meta }`. Sin params no añade query string (idéntico al fetch previo del widget; `buildQueryString` con todo undefined devuelve `''`). Consumidor `useApplicationsData` actualizado (`res.applications` → `res.data`; la query sigue gateada por `!!token`). Tests `applicationsApi.test.ts` y `useApplicationsData.test.ts` reescritos al nuevo nombre/forma (+ test nuevo de query string con filtros).
+- **Por qué**: eliminar dos funciones casi idénticas con shapes de retorno divergentes contra el mismo endpoint.
+- **Endpoint(s)/pantalla(s) afectados**: `GET /dashboard/user/{id}/applications` — widget de aplicaciones (favoritos, sin filtros) y página de listado (server-side con filtros). URL emitida idéntica en ambos casos.
+- **Impacto en cliente**: ninguno funcional; la forma de respuesta del módulo se homogeneiza a `{ data, meta }`.

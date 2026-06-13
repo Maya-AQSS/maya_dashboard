@@ -1,12 +1,6 @@
 import { apiGetJson, mapApiError } from '../../../api/http'
+import { formatYmd } from '../../../lib/dateUtils'
 import type { Booking, BookingsApiResponse } from '../types/booking'
-
-function toYmd(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
 
 export async function fetchBookings(
   userId: string,
@@ -16,7 +10,7 @@ export async function fetchBookings(
 ): Promise<Booking[]> {
   if (!userId) throw new Error('bookings.errorLoad')
 
-  const params = new URLSearchParams({ from: toYmd(from), to: toYmd(to) })
+  const params = new URLSearchParams({ from: formatYmd(from), to: formatYmd(to) })
   if (view) params.set('view', view)
 
   try {

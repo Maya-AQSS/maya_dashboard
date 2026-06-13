@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { canAccessByViewPermission } from '@ceedcv-maya/shared-profile-react'
-import { getApplicationsData } from '../api/applicationsApi'
+import { listApplications } from '../api/applicationsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 import { useUserProfile } from '../../user-profile'
 
@@ -16,8 +16,8 @@ function useApplicationsData() {
   const { data: rawApps = [], isLoading: loading, error: queryError } = useQuery({
     queryKey: ['applications', user?.sub],
     queryFn: async () => {
-      const res = await getApplicationsData(user!.sub, token!)
-      return res.applications ?? []
+      const res = await listApplications(user!.sub)
+      return res.data ?? []
     },
     enabled: !!user?.sub && !!token,
     staleTime: 5 * 60 * 1000,

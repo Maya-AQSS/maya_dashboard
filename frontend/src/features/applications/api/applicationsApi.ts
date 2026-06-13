@@ -23,21 +23,14 @@ interface ListApplicationsParams {
   sort_dir?: 'asc' | 'desc'
 }
 
-async function getApplicationsData(userId: string, _token?: string | null) {
-  if (!userId) throw new Error('applications.errorLoad')
-
-  try {
-    const payload = await apiGetJson<ApplicationsPayload>(
-      `/dashboard/user/${encodeURIComponent(userId)}/applications`,
-    )
-    const apps = Array.isArray(payload?.data) ? payload.data : []
-    return { applications: apps.map(mapApplicationFromApi), meta: payload?.meta }
-  } catch (err) {
-    throw mapApiError(err, 'applications')
-  }
-}
-
-async function listApplications(userId: string, params: ListApplicationsParams) {
+/**
+ * Lista las aplicaciones de un usuario (catálogo con flag de favorito,
+ * server-side). Unifica el doble-fetch previo (`getApplicationsData` +
+ * `listApplications`) en una sola firma: `params` es opcional — sin parámetros
+ * golpea el endpoint sin query string (mismo comportamiento que el antiguo
+ * fetch del widget) y siempre devuelve la forma estándar `{ data, meta }`.
+ */
+async function listApplications(userId: string, params: ListApplicationsParams = {}) {
   if (!userId) throw new Error('applications.errorLoad')
 
   try {
@@ -59,5 +52,5 @@ async function listApplications(userId: string, params: ListApplicationsParams) 
   }
 }
 
-export { getApplicationsData, listApplications }
+export { listApplications }
 export type { ListApplicationsParams }

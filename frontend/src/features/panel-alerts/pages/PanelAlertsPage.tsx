@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { buildBackState, useBackNavigation } from '@ceedcv-maya/shared-hooks-react'
+import { useDebounce } from '../../../hooks/useDebounce'
 import { EditorContentHtml } from '@ceedcv-maya/shared-editor-react'
 import {
   Badge,
@@ -58,7 +59,6 @@ export default function PanelAlertsPage() {
   const includeExpired = searchParams.get('expired') !== '0'
 
   const [alertSearchInput, setAlertSearchInput] = useState(alertSearch)
-  const alertDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const setActiveTab = (tab: Tab) => {
     setSearchParams((prev) => { prev.set('tab', tab); prev.delete('page'); return prev }, { replace: true })
@@ -192,13 +192,14 @@ export default function PanelAlertsPage() {
   )
 
   // ── Handlers ──────────────────────────────────────────────────
+  const debouncedAlertSearch = useDebounce((v: string) => {
+    setSearchParams((prev) => { v ? prev.set('search', v) : prev.delete('search'); prev.delete('page'); return prev }, { replace: true })
+  }, 400)
+
   const handleAlertSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value
     setAlertSearchInput(v)
-    if (alertDebounceRef.current) clearTimeout(alertDebounceRef.current)
-    alertDebounceRef.current = setTimeout(() => {
-      setSearchParams((prev) => { v ? prev.set('search', v) : prev.delete('search'); prev.delete('page'); return prev }, { replace: true })
-    }, 400)
+    debouncedAlertSearch(v)
   }
 
   const alertFiltersActive = [alertSearch, alertSeverity, includeExpired ? '' : 'active-only'].filter(Boolean).length

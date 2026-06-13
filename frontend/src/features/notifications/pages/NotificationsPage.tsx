@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
 import { useQuery } from '@tanstack/react-query'
@@ -23,6 +23,7 @@ import { useUserProfile } from '../../user-profile'
 import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 import { getUnreadCount } from '../api/notificationsApi'
 import { useNotifications } from '../hooks/useNotifications'
+import { useDebounce } from '../../../hooks/useDebounce'
 import { notificationAppLabel } from '../appLabel'
 import type { Notification, NotificationListFilters, NotificationSeverity } from '../types/notification'
 
@@ -51,16 +52,9 @@ export default function NotificationsPage() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [unreadOnly, setUnreadOnly] = useState(false)
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
     useTablePreferences({ storageKey: 'maya:dashboard:notifications-table' })
-
-  useEffect(() => {
-    return () => {
-      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    }
-  }, [])
 
   const filters: NotificationListFilters = {
     page,
@@ -98,14 +92,15 @@ export default function NotificationsPage() {
   })
   const unreadCount = unreadData?.unread ?? 0
 
+  const debouncedSetSearch = useDebounce((value: string) => {
+    setSearch(value)
+    setPage(1)
+  }, 400)
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchInput(value)
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    searchDebounceRef.current = setTimeout(() => {
-      setSearch(value)
-      setPage(1)
-    }, 400)
+    debouncedSetSearch(value)
   }
 
   const handleMarkAllRead = async () => {
@@ -118,7 +113,7 @@ export default function NotificationsPage() {
   }
 
   const clearFilters = () => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+    debouncedSetSearch.cancel()
     setSearchInput('')
     setSearch('')
     setUnreadOnly(false)

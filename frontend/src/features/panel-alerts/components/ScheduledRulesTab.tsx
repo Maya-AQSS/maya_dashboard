@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { buildBackState, useServerTable } from '@ceedcv-maya/shared-hooks-react'
+import { useDebounce } from '../../../hooks/useDebounce'
 import {
   Badge,
   Button,
@@ -27,7 +28,6 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const { show: toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:notification-rules-table' })
@@ -56,13 +56,14 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const rules = response?.data ?? []
   const meta = response?.meta
 
+  const debouncedSetSearch = useDebounce((value: string) => {
+    table.setFilter('search', value || undefined)
+  }, 400)
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchInput(value)
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    searchDebounceRef.current = setTimeout(() => {
-      table.setFilter('search', value || undefined)
-    }, 400)
+    debouncedSetSearch(value)
   }
 
   const handleUpdate = async (id: number, data: { enabled: boolean }) => {

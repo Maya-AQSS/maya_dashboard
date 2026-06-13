@@ -12,14 +12,7 @@ import {
   type FichajeEntry,
   type FichajePair,
 } from '../../fichaje/lib/pairEntries'
-
-/** Convierte un Date a `YYYY-MM-DD` (sin zona horaria, hora local). */
-function toDateString(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
+import { formatYmd } from '../../../lib/dateUtils'
 
 function startOfDay(date: Date): Date {
   const d = new Date(date)
@@ -311,8 +304,8 @@ interface DateChipProps {
  */
 function DateChip({ selectedDate, onChange, dateLocale }: DateChipProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const todayYmd = toDateString(startOfDay(new Date()))
-  const isToday = toDateString(selectedDate) === todayYmd
+  const todayYmd = formatYmd(startOfDay(new Date()))
+  const isToday = formatYmd(selectedDate) === todayYmd
 
   const fmt = new Intl.DateTimeFormat(dateLocale, {
     weekday: 'short',
@@ -358,7 +351,7 @@ function DateChip({ selectedDate, onChange, dateLocale }: DateChipProps) {
       <input
         ref={inputRef}
         type="date"
-        value={toDateString(selectedDate)}
+        value={formatYmd(selectedDate)}
         max={todayYmd}
         onChange={(e) => {
           const next = parseDateInputValue(e.target.value)
@@ -387,8 +380,8 @@ function DailyFichajesWidget() {
   const displaySubtitle = userEmail || user?.email || ''
 
   const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()))
-  const selectedYmd = useMemo(() => toDateString(selectedDate), [selectedDate])
-  const isSelectedToday = selectedYmd === toDateString(startOfDay(new Date()))
+  const selectedYmd = useMemo(() => formatYmd(selectedDate), [selectedDate])
+  const isSelectedToday = selectedYmd === formatYmd(startOfDay(new Date()))
 
   const { entries, loading, error } = useDailyFichajes(userId, selectedDate)
   const pairs = pairEntries((entries as FichajeEntry[]) ?? [], selectedDate)

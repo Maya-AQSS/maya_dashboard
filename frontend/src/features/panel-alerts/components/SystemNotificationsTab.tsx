@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
+import { useDebounce } from '../../../hooks/useDebounce'
 import {
   Badge,
   Button,
@@ -39,7 +40,6 @@ export function SystemNotificationsTab({ canToggle }: Props) {
   const { t, dateLocale } = useLocale()
   const { show: toast } = useToast()
   const queryClient = useQueryClient()
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:notification-definitions-table' })
@@ -84,13 +84,14 @@ export function SystemNotificationsTab({ canToggle }: Props) {
     }
   }
 
+  const debouncedSetSearch = useDebounce((value: string) => {
+    table.setFilter('search', value || undefined)
+  }, 400)
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchInput(value)
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    searchDebounceRef.current = setTimeout(() => {
-      table.setFilter('search', value || undefined)
-    }, 400)
+    debouncedSetSearch(value)
   }
 
   const totalPages = meta?.last_page ?? 1

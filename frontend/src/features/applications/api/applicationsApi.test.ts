@@ -27,23 +27,23 @@ vi.mock('../../../api/http', () => {
   }
 })
 
-import { getApplicationsData } from './applicationsApi'
+import { listApplications } from './applicationsApi'
 import { ApiHttpError, apiGetJson } from '../../../api/http'
 
-describe('getApplicationsData', () => {
+describe('listApplications', () => {
   afterEach(() => {
     vi.clearAllMocks()
   })
 
   it('lanza applications.errorLoad cuando userId está vacío', async () => {
-    await expect(getApplicationsData('')).rejects.toThrow('applications.errorLoad')
+    await expect(listApplications('')).rejects.toThrow('applications.errorLoad')
     expect(vi.mocked(apiGetJson)).not.toHaveBeenCalled()
   })
 
-  it('llama al endpoint correcto con userId codificado', async () => {
+  it('llama al endpoint correcto (sin query string) con userId codificado', async () => {
     vi.mocked(apiGetJson).mockResolvedValue({ data: [] })
 
-    await getApplicationsData('user-123')
+    await listApplications('user-123')
 
     expect(vi.mocked(apiGetJson)).toHaveBeenCalledWith('/dashboard/user/user-123/applications')
   })
@@ -51,11 +51,24 @@ describe('getApplicationsData', () => {
   it('codifica userId con caracteres especiales en la URL', async () => {
     vi.mocked(apiGetJson).mockResolvedValue({ data: [] })
 
-    await getApplicationsData('user@domain.com')
+    await listApplications('user@domain.com')
 
     expect(vi.mocked(apiGetJson)).toHaveBeenCalledWith(
       '/dashboard/user/user%40domain.com/applications',
     )
+  })
+
+  it('añade los parámetros de filtro/paginación como query string', async () => {
+    vi.mocked(apiGetJson).mockResolvedValue({ data: [] })
+
+    await listApplications('user-1', { page: 2, per_page: 25, search: 'foo', favorite: 'yes' })
+
+    const calledUrl = vi.mocked(apiGetJson).mock.calls[0][0] as string
+    expect(calledUrl).toContain('/dashboard/user/user-1/applications?')
+    expect(calledUrl).toContain('page=2')
+    expect(calledUrl).toContain('per_page=25')
+    expect(calledUrl).toContain('search=foo')
+    expect(calledUrl).toContain('favorite=yes')
   })
 
   it('mapea las aplicaciones del payload correctamente', async () => {
@@ -64,62 +77,62 @@ describe('getApplicationsData', () => {
     ]
     vi.mocked(apiGetJson).mockResolvedValue({ data: rawApps })
 
-    const result = await getApplicationsData('user-1')
+    const result = await listApplications('user-1')
 
-    expect(result.applications).toHaveLength(1)
-    expect(result.applications[0].name).toBe('App A')
-    expect(result.applications[0].isFavorite).toBe(true)
+    expect(result.data).toHaveLength(1)
+    expect(result.data[0].name).toBe('App A')
+    expect(result.data[0].isFavorite).toBe(true)
   })
 
-  it('retorna applications vacío cuando data no es array', async () => {
+  it('retorna data vacío cuando data no es array', async () => {
     vi.mocked(apiGetJson).mockResolvedValue({ data: null })
 
-    const result = await getApplicationsData('user-1')
+    const result = await listApplications('user-1')
 
-    expect(result.applications).toEqual([])
+    expect(result.data).toEqual([])
   })
 
-  it('retorna applications vacío cuando data es undefined en el payload', async () => {
+  it('retorna data vacío cuando data es undefined en el payload', async () => {
     vi.mocked(apiGetJson).mockResolvedValue({})
 
-    const result = await getApplicationsData('user-1')
+    const result = await listApplications('user-1')
 
-    expect(result.applications).toEqual([])
+    expect(result.data).toEqual([])
   })
 
   it('mapea 401 → applications.errorUnauthorized', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(401))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorUnauthorized')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorUnauthorized')
   })
 
   it('mapea 403 → applications.errorForbidden', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(403))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorForbidden')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorForbidden')
   })
 
   it('mapea 404 → applications.errorNotFound', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(404))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorNotFound')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorNotFound')
   })
 
   it('mapea 500 → applications.errorServer', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new ApiHttpError(500))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorServer')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorServer')
   })
 
   it('mapea TypeError → applications.errorNetwork', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new TypeError('fetch failed'))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorNetwork')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorNetwork')
   })
 
   it('errores sin reconocer caen al fallback applications.errorLoad', async () => {
     vi.mocked(apiGetJson).mockRejectedValue(new Error('boom'))
 
-    await expect(getApplicationsData('user-1')).rejects.toThrow('applications.errorLoad')
+    await expect(listApplications('user-1')).rejects.toThrow('applications.errorLoad')
   })
 })

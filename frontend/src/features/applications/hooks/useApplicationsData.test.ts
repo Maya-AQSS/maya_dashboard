@@ -29,7 +29,7 @@ vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
 }))
 
 vi.mock('../api/applicationsApi', () => ({
-  getApplicationsData: vi.fn(),
+  listApplications: vi.fn(),
 }))
 
 vi.mock('../../favorites/context/FavoritesContext', () => ({
@@ -50,13 +50,13 @@ vi.mock('../../user-profile', () => ({
 
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
-import { getApplicationsData } from '../api/applicationsApi'
+import { listApplications } from '../api/applicationsApi'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
 import useApplicationsData from './useApplicationsData'
 
 const mockUseAuth = vi.mocked(useAuth)
 const mockUseLocale = vi.mocked(useLocale)
-const mockGetApplicationsData = vi.mocked(getApplicationsData)
+const mockListApplications = vi.mocked(listApplications)
 const mockUseFavoritesContext = vi.mocked(useFavoritesContext)
 
 const addMock = vi.fn()
@@ -106,7 +106,7 @@ describe('useApplicationsData', () => {
 
   describe('estado inicial y carga de datos', () => {
     it('devuelve apps mapeadas desde el API', async () => {
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [app1] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [app1] } as any)
       const qc = makeClient()
       const { result } = renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })
 
@@ -118,7 +118,7 @@ describe('useApplicationsData', () => {
     })
 
     it('devuelve isFavorite=true cuando el id está en favorites', async () => {
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [app1] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [app1] } as any)
       setupMocks({ favorites: [{ id: '1' }] })
       const qc = makeClient()
       const { result } = renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })
@@ -129,7 +129,7 @@ describe('useApplicationsData', () => {
     })
 
     it('devuelve isFavorite=false cuando el id NO está en favorites', async () => {
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [app1] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [app1] } as any)
       setupMocks({ favorites: [{ id: '99' }] })
       const qc = makeClient()
       const { result } = renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })
@@ -144,7 +144,7 @@ describe('useApplicationsData', () => {
     it('cuando la query falla con Error, devuelve el message', async () => {
       // Use retry: false client so mock doesn't need to cover retries
       const err = new Error('applications.errorLoad')
-      mockGetApplicationsData.mockRejectedValue(err)
+      mockListApplications.mockRejectedValue(err)
       const qc = new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: 0 } },
       })
@@ -158,7 +158,7 @@ describe('useApplicationsData', () => {
 
     it('cuando la query falla con valor no-Error, usa t("applications.errorLoad")', async () => {
       // Rejecting with a non-Error — hook uses `t('applications.errorLoad')`
-      mockGetApplicationsData.mockRejectedValue('string error')
+      mockListApplications.mockRejectedValue('string error')
       const qc = new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: 0 } },
       })
@@ -173,17 +173,17 @@ describe('useApplicationsData', () => {
   describe('sin autenticar', () => {
     it('no ejecuta la query cuando token es null', () => {
       setupMocks({ token: null as any, user: null as any })
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [] } as any)
       const qc = makeClient()
       renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })
 
-      expect(mockGetApplicationsData).not.toHaveBeenCalled()
+      expect(mockListApplications).not.toHaveBeenCalled()
     })
   })
 
   describe('toggleFavorite', () => {
     it('llama a add cuando el app no es favorito', async () => {
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [app1] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [app1] } as any)
       const qc = makeClient()
       const { result } = renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })
 
@@ -196,7 +196,7 @@ describe('useApplicationsData', () => {
     })
 
     it('llama a remove cuando el app ya es favorito', async () => {
-      mockGetApplicationsData.mockResolvedValueOnce({ applications: [app1] } as any)
+      mockListApplications.mockResolvedValueOnce({ data: [app1] } as any)
       setupMocks({ favorites: [{ id: '1' }] })
       const qc = makeClient()
       const { result } = renderHook(() => useApplicationsData(), { wrapper: makeWrapper(qc) })

@@ -1,3 +1,5 @@
+import { formatYmd } from '../../../lib/dateUtils'
+
 export interface FichajeEntry {
   type: 'in' | 'out'
   timestamp: Date | string
@@ -9,15 +11,8 @@ export interface FichajePair {
   autoClose: boolean
 }
 
-function toDateString(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 function isToday(date: Date): boolean {
-  return toDateString(date) === toDateString(new Date())
+  return formatYmd(date) === formatYmd(new Date())
 }
 
 /**

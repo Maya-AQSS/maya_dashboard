@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerTable } from '@ceedcv-maya/shared-hooks-react'
+import { useDebounce } from '../../../hooks/useDebounce'
 import {
   ConfirmDialog,
   DataTable,
@@ -51,7 +52,6 @@ function ApplicationsListPage() {
 
   const [searchInput, setSearchInput] = useState('')
   const [confirmApp, setConfirmApp] = useState<App | null>(null)
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Server-side query
   const { data: response, isLoading } = useQuery({
@@ -74,13 +74,14 @@ function ApplicationsListPage() {
   // Backend data already has isFavorite (mapped via mapApplicationFromApi)
   const apps = response?.data ?? []
 
+  const debouncedSetSearch = useDebounce((value: string) => {
+    table.setFilter('search', value || undefined)
+  }, 400)
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchInput(value)
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
-    searchDebounceRef.current = setTimeout(() => {
-      table.setFilter('search', value || undefined)
-    }, 400)
+    debouncedSetSearch(value)
   }
 
   const handleFavoriteClick = (app: App, e: React.MouseEvent) => {

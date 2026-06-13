@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiGetJson, mapApiError } from '../../../api/http'
+import { formatYmd } from '../../../lib/dateUtils'
 import type { FichajeEntry } from '../lib/pairEntries'
 
 interface AttendanceRow {
@@ -13,13 +14,6 @@ interface AttendanceRow {
 interface AttendancesResponse {
   data: AttendanceRow[]
   meta: { date: string; count: number }
-}
-
-function toDateString(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
 }
 
 /**
@@ -41,7 +35,7 @@ function rowsToEntries(rows: readonly AttendanceRow[]): FichajeEntry[] {
 
 async function fetchDailyAttendances(userId: string, date: Date): Promise<AttendanceRow[]> {
   if (!userId) throw new Error('dashboard.fichaje.errorLoad')
-  const ymd = toDateString(date)
+  const ymd = formatYmd(date)
   try {
     const response = await apiGetJson<AttendancesResponse>(
       `/dashboard/user/${encodeURIComponent(userId)}/attendances?date=${ymd}`,
@@ -59,7 +53,7 @@ interface UseDailyFichajesReturn {
 }
 
 function useDailyFichajes(userId: string | undefined, date: Date): UseDailyFichajesReturn {
-  const dateKey = toDateString(date)
+  const dateKey = formatYmd(date)
 
   const query = useQuery({
     queryKey: ['daily-fichajes', userId, dateKey],

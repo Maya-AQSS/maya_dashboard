@@ -5,6 +5,7 @@ import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { postClockIn } from '../../fichaje/api/clockInApi'
 import { postAttendanceReminder } from '../api/attendanceReminderApi'
 import useDailyFichajes from '../../fichaje/hooks/useDailyFichajes'
+import { formatYmd } from '../../../lib/dateUtils'
 import type { AlertItem } from '../types/alertItem'
 
 function formatHHMM(date: Date): string {
@@ -15,13 +16,6 @@ function startOfToday(): Date {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   return d
-}
-
-function toDateString(date: Date): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
 }
 
 interface UseFichajeAlertsReturn {
@@ -45,7 +39,7 @@ export function useFichajeAlerts(): UseFichajeAlertsReturn {
   const { t } = useLocale()
   const userId = user?.sub
   const today = useMemo(() => startOfToday(), [])
-  const todayKey = useMemo(() => toDateString(today), [today])
+  const todayKey = useMemo(() => formatYmd(today), [today])
 
   const { entries } = useDailyFichajes(userId, today)
   const queryClient = useQueryClient()
