@@ -53,6 +53,8 @@ services:
       BROADCAST_CONNECTION: reverb
     volumes:
       - ./backend:/var/www/html
+      # Dev-override PHP: fuente local de maya_platform para composer.local.json (symlink:false → copia a vendor).
+      - ../maya_platform/packages/php:/var/maya_platform/packages/php
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health/live || exit 1"]
       interval: 15s
