@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\PanelAlerts;
 
+use App\Http\Requests\Concerns\AuthorizesByPermission;
 use App\Http\Requests\Concerns\ValidatesAlertAudience;
 use App\Http\Requests\Concerns\ValidatesPanelAlertTranslations;
 use Illuminate\Contracts\Validation\Validator;
@@ -11,12 +12,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePanelAlertRequest extends FormRequest
 {
+    use AuthorizesByPermission;
     use ValidatesAlertAudience;
     use ValidatesPanelAlertTranslations;
 
     public function authorize(): bool
     {
-        return true;
+        return $this->userHasPermission('dashboard.panel_alerts.update');
     }
 
     /**

@@ -4,6 +4,7 @@ use App\Models\PanelAlert;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Maya\Messaging\Publishers\AuditPublisher;
 use Maya\Messaging\Publishers\NotificationPublisher;
@@ -11,6 +12,7 @@ use Maya\Messaging\Publishers\NotificationPublisher;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['cache.default' => 'array']);
     $this->withoutMiddleware([
         \Maya\Auth\Middleware\JwtMiddleware::class,
         \Maya\Auth\Middleware\RequirePermissionMiddleware::class,
@@ -22,6 +24,13 @@ beforeEach(function () {
         'email' => 'panel-alert-test@maya.localhost',
         'name' => 'Panel Alert Test User',
         'is_active' => true,
+    ]);
+
+    // Grant the panel-alert admin permissions so the FormRequest
+    // defense-in-depth check (AuthorizesByPermission) passes.
+    DB::table('user_resolved_permissions')->insert([
+        ['user_id' => $this->userId, 'permission_slug' => 'dashboard.panel_alerts.create'],
+        ['user_id' => $this->userId, 'permission_slug' => 'dashboard.panel_alerts.update'],
     ]);
 
     $userId = $this->userId;
@@ -243,4 +252,32 @@ it('returns 404 when deleting a non-existent panel alert', function () {
     $response = $this->deleteJson('/api/v1/panel-alerts/9999');
 
     $response->assertNotFound();
+});
+
+// ─── defense-in-depth (AuthorizesByPermission) ──────────────────────────────
+
+it('denies store without the create permission (fail-closed)', function () {
+    DB::table('user_resolved_permissions')
+        ->where('user_id', $this->userId)
+        ->where('permission_slug', 'dashboard.panel_alerts.create')
+        ->delete();
+
+    $this->postJson('/api/v1/panel-alerts', [
+        'text' => 'New alert',
+        'severity' => 'low',
+        'visible_from' => now()->toIso8601String(),
+    ])->assertForbidden();
+});
+
+it('denies update without the update permission (fail-closed)', function () {
+    $alert = makePanelAlert();
+
+    DB::table('user_resolved_permissions')
+        ->where('user_id', $this->userId)
+        ->where('permission_slug', 'dashboard.panel_alerts.update')
+        ->delete();
+
+    $this->putJson("/api/v1/panel-alerts/{$alert->id}", [
+        'text' => 'Updated text',
+    ])->assertForbidden();
 });

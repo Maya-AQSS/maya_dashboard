@@ -4,11 +4,13 @@ use App\Models\NotificationDefinition;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['cache.default' => 'array']);
     $this->withoutMiddleware([
         \Maya\Auth\Middleware\JwtMiddleware::class,
         \Maya\Auth\Middleware\RequirePermissionMiddleware::class,
@@ -20,6 +22,13 @@ beforeEach(function () {
         'email' => 'def-test@maya.localhost',
         'name' => 'Def Test',
         'is_active' => true,
+    ]);
+
+    // Grant the panel-alert update permission so the FormRequest
+    // defense-in-depth check (AuthorizesByPermission) passes.
+    DB::table('user_resolved_permissions')->insert([
+        'user_id' => $this->userId,
+        'permission_slug' => 'dashboard.panel_alerts.update',
     ]);
 
     $userId = $this->userId;

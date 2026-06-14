@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['cache.default' => 'array']);
     $this->withoutMiddleware([
         \Maya\Auth\Middleware\JwtMiddleware::class,
         \Maya\Auth\Middleware\RequirePermissionMiddleware::class,
@@ -18,6 +19,13 @@ beforeEach(function () {
 
     $this->userId = (string) Str::uuid();
     User::forceCreate(['id' => $this->userId, 'email' => 'rule-test@maya.localhost', 'name' => 'Rule Test', 'is_active' => true]);
+
+    // Grant the panel-alert admin permissions so the FormRequest
+    // defense-in-depth check (AuthorizesByPermission) passes.
+    DB::table('user_resolved_permissions')->insert([
+        ['user_id' => $this->userId, 'permission_slug' => 'dashboard.panel_alerts.create'],
+        ['user_id' => $this->userId, 'permission_slug' => 'dashboard.panel_alerts.update'],
+    ]);
 
     $userId = $this->userId;
     $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
