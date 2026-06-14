@@ -53,4 +53,16 @@ interface NotificationRepositoryInterface
      * @return bool true if the user exists in the federated users table.
      */
     public function userExists(string $keycloakId): bool;
+
+    /**
+     * Marks the notification as acknowledged if it was not already.
+     * Returns the refreshed instance.
+     */
+    public function acknowledge(Notification $notification, string $userId): Notification;
+
+    /**
+     * Marks the notification as resolved if it was not already.
+     * Returns the refreshed instance.
+     */
+    public function resolve(Notification $notification, string $userId): Notification;
 }
