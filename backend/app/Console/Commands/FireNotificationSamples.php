@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Contracts\NotificationSampleServiceInterface;
 use Illuminate\Console\Command;
 
@@ -18,7 +18,7 @@ class FireNotificationSamples extends Command
 
     protected $description = 'Dispara notificaciones de muestra de todos los tipos (o uno) a un destinatario';
 
-    public function handle(NotificationSampleServiceInterface $samples): int
+    public function handle(NotificationSampleServiceInterface $samples, UserRepositoryInterface $users): int
     {
         if (app()->isProduction()) {
             $this->error('No disponible en producción.');
@@ -28,7 +28,7 @@ class FireNotificationSamples extends Command
 
         $recipient = (string) ($this->option('recipient') ?? '');
         if ($recipient === '') {
-            $recipient = (string) (User::query()->where('is_active', true)->value('id') ?? '');
+            $recipient = (string) ($users->firstActiveId() ?? '');
         }
         if ($recipient === '') {
             $this->error('No hay destinatario. Indica --recipient=<keycloak_id>.');

@@ -15,6 +15,13 @@ final class UserRepository implements UserRepositoryInterface
         return User::query()->where('id', $keycloakId)->exists();
     }
 
+    public function firstActiveId(): ?string
+    {
+        $id = User::query()->where('is_active', true)->value('id');
+
+        return $id === null ? null : (string) $id;
+    }
+
     /**
      * @return Generator<string>
      */
