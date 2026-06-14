@@ -1,8 +1,45 @@
-vendor
-node_modules
+# Producción (Dockerfile.prod): la imagen incluye sólo lo imprescindible.
+# Dev (Dockerfile): el bind-mount sobreescribe el contexto, así que aquí
+# basta con excluir lo que NO debe formar parte de la imagen.
+
+# Dependencias gestionadas por el build
+vendor/
+node_modules/
+
+# Secretos y configuración local
 .env
+.env.*
+!.env.example
+composer.local.json
+composer.local.dist.json
+
+# Caches y artefactos locales
 storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
+storage/framework/testing/*
 bootstrap/cache/*.php
+
+# VCS / IDE / temporales
+.git/
+.gitignore
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests (no necesarios en runtime)
+tests/
+phpunit.xml
+pint.json
+
+# Docker dev (no necesarios en runtime de prod)
+Dockerfile
+docker-entrypoint.sh
+
+# Artefactos de docs/local
+*.md
+errores.md
+traducciones.md
+README.md
