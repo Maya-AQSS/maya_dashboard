@@ -55,7 +55,7 @@ class AttendanceController extends Controller
 
         if ($dto === null) {
             return response()->json([
-                'message' => 'No hay fichaje abierto que cerrar.',
+                'message' => __('attendance.no_open_check_in'),
             ], 409);
         }
 

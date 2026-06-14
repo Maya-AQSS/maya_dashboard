@@ -38,7 +38,7 @@ class EnsureRouteUserMatchesToken
             ?? (JwtSubject::claims($request)['sub'] ?? null);
 
         if ($authenticatedId !== null && $routeUser !== $authenticatedId) {
-            abort(403, 'Forbidden: authenticated user does not match the requested resource.');
+            abort(403, __('auth.user_mismatch'));
         }
 
         return $next($request);

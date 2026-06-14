@@ -354,9 +354,9 @@ function ProfilePage() {
               </ProfileSection>
 
               {/* Preferencias (solo lectura): idioma actual en texto */}
-              <ProfileSection title={t('userMenu.preferences') || 'Preferencias'}>
+              <ProfileSection title={t('userMenu.preferences')}>
                 <ProfileDl>
-                  <ProfileRow label={t('profile.language') || 'Idioma'} value={currentLanguageName} />
+                  <ProfileRow label={t('profile.language')} value={currentLanguageName} />
                 </ProfileDl>
               </ProfileSection>
             </div>
@@ -482,11 +482,11 @@ function PreferencesCard({
   return (
     <div className="p-4 sm:p-5 rounded-lg border border-ui-border dark:border-ui-dark-border bg-ui-body dark:bg-ui-dark-card">
       <h4 className="m-0 mb-4 text-base font-semibold text-text-primary dark:text-text-dark-secondary">
-        {t('userMenu.preferences') || 'Preferencias'}
+        {t('userMenu.preferences')}
       </h4>
       <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-2 sm:gap-3 items-center">
         <FieldLabel htmlFor="profile-locale-select">
-          {t('profile.language') || 'Idioma'}
+          {t('profile.language')}
         </FieldLabel>
         <Select
           id="profile-locale-select"

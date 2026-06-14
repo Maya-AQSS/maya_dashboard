@@ -469,8 +469,8 @@ function DailyFichajesWidget() {
 
   // ── Render ──────────────────────────────────────────────────────────────
   const clockLabel = hasOpenPair
-    ? t('dashboard.fichaje.clockOutButton', { defaultValue: 'Fichar salida' })
-    : t('dashboard.fichaje.clockInButton', { defaultValue: 'Fichar' })
+    ? t('dashboard.fichaje.clockOutButton')
+    : t('dashboard.fichaje.clockInButton')
 
   const showLowerSection = pairs.length > 0
   const showClockCTA = isSelectedToday
@@ -491,7 +491,7 @@ function DailyFichajesWidget() {
             </svg>
           </span>
           <h3 className="text-sm font-display font-semibold text-text-primary dark:text-text-dark-primary truncate">
-            {t('dashboard.fichaje.dailyTitle', { defaultValue: 'Fichajes del día' })}
+            {t('dashboard.fichaje.dailyTitle')}
           </h3>
         </div>
         <DateChip
@@ -506,7 +506,7 @@ function DailyFichajesWidget() {
         <ProfileAvatar name={displayName} initials={displayInitials} size={40} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-display font-semibold text-text-primary dark:text-text-dark-primary truncate">
-            {displayName || t('dashboard.fichaje.dailyTitle', { defaultValue: 'Usuario' })}
+            {displayName || t('dashboard.fichaje.userFallback')}
           </p>
           {displaySubtitle && (
             <p className="text-2xs text-text-muted dark:text-text-dark-muted truncate">
@@ -516,7 +516,7 @@ function DailyFichajesWidget() {
         </div>
         <div className="text-right shrink-0">
           <p className="text-2xs uppercase tracking-wider text-text-muted dark:text-text-dark-muted">
-            {t('dashboard.fichaje.totalWorked', { defaultValue: 'Total trabajado' })}
+            {t('dashboard.fichaje.totalWorked')}
           </p>
           <p className="text-xl font-display font-bold text-text-primary dark:text-text-dark-primary tabular-nums leading-tight">
             {formatHours(totalMs)}
@@ -558,8 +558,8 @@ function DailyFichajesWidget() {
                 disabled={clockPending}
               >
                 {clockPending
-                  ? t('dashboard.fichaje.clockingIn', { defaultValue: 'Fichando…' })
-                  : t('dashboard.fichaje.clockInButton', { defaultValue: 'Fichar' })}
+                  ? t('dashboard.fichaje.clockingIn')
+                  : t('dashboard.fichaje.clockInButton')}
               </Button>
             )}
           </div>
@@ -594,7 +594,7 @@ function DailyFichajesWidget() {
                     editValue={requestForm.from}
                     onEditChange={(value) => setRequestForm((f) => ({ ...f, from: value }))}
                     onOpenEdit={() => handleOpenEdit(pairIndex)}
-                    label={t('dashboard.fichaje.entrada', { defaultValue: 'Entrada' })}
+                    label={t('dashboard.fichaje.entrada')}
                     requestModificationLabel={t('dashboard.fichaje.requestModification')}
                   />
 
@@ -620,7 +620,7 @@ function DailyFichajesWidget() {
                       label={
                         pair.autoClose
                           ? t('dashboard.fichaje.salidaNoFichada')
-                          : t('dashboard.fichaje.salida', { defaultValue: 'Salida' })
+                          : t('dashboard.fichaje.salida')
                       }
                       requestModificationLabel={t('dashboard.fichaje.requestModification')}
                     />
@@ -672,7 +672,7 @@ function DailyFichajesWidget() {
             disabled={clockPending}
           >
             {clockPending
-              ? t('dashboard.fichaje.clockingIn', { defaultValue: 'Fichando…' })
+              ? t('dashboard.fichaje.clockingIn')
               : clockLabel}
           </Button>
         </div>

@@ -214,6 +214,7 @@
       "totalWorked": "Total trabajado",
       "clockedInAt": "Fichado a las {{time}}",
       "dailyTitle": "Fichajes del día",
+      "userFallback": "Usuario",
       "prevDay": "Día anterior",
       "nextDay": "Día siguiente",
       "columnTime": "Hora",

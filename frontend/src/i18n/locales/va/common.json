@@ -214,6 +214,7 @@
       "totalWorked": "Total treballat",
       "clockedInAt": "Fitxat a les {{time}}",
       "dailyTitle": "Fitxatges del dia",
+      "userFallback": "Usuari",
       "prevDay": "Dia anterior",
       "nextDay": "Dia següent",
       "columnTime": "Hora",

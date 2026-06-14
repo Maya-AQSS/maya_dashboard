@@ -214,6 +214,7 @@
       "totalWorked": "Total worked",
       "clockedInAt": "Clocked in at {{time}}",
       "dailyTitle": "Daily clock-ins",
+      "userFallback": "User",
       "prevDay": "Previous day",
       "nextDay": "Next day",
       "columnTime": "Time",
