@@ -31,6 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RequireRoleMiddleware::class,
         ], [
             'trustProxies' => false,
+            'apiPrepend' => [
+                \App\Http\Middleware\SetLocaleFromAcceptLanguage::class,
+            ],
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
