@@ -185,7 +185,7 @@ describe('DashboardPage', () => {
   describe('modo normal (no edición)', () => {
     it('muestra el título del dashboard', () => {
       render(<DashboardPage />)
-      expect(screen.getByText('dashboard.title')).toBeTruthy()
+      expect(screen.getByText('nav.dashboard')).toBeTruthy()
     })
 
     it('muestra el botón de toggle edición con dashboard.dashboard.update', () => {
@@ -227,7 +227,7 @@ describe('DashboardPage', () => {
     it('cancela la edición y restaura la toolbar de toggle', () => {
       render(<DashboardPage />)
       fireEvent.click(screen.getByTestId('edit-toggle'))
-      fireEvent.click(screen.getByText('dashboard.cancel'))
+      fireEvent.click(screen.getByText('actions.cancel'))
       expect(screen.queryByTestId('edit-toolbar')).toBeNull()
       expect(screen.getByTestId('edit-toggle')).toBeTruthy()
     })
@@ -236,7 +236,7 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       fireEvent.click(screen.getByTestId('edit-toggle'))
       await act(async () => {
-        fireEvent.click(screen.getByText('dashboard.save'))
+        fireEvent.click(screen.getByText('actions.save'))
       })
       expect(saveLayoutMock).toHaveBeenCalledTimes(1)
       expect(showToastMock).toHaveBeenCalledWith(
@@ -249,7 +249,7 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       fireEvent.click(screen.getByTestId('edit-toggle'))
       await act(async () => {
-        fireEvent.click(screen.getByText('dashboard.save'))
+        fireEvent.click(screen.getByText('actions.save'))
       })
       expect(showToastMock).toHaveBeenCalledWith(
         expect.objectContaining({ tone: 'danger' }),
@@ -260,7 +260,7 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       fireEvent.click(screen.getByTestId('edit-toggle'))
       await act(async () => {
-        fireEvent.click(screen.getByText('dashboard.resetLayout'))
+        fireEvent.click(screen.getByText('actions.reset'))
       })
       expect(resetToDefaultMock).toHaveBeenCalledTimes(1)
       expect(showToastMock).toHaveBeenCalledWith(
@@ -273,7 +273,7 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       fireEvent.click(screen.getByTestId('edit-toggle'))
       await act(async () => {
-        fireEvent.click(screen.getByText('dashboard.resetLayout'))
+        fireEvent.click(screen.getByText('actions.reset'))
       })
       expect(showToastMock).toHaveBeenCalledWith(
         expect.objectContaining({ tone: 'danger' }),

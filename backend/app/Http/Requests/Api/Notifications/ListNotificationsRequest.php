@@ -15,13 +15,13 @@ class ListNotificationsRequest extends PaginatedFilterRequest
     protected function filterRules(): array
     {
         return [
-            'type'        => ['nullable', 'string', 'max:64'],
-            'app'         => ['nullable', 'string', 'max:64'],
+            'type' => ['nullable', 'string', 'max:64'],
+            'app' => ['nullable', 'string', 'max:64'],
             'unread_only' => ['nullable', 'boolean'],
-            'date_from'   => ['nullable', 'date'],
-            'date_to'     => ['nullable', 'date'],
-            'sort_by'     => ['nullable', 'string', 'in:created_at,read_at'],
-            'scope'       => ['nullable', 'string', 'in:user,dashboard,both'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+            'sort_by' => ['nullable', 'string', 'in:created_at,read_at'],
+            'scope' => ['nullable', 'string', 'in:user,dashboard,both'],
             'is_critical' => ['nullable', 'boolean'],
             'acknowledged' => ['nullable', 'boolean'],
         ];

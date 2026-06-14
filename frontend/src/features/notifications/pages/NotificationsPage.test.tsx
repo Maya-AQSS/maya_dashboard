@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: () => ({ t: (k: string) => k, locale: 'es', setLocale: vi.fn() }),
+  useNotificationText: () => (input: { key?: string; fallback?: string }) =>
+    input.fallback ?? input.key ?? '',
 }))
 
 vi.mock('@ceedcv-maya/shared-ui-react', () => ({
@@ -36,6 +38,12 @@ vi.mock('@ceedcv-maya/shared-ui-react', () => ({
     setPageSize: vi.fn(),
   }),
   useToast: () => ({ toast: vi.fn() }),
+}))
+
+vi.mock('../../user-profile', () => ({
+  useUserProfile: () => ({
+    hasPermission: () => true,
+  }),
 }))
 
 vi.mock('../hooks/useNotifications', () => ({

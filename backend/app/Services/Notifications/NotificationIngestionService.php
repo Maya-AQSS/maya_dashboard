@@ -133,7 +133,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             } catch (\Throwable $e) {
                 $this->resilientLogPublisher->publishStructured(
                     'low',
-                    'Notification persisted but broadcast failed: ' . $e->getMessage(),
+                    'Notification persisted but broadcast failed: '.$e->getMessage(),
                     'LAR-DASH-006',
                     ['type' => $dto->type],
                     MessagingConfig::appSlug(),
@@ -150,7 +150,7 @@ class NotificationIngestionService implements NotificationIngestionServiceInterf
             return null;
         }
 
-        $cacheKey = 'notification_user_exists:' . $keycloakId;
+        $cacheKey = 'notification_user_exists:'.$keycloakId;
 
         $exists = Cache::remember($cacheKey, self::USER_CACHE_TTL, function () use ($keycloakId): bool {
             return $this->repo->userExists($keycloakId);

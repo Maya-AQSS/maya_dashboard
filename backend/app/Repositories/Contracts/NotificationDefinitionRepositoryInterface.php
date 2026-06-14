@@ -6,7 +6,6 @@ namespace App\Repositories\Contracts;
 
 use App\Models\NotificationDefinition;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
 interface NotificationDefinitionRepositoryInterface

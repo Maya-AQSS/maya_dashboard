@@ -28,7 +28,7 @@ final class PanelAlertNotificationService implements PanelAlertNotificationServi
     {
         $alert = $this->alerts->findDtoOrFail($alertId);
 
-        $type = 'panel_alert.' . $alert->source;
+        $type = 'panel_alert.'.$alert->source;
         $title = Str::limit(strip_tags($alert->text), 120, '…');
         $isCritical = in_array($alert->severity, ['critical', 'high'], true);
 

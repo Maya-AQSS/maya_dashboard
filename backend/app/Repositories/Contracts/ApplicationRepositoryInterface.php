@@ -19,13 +19,12 @@ interface ApplicationRepositoryInterface
     /**
      * Listado paginado con filtros server-side.
      *
-     * @param string $userId
-     * @param int $page Current page (1-based)
-     * @param int $perPage Items per page
-     * @param string|null $search Search query
-     * @param string|null $favorite Filter: 'yes' or 'no'
-     * @param string $sortBy Sort column
-     * @param string $sortDir Sort direction
+     * @param  int  $page  Current page (1-based)
+     * @param  int  $perPage  Items per page
+     * @param  string|null  $search  Search query
+     * @param  string|null  $favorite  Filter: 'yes' or 'no'
+     * @param  string  $sortBy  Sort column
+     * @param  string  $sortDir  Sort direction
      * @return LengthAwarePaginator<Application>
      */
     public function paginateActiveWithFilters(

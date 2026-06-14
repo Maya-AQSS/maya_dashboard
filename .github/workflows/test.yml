@@ -20,24 +20,51 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: maya
+          # Coinciden con los valores forzados (force="true") en phpunit.xml:
+          # DB_DATABASE/USERNAME/PASSWORD. El job no puede sobrescribirlos, así
+          # que el servicio debe crearse con exactamente estas credenciales.
+          POSTGRES_USER: dashboard_user
           POSTGRES_PASSWORD: secret
           POSTGRES_DB: maya_dashboard_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U maya"
+          --health-cmd "pg_isready -U dashboard_user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
+    # APP_ENV=testing exime el boot-guard de credenciales AMQP de
+    # shared-messaging-laravel (MessagingServiceProvider) durante
+    # `package:discover` del composer install, donde no hay .env con
+    # RABBITMQ_USER/PASSWORD. La suite Pest ya corre en env testing.
+    #
+    # Las vars HOST_PREFIX/DOMAIN_SUFFIX/MAYA_SLOT* evitan que la interpolación
+    # de .env.example deje APP_URL/REVERB_HOST malformados ("Invalid URI: Host
+    # is malformed") al bootear artisan en package:discover.
+    #
+    # LOG_MGMT_DB_PASSWORD (+ host/db/user) debe estar presente: config/database.php
+    # lanza RuntimeException si LOG_MGMT_DB_PASSWORD no está, al evaluar la
+    # conexión read-only pgsql_logs. En CI no se conecta de verdad, basta con
+    # un valor no vacío para que la config no reviente.
     env:
+      APP_ENV: testing
+      APP_URL: http://localhost
+      HOST_PREFIX: ""
+      DOMAIN_SUFFIX: test
+      MAYA_SLOT: maya
+      MAYA_SLOT_DB: ci
       DB_CONNECTION: pgsql
       DB_HOST: 127.0.0.1
       DB_PORT: 5432
       DB_DATABASE: maya_dashboard_test
-      DB_USERNAME: maya
+      DB_USERNAME: dashboard_user
       DB_PASSWORD: secret
+      LOG_MGMT_DB_HOST: 127.0.0.1
+      LOG_MGMT_DB_PORT: 5432
+      LOG_MGMT_DB_DATABASE: maya_dashboard_test
+      LOG_MGMT_DB_USERNAME: dashboard_user
+      LOG_MGMT_DB_PASSWORD: secret
 
     steps:
       - name: Checkout code
@@ -58,7 +85,7 @@ jobs:
           restore-keys: composer-
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader --dev
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
       - name: Run tests
         run: ./vendor/bin/pest --no-coverage --colors=never
@@ -82,15 +109,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node 22
+      - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          # Node 24 (igual que los contenedores de dev): Vite 8 / rolldown usan
+          # bindings nativos de oxc que en Node 22 fallan al resolver el tsconfig
+          # de vitest.setup.ts ([TSCONFIG_ERROR] Tsconfig not found). En Node 24
+          # la suite pasa idéntica al entorno local.
+          node-version: "24"
+          # cache: "npm" deshabilitado mientras package-lock.json no esté en git.
 
       - name: Install npm dependencies
-        run: npm ci
+        # `npm install` (no `npm ci`) porque package-lock.json no está versionado
+        # en este repo. Cambiar a `npm ci` cuando el lockfile esté en git.
+        run: npm install --no-audit --no-fund
 
       - name: Run vitest
         run: node_modules/.bin/vitest run --no-coverage

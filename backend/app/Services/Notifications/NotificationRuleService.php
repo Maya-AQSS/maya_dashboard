@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\DTOs\AlertAudienceDto;
+use App\DTOs\NotificationDefinitionDto;
 use App\DTOs\NotificationRuleDto;
 use App\Models\NotificationRule;
 use App\Repositories\Contracts\NotificationRuleRepositoryInterface;
@@ -90,13 +91,13 @@ final class NotificationRuleService implements NotificationRuleServiceInterface
     /**
      * The evaluator_key must reference an existing scheduled definition.
      */
-    private function resolveScheduledDefinition(string $evaluatorKey): \App\DTOs\NotificationDefinitionDto
+    private function resolveScheduledDefinition(string $evaluatorKey): NotificationDefinitionDto
     {
         $definition = $this->definitions->findByKey($evaluatorKey);
 
         if ($definition === null || $definition->category !== 'scheduled') {
             throw ValidationException::withMessages([
-                'evaluator_key' => 'evaluator_key must reference an existing scheduled notification definition.',
+                'evaluator_key' => __('validation.notification_rule.evaluator_key_invalid'),
             ]);
         }
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Notifications;
 
 use App\DTOs\NotificationDefinitionDto;
+use App\Models\NotificationDefinition;
 use App\Repositories\Contracts\NotificationDefinitionRepositoryInterface;
 use App\Services\Contracts\NotificationDefinitionServiceInterface;
-use App\Models\NotificationDefinition;
 use Illuminate\Support\Collection;
 use Maya\Http\Pagination\PaginatedDto;
 

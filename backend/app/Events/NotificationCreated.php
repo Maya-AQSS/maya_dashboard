@@ -26,7 +26,7 @@ final class NotificationCreated implements ShouldBroadcastNow
     /**
      * @param  array<string, mixed>  $notification  Payload serializado de la notificación persistida.
      * @param  string  $userId  Keycloak UUID del destinatario ('' si solo scope=dashboard).
-     * @param  string  $scope   user | dashboard | both — decide los canales de emisión.
+     * @param  string  $scope  user | dashboard | both — decide los canales de emisión.
      */
     public function __construct(
         private readonly array $notification,
@@ -46,7 +46,7 @@ final class NotificationCreated implements ShouldBroadcastNow
         $channels = [];
 
         if ($this->userId !== '') {
-            $channels[] = new PrivateChannel('notifications.' . $this->userId);
+            $channels[] = new PrivateChannel('notifications.'.$this->userId);
         }
 
         if ($this->scope === 'dashboard' || $this->scope === 'both') {

@@ -39,13 +39,20 @@ vi.mock('@ceedcv-maya/shared-ui-react', () => ({
     onClick,
     type,
     disabled,
+    form,
   }: {
     children: React.ReactNode
     onClick?: () => void
     type?: string
     disabled?: boolean
+    form?: string
   }) => (
-    <button onClick={onClick} type={(type as 'button' | 'submit' | 'reset') ?? 'button'} disabled={disabled}>
+    <button
+      onClick={onClick}
+      type={(type as 'button' | 'submit' | 'reset') ?? 'button'}
+      disabled={disabled}
+      form={form}
+    >
       {children}
     </button>
   ),
@@ -365,14 +372,20 @@ describe('ProfilePage', () => {
       expect(screen.getByRole('combobox')).toBeTruthy()
     })
 
-    it('llama updateMyLocale al cambiar el idioma con profile.update', async () => {
+    it('llama updateMyLocale al guardar tras cambiar el idioma con profile.update', async () => {
+      // El cambio de idioma queda pendiente al cambiar el select y solo se
+      // aplica (updateMyLocale) al pulsar Guardar — ver onSubmit en ProfilePage.
       hasPermissionMock.mockImplementation(() => true)
+      mockUpdateProfile.mockResolvedValueOnce({ id: 'u-1', name: 'Juan' } as any)
       mockUpdateMyLocale.mockResolvedValueOnce(undefined)
       render(<ProfilePage />)
       enterEdit()
       const select = screen.getByRole('combobox')
       await act(async () => {
         fireEvent.change(select, { target: { value: 'en' } })
+      })
+      await act(async () => {
+        fireEvent.click(screen.getByText('profile.save'))
       })
       expect(mockUpdateMyLocale).toHaveBeenCalledWith('en')
     })
@@ -395,13 +408,18 @@ describe('ProfilePage', () => {
       expect(mockUpdateMyLocale).not.toHaveBeenCalled()
     })
 
-    it('no lanza error cuando updateMyLocale falla', async () => {
+    it('no lanza error cuando updateMyLocale falla al guardar', async () => {
+      // updateMyLocale es best-effort: su fallo no debe romper el guardado.
+      mockUpdateProfile.mockResolvedValueOnce({ id: 'u-1', name: 'Juan' } as any)
       mockUpdateMyLocale.mockRejectedValueOnce(new Error('Server error'))
       render(<ProfilePage />)
       enterEdit()
       const select = screen.getByRole('combobox')
       await act(async () => {
         fireEvent.change(select, { target: { value: 'en' } })
+      })
+      await act(async () => {
+        fireEvent.click(screen.getByText('profile.save'))
       })
       // Should not throw
       expect(mockUpdateMyLocale).toHaveBeenCalledWith('en')

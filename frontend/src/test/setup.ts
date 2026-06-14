@@ -1,5 +1,14 @@
 import { cleanup } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
+// Inicializa i18next con los recursos reales de la app para los tests que NO
+// mockean react-i18next/useLocale (p.ej. UserAlertsWidget asume traducciones
+// resueltas). Los tests que mockean i18n localmente no se ven afectados: su
+// vi.mock sobrescribe el módulo. Es un side-effect import (init en createAppI18n).
+// Forzamos locale 'es': en jsdom el LanguageDetector resolvería 'en' por
+// navigator.language y 'en' no contiene todas las claves de dominio del
+// dashboard (las traducciones canónicas viven en es/common.json).
+import i18n from './../i18n'
+void i18n.changeLanguage('es')
 
 const localStorageMock = {
   _store: {} as Record<string, string>,

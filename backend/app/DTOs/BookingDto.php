@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Reserva proyectada desde la vista FDW `bookings` (`v_app_bookings` en Odoo).
  */
@@ -31,7 +33,7 @@ final readonly class BookingDto
         // incrementing, …) y dejaría todos los campos vacíos. Usar
         // attributesToArray() (con casts). stdClass (filas crudas FDW) sigue
         // por get_object_vars().
-        if ($row instanceof \Illuminate\Database\Eloquent\Model) {
+        if ($row instanceof Model) {
             $row = $row->attributesToArray();
         } elseif (is_object($row)) {
             $row = get_object_vars($row);

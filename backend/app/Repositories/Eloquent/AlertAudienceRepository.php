@@ -8,6 +8,7 @@ use App\DTOs\AlertAudienceDto;
 use App\Models\User;
 use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
 use Generator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class AlertAudienceRepository implements AlertAudienceRepositoryInterface
@@ -49,7 +50,7 @@ final class AlertAudienceRepository implements AlertAudienceRepositoryInterface
     }
 
     /**
-     * @param  \Illuminate\Database\Eloquent\Builder<User>  $query
+     * @param  Builder<User>  $query
      */
     private function applyAudienceConstraint($query, AlertAudienceDto $audience): void
     {

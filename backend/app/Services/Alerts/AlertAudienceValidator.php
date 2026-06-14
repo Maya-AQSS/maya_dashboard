@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 use Maya\Profile\Dtos\AcademicContextDto;
 use Maya\Profile\Dtos\CourseModuleDto;
 use Maya\Profile\Dtos\StudyDto;
-use Maya\Profile\Dtos\TeamDto;
 use Maya\Profile\Services\Contracts\AcademicContextServiceInterface;
 
 final class AlertAudienceValidator implements AlertAudienceValidatorInterface
@@ -40,7 +39,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
     {
         if ($context->status['teams'] !== 'ok') {
             throw ValidationException::withMessages([
-                'audience_team_id' => ['El contexto de equipos no está disponible.'],
+                'audience_team_id' => [__('validation.alert_audience.team_context_unavailable')],
             ]);
         }
 
@@ -51,7 +50,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
         }
 
         throw ValidationException::withMessages([
-            'audience_team_id' => ['El equipo seleccionado no pertenece a tu contexto.'],
+            'audience_team_id' => [__('validation.alert_audience.team_not_owned')],
         ]);
     }
 
@@ -74,7 +73,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
 
         if ($study === null || $study->studyTypeId !== $studyTypeId) {
             throw ValidationException::withMessages([
-                'audience_study_id' => ['El estudio no pertenece al tipo de estudio seleccionado.'],
+                'audience_study_id' => [__('validation.alert_audience.study_not_in_type')],
             ]);
         }
 
@@ -87,7 +86,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
 
         if ($module === null || $module->studyId !== $studyId) {
             throw ValidationException::withMessages([
-                'audience_module_id' => ['El módulo no pertenece al estudio seleccionado.'],
+                'audience_module_id' => [__('validation.alert_audience.module_not_in_study')],
             ]);
         }
     }
@@ -96,7 +95,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
     {
         if ($context->status['study_types'] !== 'ok') {
             throw ValidationException::withMessages([
-                'audience_study_type_id' => ['El contexto académico no está disponible.'],
+                'audience_study_type_id' => [__('validation.alert_audience.academic_context_unavailable')],
             ]);
         }
 
@@ -107,7 +106,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
         }
 
         throw ValidationException::withMessages([
-            'audience_study_type_id' => ['El tipo de estudio no pertenece a tu contexto.'],
+            'audience_study_type_id' => [__('validation.alert_audience.study_type_not_owned')],
         ]);
     }
 
@@ -115,7 +114,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
     {
         if ($context->status['studies'] !== 'ok') {
             throw ValidationException::withMessages([
-                'audience_study_id' => ['El contexto de estudios no está disponible.'],
+                'audience_study_id' => [__('validation.alert_audience.study_context_unavailable')],
             ]);
         }
 
@@ -132,7 +131,7 @@ final class AlertAudienceValidator implements AlertAudienceValidatorInterface
     {
         if ($context->status['modules'] !== 'ok') {
             throw ValidationException::withMessages([
-                'audience_module_id' => ['El contexto de módulos no está disponible.'],
+                'audience_module_id' => [__('validation.alert_audience.module_context_unavailable')],
             ]);
         }
 

@@ -30,8 +30,8 @@ use Maya\Profile\Repositories\Resolvers\FdwAcademicResolver;
 final class DashboardProfileResolver implements UserProfileResolverInterface
 {
     public function __construct(
-        private readonly FdwAcademicResolver $base = new FdwAcademicResolver(),
-        private readonly EmployeeProfileReader $employee = new EmployeeProfileReader(),
+        private readonly FdwAcademicResolver $base = new FdwAcademicResolver,
+        private readonly EmployeeProfileReader $employee = new EmployeeProfileReader,
     ) {}
 
     public function resolve(string $userId, array $jwtProfile): UserProfileDto
@@ -41,11 +41,11 @@ final class DashboardProfileResolver implements UserProfileResolverInterface
         $employeeData = $this->employee->read($dto->id);
 
         return new UserProfileDto(
-            id:     $dto->id,
-            email:  $dto->email,
-            name:   $dto->name,
+            id: $dto->id,
+            email: $dto->email,
+            name: $dto->name,
             locale: $dto->locale,
-            extra:  array_merge($dto->extra, ['employee' => $employeeData]),
+            extra: array_merge($dto->extra, ['employee' => $employeeData]),
         );
     }
 
