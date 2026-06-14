@@ -1,0 +1,22 @@
+apiVersion: v2
+name: maya-dashboard
+description: |
+  Maya Dashboard — chart Helm autocontenido para K3s interno CEEDCV.
+  Despliega backend (Laravel), frontend (React/Nginx), worker AMQP
+  (notifications:consume), scheduler (schedule:work, alertas) y reverb
+  (WebSockets) en su propio namespace, consumiendo Patroni VIP, Keycloak,
+  RabbitMQ y Redis ya provistos por la infra.
+type: application
+version: 0.1.0
+appVersion: "0.20.0"
+kubeVersion: ">=1.28.0-0"
+keywords:
+  - laravel
+  - react
+  - maya
+  - ceedcv
+  - dashboard
+home: https://dashboard.ceedcv.es
+maintainers:
+  - name: CEEDCV — Equipo Maya
+    email: dev@ceedcv.es

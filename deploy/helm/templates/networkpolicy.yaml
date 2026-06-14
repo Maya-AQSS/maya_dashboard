@@ -1,0 +1,86 @@
+{{- if .Values.networkPolicy.enabled }}
+# Defensa en profundidad: deny-all + allow east-west explícito.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-deny-all
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# Ingress: Traefik (kube-system) puede llegar a backend, frontend y reverb.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-allow-ingress-traefik
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "maya-dashboard.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+      {{- range .Values.networkPolicy.allowedFromNamespaces }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+      {{- end }}
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 8080 }
+---
+# Egress: DNS + DB Patroni + Keycloak + RabbitMQ + Redis. Sin internet.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-allow-egress
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "maya-dashboard.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Egress]
+  egress:
+    {{- if .Values.networkPolicy.allowedEgress.dns }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    {{- end }}
+    # Patroni VIP (fuera de Pod CIDR, va a ipBlock).
+    - to:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.allowedEgress.patroniCidr | quote }}
+      ports:
+        - { protocol: TCP, port: 5432 }
+    # Keycloak namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.keycloakNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 443 }
+    # RabbitMQ namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.rabbitmqNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 5672 }
+        - { protocol: TCP, port: 5671 }
+    # Redis namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.redisNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 6379 }
+{{- end }}

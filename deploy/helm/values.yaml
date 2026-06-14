@@ -1,0 +1,271 @@
+# maya_dashboard — values de PRODUCCIÓN (K3s interno CEEDCV).
+#
+# Convenciones:
+# - Las credenciales NUNCA viven aquí. Se inyectan desde el Secret
+#   `maya-dashboard-secret` (creado vía `kubectl create secret ...` o
+#   Sealed Secrets) y se referencian con `secretKeyRef` en el deployment.
+# - Los placeholders <...> deben ser sustituidos antes de `helm upgrade`.
+# - DB_HOST es la VIP Patroni `172.29.71.252` (fijo en la infra real).
+
+# ─── Identidad del release ──────────────────────────────────────────────────
+nameOverride: ""
+fullnameOverride: ""
+
+# ─── Imágenes ───────────────────────────────────────────────────────────────
+image:
+  registry: gitea.ceedcv.es          # registry OCI interno (Gitea)
+  repository: maya                   # <registry>/<repository>/<name>
+  backend:
+    name: maya-dashboard-backend
+    pullPolicy: IfNotPresent
+  frontend:
+    name: maya-dashboard-frontend
+    pullPolicy: IfNotPresent
+  tag: ""                            # se sobreescribe con --set image.tag=<sha>
+  pullSecrets:
+    - name: regcred                  # creado en `kubectl create secret docker-registry`
+
+# ─── Backend (API HTTP) ─────────────────────────────────────────────────────
+backend:
+  replicas: 2                        # multinodo => OK con sesiones en Redis
+  containerPort: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi                  # matriz del plan: dashboard.backend.mem = 512Mi
+  probes:
+    liveness:
+      path: /api/v1/health/live
+      initialDelaySeconds: 20
+      periodSeconds: 15
+      timeoutSeconds: 3
+      failureThreshold: 3
+    readiness:
+      path: /api/v1/health/ready
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# ─── Frontend (SPA estática Nginx) ─────────────────────────────────────────
+frontend:
+  replicas: 2
+  containerPort: 8080
+  resources:
+    requests: { cpu: 50m, memory: 64Mi }
+    limits:   { cpu: 200m, memory: 128Mi }
+  probes:
+    liveness:  { path: /healthz, port: 8080, initialDelaySeconds: 5, periodSeconds: 15 }
+    readiness: { path: /healthz, port: 8080, initialDelaySeconds: 2, periodSeconds: 10 }
+
+# ─── Worker (consumer AMQP notifications) ──────────────────────────────────
+worker:
+  enabled: true
+  replicas: 1                        # singleton (consumer único por queue)
+  command: ["notifications:consume"] # matriz del plan: dashboard.worker = notifications:consume
+  # dashboard worker SÍ usa rabbit (audit/logs lo quitan para evitar feedback loop).
+  logStack: "daily,rabbit"
+  resources:
+    requests: { cpu: 50m,  memory: 192Mi }
+    limits:   { cpu: 500m, memory: 384Mi }
+
+# ─── Scheduler (panel-alerts:materialize cada 60s) ─────────────────────────
+scheduler:
+  enabled: true                      # matriz del plan: dashboard.scheduler.enabled = true
+  replicas: 1                        # singleton estricto
+  resources:
+    requests: { cpu: 25m,  memory: 128Mi }
+    limits:   { cpu: 250m, memory: 256Mi }
+
+# ─── Reverb (WebSockets en tiempo real) ────────────────────────────────────
+reverb:
+  enabled: true
+  replicas: 1                        # singleton salvo scaling Redis
+  containerPort: 8080
+  resources:
+    requests: { cpu: 50m,  memory: 128Mi }
+    limits:   { cpu: 500m, memory: 256Mi }
+  ingress:
+    enabled: true
+    host: dashboard-reverb.ceedcv.es
+  terminationGracePeriodSeconds: 60
+
+# ─── Migrate Job (helm hook pre-upgrade) ───────────────────────────────────
+migrate:
+  enabled: true
+  backoffLimit: 1
+  resources:
+    requests: { cpu: 50m, memory: 256Mi }
+    limits:   { cpu: 500m, memory: 512Mi }
+
+# ─── Ingress (Traefik + MetalLB + CA interna) ──────────────────────────────
+ingress:
+  enabled: true
+  className: traefik
+  host: dashboard.ceedcv.es
+  apiHost: dashboard-api.ceedcv.es
+  tls:
+    enabled: true
+    secretName: dashboard-tls        # cert de la CA interna (montado o cert-manager)
+  annotations: {}
+
+# ─── Storage (PVC RWX — DESHABILITADO: dashboard no persiste ficheros) ─────
+storage:
+  enabled: false                     # matriz del plan: dashboard.storage = -
+  # storageClassName: maya-nfs
+  # size: 5Gi
+  # mountPath: /var/www/html/storage/app/media
+
+# ─── Config no-sensible (-> ConfigMap) ──────────────────────────────────────
+config:
+  APP_NAME: "Maya Dashboard"
+  APP_ENV: production                # forzado: nunca local en prod
+  APP_DEBUG: "false"                 # forzado
+  APP_LOCALE: es
+  APP_FALLBACK_LOCALE: es
+  APP_FAKER_LOCALE: es_ES
+  APP_URL: https://dashboard-api.ceedcv.es
+  APP_MAINTENANCE_DRIVER: file
+
+  LOG_CHANNEL: stack
+  LOG_STACK: "daily,rabbit"          # backend/scheduler => daily+rabbit; el worker override en su deploy
+  LOG_DEPRECATIONS_CHANNEL: "null"
+  LOG_LEVEL: info
+  LOG_RABBIT_LEVEL: warning
+
+  # ─── DB Patroni VIP ───────────────────────────────────────────────────────
+  DB_CONNECTION: pgsql
+  DB_HOST: "172.29.71.252"           # Patroni VIP
+  DB_PORT: "5432"
+  DB_DATABASE: maya_dashboard
+
+  # ─── Session/cache (Redis in-cluster) ─────────────────────────────────────
+  SESSION_DRIVER: redis
+  SESSION_LIFETIME: "120"
+  SESSION_ENCRYPT: "false"
+  SESSION_PATH: "/"
+  SESSION_DOMAIN: ".ceedcv.es"
+  SESSION_SECURE_COOKIE: "true"      # forzado en HTTPS-only
+  SESSION_SAME_SITE: lax
+
+  BROADCAST_CONNECTION: reverb
+  FILESYSTEM_DISK: local
+  QUEUE_CONNECTION: rabbitmq
+  CACHE_STORE: redis
+
+  REDIS_CLIENT: phpredis
+  REDIS_HOST: "redis-master.redis.svc.cluster.local"
+  REDIS_PORT: "6379"
+
+  # ─── RabbitMQ in-cluster ──────────────────────────────────────────────────
+  RABBITMQ_HOST: "rabbitmq.rabbitmq.svc.cluster.local"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USER: maya_dashboard
+  RABBITMQ_VHOST: "/maya"
+  MAYA_MESSAGING_APP: maya-dashboard
+
+  # ─── Keycloak (realm maya) ────────────────────────────────────────────────
+  KEYCLOAK_URL: "http://keycloak.keycloak.svc.cluster.local:8080"
+  KEYCLOAK_REALM: maya
+  KEYCLOAK_CLIENT_ID: maya-dashboard-backend
+  JWKS_URL: "http://keycloak.keycloak.svc.cluster.local:8080/realms/maya/protocol/openid-connect/certs"
+  JWT_ISSUER: "https://keycloak.ceedcv.es/realms/maya"
+  JWT_AUDIENCE: "maya-dashboard-backend,maya-audit,maya-dms,maya-logs"
+  JWKS_CACHE_TTL: "3600"
+
+  # ─── CORS / proxies ──────────────────────────────────────────────────────
+  CORS_ALLOWED_ORIGINS: "https://dashboard.ceedcv.es,https://dms.ceedcv.es,https://audit.ceedcv.es,https://logs.ceedcv.es"
+  # IP/CIDR del Traefik interno (rango MetalLB), restringe trustProxies (W1).
+  TRUSTED_PROXIES: "172.29.71.0/24"
+
+  # ─── Log Management DB (lectura, EvaluateAlertRules) ──────────────────────
+  LOG_MGMT_DB_HOST: "172.29.71.252"
+  LOG_MGMT_DB_PORT: "5432"
+  LOG_MGMT_DB_DATABASE: log_mgmt_db
+  LOG_MGMT_DB_USERNAME: log_mgmt_readonly
+
+  # ─── Reverb (expuestos al frontend vía VITE_*; aquí van los del backend) ──
+  REVERB_APP_ID: maya-dashboard
+  REVERB_HOST: dashboard-reverb.ceedcv.es
+  REVERB_PORT: "443"
+  REVERB_SCHEME: https
+  REVERB_SERVER_HOST: "0.0.0.0"
+  REVERB_SERVER_PORT: "8080"
+
+  # ─── Bcrypt / view ───────────────────────────────────────────────────────
+  BCRYPT_ROUNDS: "12"
+  VIEW_COMPILED_PATH: /tmp/laravel-views
+
+  # ─── Mail (no usado en dashboard, valores neutros) ───────────────────────
+  MAIL_MAILER: log
+  MAIL_FROM_ADDRESS: "noreply@ceedcv.es"
+  MAIL_FROM_NAME: "Maya Dashboard"
+
+# ─── Secret (NO commitear valores reales; placeholders + .schema.json) ──────
+# El Secret se crea aparte:
+#   kubectl -n maya-dashboard create secret generic maya-dashboard-secret \
+#     --from-literal=APP_KEY="base64:<...>" \
+#     --from-literal=DB_USERNAME=<...> \
+#     --from-literal=DB_PASSWORD=<...> \
+#     --from-literal=REDIS_PASSWORD=<...> \
+#     --from-literal=RABBITMQ_PASSWORD=<...> \
+#     --from-literal=KEYCLOAK_CLIENT_SECRET=<...> \
+#     --from-literal=REVERB_APP_KEY=$(openssl rand -hex 32) \
+#     --from-literal=REVERB_APP_SECRET=$(openssl rand -hex 32) \
+#     --from-literal=LOG_MGMT_DB_PASSWORD=<...>
+secret:
+  name: maya-dashboard-secret
+  # Keys esperadas en el Secret (sólo para documentación y validación; el chart
+  # las referencia con secretKeyRef explícitos en el deployment).
+  expectedKeys:
+    - APP_KEY
+    - DB_USERNAME
+    - DB_PASSWORD
+    - REDIS_PASSWORD
+    - RABBITMQ_PASSWORD
+    - KEYCLOAK_CLIENT_SECRET
+    - REVERB_APP_KEY
+    - REVERB_APP_SECRET
+    - LOG_MGMT_DB_PASSWORD
+
+# ─── securityContext (W4) ────────────────────────────────────────────────────
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+# ─── NetworkPolicy (W5) ──────────────────────────────────────────────────────
+networkPolicy:
+  enabled: true
+  # Namespaces autorizados east-west (audit/logs pueden llamar a authz; dashboard
+  # no recibe llamadas de otros servicios salvo el frontend vía Ingress).
+  allowedFromNamespaces:
+    - kube-system          # Traefik / probes
+    - maya-dashboard
+  # Egress: DB Patroni, Redis, RabbitMQ, Keycloak, DNS. Sin salida a internet.
+  allowedEgress:
+    dns: true
+    patroniCidr: "172.29.71.252/32"
+    keycloakNamespace: keycloak
+    rabbitmqNamespace: rabbitmq
+    redisNamespace: redis
+

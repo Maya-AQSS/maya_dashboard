@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "maya-dashboard helm values",
+  "type": "object",
+  "required": ["image", "backend", "frontend", "worker", "scheduler", "reverb", "ingress", "config", "secret"],
+  "properties": {
+    "nameOverride":     { "type": "string" },
+    "fullnameOverride": { "type": "string" },
+    "image": {
+      "type": "object",
+      "required": ["registry", "repository", "backend", "frontend"],
+      "properties": {
+        "registry":   { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "minLength": 1 },
+        "tag":        { "type": "string" },
+        "backend": {
+          "type": "object",
+          "required": ["name", "pullPolicy"],
+          "properties": {
+            "name":       { "type": "string", "minLength": 1 },
+            "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+          }
+        },
+        "frontend": {
+          "type": "object",
+          "required": ["name", "pullPolicy"],
+          "properties": {
+            "name":       { "type": "string", "minLength": 1 },
+            "pullPolicy": { "enum": ["Always", "IfNotPresent", "Never"] }
+          }
+        },
+        "pullSecrets": {
+          "type": "array",
+          "items": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" } } }
+        }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "required": ["replicas", "containerPort", "resources", "probes"],
+      "properties": {
+        "replicas":      { "type": "integer", "minimum": 1, "maximum": 20 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "resources":     { "type": "object" },
+        "probes":        { "type": "object" },
+        "podAnnotations":{ "type": "object" },
+        "nodeSelector":  { "type": "object" },
+        "tolerations":   { "type": "array" },
+        "affinity":      { "type": "object" }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "required": ["replicas", "containerPort", "resources", "probes"],
+      "properties": {
+        "replicas":      { "type": "integer", "minimum": 1, "maximum": 20 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    },
+    "worker": {
+      "type": "object",
+      "required": ["enabled", "replicas", "command"],
+      "properties": {
+        "enabled":  { "type": "boolean" },
+        "replicas": { "type": "integer", "minimum": 1, "maximum": 1, "description": "Worker es singleton: replicas=1." },
+        "command":  { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "logStack": { "type": "string" },
+        "resources":{ "type": "object" }
+      }
+    },
+    "scheduler": {
+      "type": "object",
+      "required": ["enabled", "replicas"],
+      "properties": {
+        "enabled":  { "type": "boolean", "const": true, "description": "Dashboard requiere scheduler para panel-alerts:materialize." },
+        "replicas": { "type": "integer", "const": 1, "description": "Scheduler es singleton estricto." },
+        "resources":{ "type": "object" }
+      }
+    },
+    "reverb": {
+      "type": "object",
+      "required": ["enabled", "replicas", "containerPort", "ingress"],
+      "properties": {
+        "enabled":       { "type": "boolean" },
+        "replicas":      { "type": "integer", "minimum": 1, "maximum": 1 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "ingress": {
+          "type": "object",
+          "required": ["enabled", "host"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "host":    { "type": "string", "format": "hostname" }
+          }
+        },
+        "terminationGracePeriodSeconds": { "type": "integer", "minimum": 30 }
+      }
+    },
+    "migrate": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled":      { "type": "boolean" },
+        "backoffLimit": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "required": ["enabled", "className", "host", "apiHost", "tls"],
+      "properties": {
+        "enabled":   { "type": "boolean" },
+        "className": { "type": "string", "minLength": 1 },
+        "host":      { "type": "string", "format": "hostname" },
+        "apiHost":   { "type": "string", "format": "hostname" },
+        "tls": {
+          "type": "object",
+          "required": ["enabled", "secretName"],
+          "properties": {
+            "enabled":    { "type": "boolean" },
+            "secretName": { "type": "string", "minLength": 1 }
+          }
+        },
+        "annotations": { "type": "object" }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled":          { "type": "boolean", "const": false, "description": "Dashboard NO persiste ficheros." },
+        "storageClassName": { "type": "string" },
+        "size":             { "type": "string" },
+        "mountPath":        { "type": "string" }
+      }
+    },
+    "config": {
+      "type": "object",
+      "required": [
+        "APP_ENV", "APP_DEBUG", "APP_URL",
+        "DB_HOST", "DB_PORT", "DB_DATABASE",
+        "REDIS_HOST", "RABBITMQ_HOST",
+        "KEYCLOAK_URL", "KEYCLOAK_REALM", "JWKS_URL", "JWT_ISSUER", "JWT_AUDIENCE",
+        "SESSION_SECURE_COOKIE", "TRUSTED_PROXIES", "CORS_ALLOWED_ORIGINS"
+      ],
+      "properties": {
+        "APP_ENV": {
+          "type": "string",
+          "const": "production",
+          "description": "Forzado: nunca local/staging en prod."
+        },
+        "APP_DEBUG": {
+          "type": "string",
+          "const": "false",
+          "description": "Forzado: prohibido true en producción."
+        },
+        "SESSION_SECURE_COOKIE": {
+          "type": "string",
+          "const": "true",
+          "description": "Forzado: cookies sólo por HTTPS."
+        },
+        "DEV_BYPASS_AUTH": {
+          "not": {}
+        }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "secret": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name":         { "type": "string", "minLength": 1 },
+        "createStub":   { "type": "boolean" },
+        "expectedKeys": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "podSecurityContext":       { "type": "object" },
+    "containerSecurityContext": { "type": "object" },
+    "networkPolicy": {
+      "type": "object",
+      "required": ["enabled"],
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+maya_dashboard {{ .Chart.AppVersion }} desplegado como release "{{ .Release.Name }}" en el namespace "{{ .Release.Namespace }}".
+
+Componentes:
+  - backend  : Deployment ({{ .Values.backend.replicas }} réplicas) / Service ClusterIP / Ingress {{ .Values.ingress.apiHost }}
+  - frontend : Deployment ({{ .Values.frontend.replicas }} réplicas) / Service ClusterIP / Ingress {{ .Values.ingress.host }}
+  - worker   : Deployment 1 (notifications:consume)
+  - scheduler: Deployment 1 (schedule:work)
+  - reverb   : Deployment 1 / Ingress {{ .Values.reverb.ingress.host }}
+  - migrate  : Job hook pre-install/pre-upgrade (forward-only)
+
+Verifica:
+  kubectl -n {{ .Release.Namespace }} get pods
+  kubectl -n {{ .Release.Namespace }} get ingress
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "maya-dashboard.fullname" . }}-backend --tail=50
+
+Recordatorios:
+  - El Secret "{{ .Values.secret.name }}" debe existir antes del upgrade
+    (kubectl create secret generic ...).
+  - DNS interno *.ceedcv.es → IP MetalLB de Traefik.
+  - Backups: Patroni ya cubierto por la infra; este servicio no persiste ficheros.

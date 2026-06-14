@@ -1,0 +1,61 @@
+{{- if .Values.migrate.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-migrate-{{ now | unixEpoch }}
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    # Migración forward-only: helm rollback NO revierte el esquema.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.migrate.backoffLimit }}
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "migrate") | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrate
+          image: {{ include "maya-dashboard.image" (dict "root" . "name" .Values.image.backend.name) }}
+          imagePullPolicy: {{ .Values.image.backend.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -euo pipefail
+              cd /var/www/html
+              echo "[migrate] config:cache"
+              php artisan config:cache
+              echo "[migrate] running migrate --force --no-interaction"
+              php artisan migrate --force --no-interaction
+              if [ "${DB_SEED_MODE:-disabled}" = "if-empty" ]; then
+                  echo "[migrate] DB_SEED_MODE=if-empty → db:seed (idempotente)"
+                  php artisan db:seed --force --no-interaction || true
+              fi
+              echo "[migrate] done"
+          env:
+            - name: CONTAINER_ROLE
+              value: migrate
+          envFrom:
+            {{- include "maya-dashboard.envFrom" . | nindent 12 }}
+          resources: {{- toYaml .Values.migrate.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "maya-dashboard.writableVolumeMounts" . | nindent 12 }}
+            - name: run
+              mountPath: /run
+      volumes:
+        {{- include "maya-dashboard.writableVolumes" . | nindent 8 }}
+        - name: run
+          emptyDir: {}
+{{- end }}
