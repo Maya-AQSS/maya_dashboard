@@ -1,6 +1,53 @@
+# syntax=docker/dockerfile:1.7
+#
+# maya_dashboard frontend — imagen de producción (K3s)
+# ----------------------------------------------------
+# Multi-stage node:24 -> nginx:1.29.
+# Los VITE_* deben declararse como ARG en la etapa builder para que los
+# --build-arg del Buildx surtan efecto; si no se declaran, Vite hornea
+# undefined y la SPA se rompe en runtime.
+#
+# Uso:
+#   docker buildx build -f frontend/Dockerfile.prod \
+#     --build-arg VITE_API_URL=https://dashboard-api.ceedcv.es/api/v1 \
+#     --build-arg VITE_KEYCLOAK_URL=https://keycloak.ceedcv.es \
+#     --build-arg VITE_KEYCLOAK_REALM=maya \
+#     --build-arg VITE_KEYCLOAK_CLIENT_ID=maya-dashboard \
+#     --build-arg VITE_DASHBOARD_API_URL=https://dashboard-api.ceedcv.es \
+#     --build-arg VITE_REVERB_HOST=dashboard-reverb.ceedcv.es \
+#     --build-arg VITE_REVERB_APP_KEY=<reverb-key> \
+#     --build-arg VITE_REVERB_PORT=443 \
+#     --build-arg VITE_REVERB_SCHEME=https \
+#     -t <registry>/maya/maya-dashboard-frontend:<sha> frontend
+
 FROM node:24-alpine AS builder
 
 WORKDIR /app
+
+# ─── ARGs de build (deben ir antes de `npm run build`) ──────────────────────
+ARG VITE_API_URL
+ARG VITE_KEYCLOAK_URL
+ARG VITE_KEYCLOAK_REALM
+ARG VITE_KEYCLOAK_CLIENT_ID
+ARG VITE_DASHBOARD_API_URL
+ARG VITE_DASHBOARD_URL
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_PORT=443
+ARG VITE_REVERB_SCHEME=https
+ARG VITE_APP_NAME="Maya Dashboard"
+
+ENV VITE_API_URL=${VITE_API_URL} \
+    VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL} \
+    VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM} \
+    VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID} \
+    VITE_DASHBOARD_API_URL=${VITE_DASHBOARD_API_URL} \
+    VITE_DASHBOARD_URL=${VITE_DASHBOARD_URL} \
+    VITE_REVERB_HOST=${VITE_REVERB_HOST} \
+    VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
+    VITE_REVERB_PORT=${VITE_REVERB_PORT} \
+    VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME} \
+    VITE_APP_NAME=${VITE_APP_NAME}
 
 COPY package*.json ./
 RUN npm ci
@@ -11,13 +58,23 @@ RUN npm run build
 # ─── Producción ───────────────────────────────────────────────────────────────
 FROM nginx:1.29-alpine
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Usuario no-root para nginx (la imagen oficial trae `nginx` UID 101)
+RUN apk add --no-cache curl \
+    && mkdir -p /var/cache/nginx /var/run/nginx \
+    && chown -R nginx:nginx /var/cache/nginx /var/run/nginx
+
+COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
 RUN printf 'server {\n\
-    listen 80;\n\
+    listen 8080;\n\
     server_name _;\n\
     root /usr/share/nginx/html;\n\
     index index.html;\n\
+    server_tokens off;\n\
+    add_header X-Frame-Options "SAMEORIGIN" always;\n\
+    add_header X-Content-Type-Options "nosniff" always;\n\
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;\n\
+    location = /healthz { access_log off; return 200 "ok\\n"; }\n\
     location / {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
@@ -25,8 +82,14 @@ RUN printf 'server {\n\
         expires max;\n\
         add_header Cache-Control "public, immutable";\n\
     }\n\
-}\n' > /etc/nginx/conf.d/default.conf
+}\n' > /etc/nginx/conf.d/default.conf \
+    && sed -i 's/user  nginx;/user nginx;/; s|/var/run/nginx.pid|/var/run/nginx/nginx.pid|' /etc/nginx/nginx.conf
 
-EXPOSE 80
+USER nginx
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -fsS http://127.0.0.1:8080/healthz || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
