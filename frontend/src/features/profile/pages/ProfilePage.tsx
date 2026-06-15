@@ -24,6 +24,7 @@ import {
   emptyEmployeeForm,
   type EmployeeFormInput,
 } from '../lib/profileSchema'
+import type { EmployeeData } from '../api/employeeApi'
 
 interface ProfileUser extends AuthUser {
   id?: string
@@ -131,6 +132,10 @@ function ProfilePage() {
   const { goBack } = useBackNavigation({ fallback: '/' })
   const [isEditing, setIsEditing] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  // ODOO_BRIDGE — Sobreescritura local de los campos editables para reflejar el
+  // guardado inmediatamente sin esperar a que /me refresque el contexto de auth.
+  // Eliminar cuando la integración con Odoo actualice directamente la fuente de verdad.
+  const [employeeOverride, setEmployeeOverride] = useState<Partial<EmployeeData> | null>(null)
   // Idioma "pendiente" mientras se edita: solo se aplica al guardar, no al
   // cambiar el select (evita que la UI cambie de idioma a mitad de edición).
   const [pendingLocale, setPendingLocale] = useState<string>(locale)
@@ -181,6 +186,9 @@ function ProfilePage() {
     useMyAcademicContext()
 
   const { data: employeeData } = useMyEmployeeData()
+  const effectiveEmployee: EmployeeData | null = employeeOverride
+    ? { ...(employeeData ?? {} as EmployeeData), ...employeeOverride }
+    : employeeData
 
   if (!user) {
     return <p className="text-text-primary dark:text-text-dark-primary">{t('profile.noUser')}</p>
@@ -200,11 +208,11 @@ function ProfilePage() {
   const handleEdit = () => {
     if (!canUpdate) return
     reset({
-      personal_email: employeeData?.personal_email ?? '',
-      iban: employeeData?.iban ?? '',
-      car_registration_number_1: employeeData?.car_registration_number_1 ?? '',
-      car_registration_number_2: employeeData?.car_registration_number_2 ?? '',
-      car_registration_number_3: employeeData?.car_registration_number_3 ?? '',
+      personal_email: effectiveEmployee?.personal_email ?? '',
+      iban: effectiveEmployee?.iban ?? '',
+      car_registration_number_1: effectiveEmployee?.car_registration_number_1 ?? '',
+      car_registration_number_2: effectiveEmployee?.car_registration_number_2 ?? '',
+      car_registration_number_3: effectiveEmployee?.car_registration_number_3 ?? '',
     })
     setPendingLocale(locale)
     setSaveError(null)
@@ -226,6 +234,9 @@ function ProfilePage() {
         setSaveError(t('profile.saveError'))
         return
       }
+
+      // ODOO_BRIDGE — Actualizar estado local para reflejo inmediato en la UI.
+      setEmployeeOverride(updatedUser)
 
       // Aplica el cambio de idioma SOLO al guardar (no al cambiar el select).
       // El endpoint es best-effort: la fuente de verdad provisional es el
@@ -311,7 +322,7 @@ function ProfilePage() {
                   <ProfileRow label={t('auth.surname')} value={user.surname} />
                   <ProfileRow label={t('profile.dni')} value={user.dni} />
                   <ProfileRow label={t('auth.email')} value={user.email} />
-                  <ProfileRow label={t('profile.personalEmail')} value={employeeData?.personal_email} />
+                  <ProfileRow label={t('profile.personalEmail')} value={effectiveEmployee?.personal_email} />
                   <ProfileRow label={t('profile.phone')} value={user.phone} />
                 </ProfileDl>
               </ProfileSection>
@@ -321,10 +332,10 @@ function ProfilePage() {
                 <ProfileDl>
                   <ProfileRow
                     label={t('profile.positionType')}
-                    value={employeeData?.position_type ? (POSITION_TYPE_LABELS[employeeData.position_type] ?? employeeData.position_type) : null}
+                    value={effectiveEmployee?.position_type ? (POSITION_TYPE_LABELS[employeeData.position_type] ?? employeeData.position_type) : null}
                   />
-                  <ProfileRow label={t('profile.supervisor')} value={employeeData?.supervisor_name} />
-                  <ProfileRow label={t('profile.mentor')} value={employeeData?.mentor_name} />
+                  <ProfileRow label={t('profile.supervisor')} value={effectiveEmployee?.supervisor_name} />
+                  <ProfileRow label={t('profile.mentor')} value={effectiveEmployee?.mentor_name} />
                 </ProfileDl>
               </ProfileSection>
             </div>
@@ -333,23 +344,23 @@ function ProfilePage() {
               {/* Administración interna */}
               <ProfileSection title={t('profile.adminData')}>
                 <ProfileDl>
-                  <ProfileRow label={t('profile.idCardRfid')} value={employeeData?.id_card_rfid} />
+                  <ProfileRow label={t('profile.idCardRfid')} value={effectiveEmployee?.id_card_rfid} />
                   <ProfileRow
                     label={t('profile.keys')}
-                    value={employeeData?.keys ? (KEYS_LABELS[employeeData.keys] ?? employeeData.keys) : null}
+                    value={effectiveEmployee?.keys ? (KEYS_LABELS[employeeData.keys] ?? employeeData.keys) : null}
                   />
-                  <ProfileRow label={t('profile.dateKeysHandover')} value={employeeData?.date_keys_handover} />
-                  <ProfileRow label={t('profile.dateKeysReturn')} value={employeeData?.date_keys_return} />
-                  <ProfileRow label={t('profile.iban')} value={employeeData?.iban} />
+                  <ProfileRow label={t('profile.dateKeysHandover')} value={effectiveEmployee?.date_keys_handover} />
+                  <ProfileRow label={t('profile.dateKeysReturn')} value={effectiveEmployee?.date_keys_return} />
+                  <ProfileRow label={t('profile.iban')} value={effectiveEmployee?.iban} />
                 </ProfileDl>
               </ProfileSection>
 
               {/* Vehículos */}
               <ProfileSection title={t('profile.vehicles')}>
                 <ProfileDl>
-                  <ProfileRow label={t('profile.carRegistration1')} value={employeeData?.car_registration_number_1} />
-                  <ProfileRow label={t('profile.carRegistration2')} value={employeeData?.car_registration_number_2} />
-                  <ProfileRow label={t('profile.carRegistration3')} value={employeeData?.car_registration_number_3} />
+                  <ProfileRow label={t('profile.carRegistration1')} value={effectiveEmployee?.car_registration_number_1} />
+                  <ProfileRow label={t('profile.carRegistration2')} value={effectiveEmployee?.car_registration_number_2} />
+                  <ProfileRow label={t('profile.carRegistration3')} value={effectiveEmployee?.car_registration_number_3} />
                 </ProfileDl>
               </ProfileSection>
 

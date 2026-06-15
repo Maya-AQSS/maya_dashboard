@@ -471,6 +471,7 @@
       "unread": "No leída"
     },
     "testSent": "Notificación de prueba enviada.",
+    "testSkippedDisabled": "La notificación está desactivada. Actívala para poder probarla.",
     "testError": "No se pudo enviar la prueba.",
     "apps": {
       "maya-dashboard": "Panel principal",

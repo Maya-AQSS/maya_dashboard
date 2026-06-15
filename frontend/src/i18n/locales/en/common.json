@@ -471,6 +471,7 @@
     "deleteSuccess": "Notification deleted.",
     "deleteError": "Could not delete the notification.",
     "testSent": "Test notification sent.",
+    "testSkippedDisabled": "The notification is disabled. Enable it before testing.",
     "testError": "Could not send the test.",
     "apps": {
       "maya-dashboard": "Dashboard",

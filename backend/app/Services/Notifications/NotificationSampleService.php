@@ -27,6 +27,13 @@ final class NotificationSampleService implements NotificationSampleServiceInterf
 
     public function fireSample(string $key, ?string $recipientId): bool
     {
+        // Return false immediately when the type is disabled so the API responds
+        // with delivered:false — the ingestion path returns true for disabled
+        // notifications (ACK for AMQP consumers), which would be misleading here.
+        if (! $this->definitions->isKeyEnabled($key)) {
+            return false;
+        }
+
         $isDashboard = in_array($key, self::DASHBOARD_SCOPE_KEYS, true);
         $scope = $isDashboard ? 'dashboard' : 'user';
 

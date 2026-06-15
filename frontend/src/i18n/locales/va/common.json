@@ -471,6 +471,7 @@
     "deleteSuccess": "Notificació eliminada.",
     "deleteError": "No s'ha pogut eliminar la notificació.",
     "testSent": "Notificació de prova enviada.",
+    "testSkippedDisabled": "La notificació està desactivada. Activa-la per a poder provar-la.",
     "testError": "No s'ha pogut enviar la prova.",
     "apps": {
       "maya-dashboard": "Panell principal",

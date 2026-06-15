@@ -74,11 +74,7 @@ final class EmployeeProfileReader
             ->where('user_id', '=', $userId)
             ->first();
 
-        if ($row === null) {
-            return $this->empty();
-        }
-
-        return [
+        $base = $row === null ? $this->empty() : [
             'personal_email' => $this->str($row->personal_email ?? null),
             'position_type' => $this->str($row->position_type ?? null),
             'supervisor_name' => $this->str($row->supervisor_name ?? null),
@@ -92,6 +88,26 @@ final class EmployeeProfileReader
             'car_registration_number_2' => $this->str($row->car_registration_number_2 ?? null),
             'car_registration_number_3' => $this->str($row->car_registration_number_3 ?? null),
         ];
+
+        // ODOO_BRIDGE — Merge local overrides over FDW data for editable fields.
+        // Remove when Odoo provides a writable employee profile API.
+        try {
+            $override = DB::table('employee_profile_overrides')
+                ->where('user_id', '=', $userId)
+                ->first();
+
+            if ($override !== null) {
+                foreach (['personal_email', 'iban', 'car_registration_number_1', 'car_registration_number_2', 'car_registration_number_3'] as $field) {
+                    if (($override->$field ?? null) !== null) {
+                        $base[$field] = $this->str($override->$field);
+                    }
+                }
+            }
+        } catch (\Throwable) {
+            // Degradación silenciosa si la tabla de overrides no existe aún.
+        }
+
+        return $base;
     }
 
     /**

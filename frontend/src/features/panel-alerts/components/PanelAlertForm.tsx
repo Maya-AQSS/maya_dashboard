@@ -233,6 +233,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
             type="datetime-local"
             value={visibleFrom}
             onChange={(e) => setVisibleFrom(e.target.value)}
+            min={new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 16)}
             required
           />
         </div>

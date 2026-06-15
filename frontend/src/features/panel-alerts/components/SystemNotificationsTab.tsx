@@ -165,7 +165,13 @@ export function SystemNotificationsTab({ canToggle }: Props) {
               size="xs"
               onClick={() => {
                 fireNotificationSample(d.key)
-                  .then(() => toast({ tone: 'success', title: t('notifications.testSent') }))
+                  .then((delivered) => {
+                    if (delivered) {
+                      toast({ tone: 'success', title: t('notifications.testSent') })
+                    } else {
+                      toast({ tone: 'warning', title: t('notifications.testSkippedDisabled') })
+                    }
+                  })
                   .catch(() => toast({ tone: 'danger', title: t('notifications.testError') }))
               }}
             >

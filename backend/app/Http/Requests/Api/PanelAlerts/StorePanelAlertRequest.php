@@ -37,7 +37,7 @@ class StorePanelAlertRequest extends FormRequest
             'severity' => ['required', 'string', 'in:critical,high,medium,low,info'],
             'action_label' => ['nullable', 'string', 'max:255'],
             'action_url' => ['nullable', 'url', 'max:2048'],
-            'visible_from' => ['required', 'date'],
+            'visible_from' => ['required', 'date', 'after_or_equal:now'],
             'visible_until' => ['nullable', 'date', 'after:visible_from'],
             // Recurrencia opcional (decisión 1: alertas manuales con cron).
             'schedule_cron' => ['nullable', 'string', 'max:64'],

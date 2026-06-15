@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\HealthCheckController;
 use App\Http\Controllers\Api\V1\Attendance\AttendanceController;
 use App\Http\Controllers\Api\V1\Booking\BookingController;
 use App\Http\Controllers\Api\V1\Dashboard\ApplicationController;
+use App\Http\Controllers\Api\V1\Me\MeEmployeeController;
 use App\Http\Controllers\Api\V1\Dashboard\UserDashboardLayoutController;
 use App\Http\Controllers\Api\V1\Dashboard\UserFavoriteApplicationController;
 use App\Http\Controllers\Api\V1\Notifications\AttendanceReminderController;
@@ -42,6 +43,9 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
 Route::middleware('auth.keycloak')->prefix('v1')->group(function () {
     Route::get('/me', [MeController::class, 'show']);
     Route::put('/me/locale', [MeController::class, 'updateLocale'])
+        ->middleware('permission:profile.update');
+    // ODOO_BRIDGE — Eliminar cuando Odoo proporcione API de escritura de perfil de empleado.
+    Route::patch('/me/employee', [MeEmployeeController::class, 'update'])
         ->middleware('permission:profile.update');
 
     // Idiomas activos (Odoo res.lang) — selector de perfil y formularios multiidioma.
