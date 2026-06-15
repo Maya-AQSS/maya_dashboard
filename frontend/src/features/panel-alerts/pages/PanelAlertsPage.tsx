@@ -75,7 +75,9 @@ export default function PanelAlertsPage() {
   }
 
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
-    useTablePreferences({ storageKey: 'maya:dashboard:panel-alerts-table' })
+    // defaultPageSize 15 para igualar a las tablas que usan useServerTable
+    // (cuyo default es 15); useTablePreferences por sí solo arranca en 10.
+    useTablePreferences({ storageKey: 'maya:dashboard:panel-alerts-table', defaultPageSize: 15 })
 
   const alertFilters: PanelAlertFilters = {
     page: alertPage,
