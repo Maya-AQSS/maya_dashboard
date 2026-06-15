@@ -29,8 +29,6 @@ const SOURCE_APP_OPTIONS = [
   'maya-dashboard',
 ] as const
 
-const SEVERITY_OPTIONS = ['critical', 'high', 'medium', 'low', 'info'] as const
-
 type Props = {
   canManage: boolean
 }
@@ -45,7 +43,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
     useTablePreferences({ storageKey: 'maya:dashboard:notification-rules-table' })
 
   const table = useServerTable({
-    defaults: { search: '', source_app: '', severity: '' },
+    defaults: { search: '', source_app: '' },
     sortableColumns: ['name', 'source_app', 'schedule_cron'],
     storageKey: 'maya:dashboard:notification-rules-table',
     defaultSort: { columnId: 'name', direction: 'asc' },
@@ -57,7 +55,6 @@ export function ScheduledRulesTab({ canManage }: Props) {
     queryKey: ['notification-rules', table.queryParams],
     queryFn: () => listNotificationRules({
       source_app: table.queryParams.source_app || undefined,
-      severity: table.queryParams.severity || undefined,
       page: table.queryParams.page,
       per_page: table.queryParams.per_page,
       search: table.queryParams.search || undefined,
@@ -239,18 +236,6 @@ export function ScheduledRulesTab({ canManage }: Props) {
                 <option value="">{t('panelAlerts.sourceAppAll')}</option>
                 {SOURCE_APP_OPTIONS.map((app) => (
                   <option key={app} value={app}>{app}</option>
-                ))}
-              </Select>
-            </FilterField>
-            <FilterField label={t('panelAlerts.fields.severity')}>
-              <Select
-                fieldSize="sm"
-                value={table.queryParams.severity ?? ''}
-                onChange={(e) => { table.setFilter('severity', e.target.value || undefined) }}
-              >
-                <option value="">{t('panelAlerts.severityAll')}</option>
-                {SEVERITY_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{t(`severity.${s}`)}</option>
                 ))}
               </Select>
             </FilterField>
