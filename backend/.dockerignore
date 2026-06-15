@@ -35,8 +35,6 @@ phpunit.xml
 pint.json
 
 # Docker dev (no necesarios en runtime de prod)
-Dockerfile
-docker-entrypoint.sh
 
 # Artefactos de docs/local
 *.md
