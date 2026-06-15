@@ -18,7 +18,7 @@ interface NotificationDefinitionRepositoryInterface
     /**
      * @return LengthAwarePaginator<NotificationDefinition>
      */
-    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): LengthAwarePaginator;
+    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $defaultSeverity = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): LengthAwarePaginator;
 
     public function findOrFail(int $id): NotificationDefinition;
 

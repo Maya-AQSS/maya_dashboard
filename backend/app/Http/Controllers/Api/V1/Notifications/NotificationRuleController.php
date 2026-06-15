@@ -32,6 +32,7 @@ class NotificationRuleController extends Controller
         $page = max(1, (int) ($request->validated('page') ?? 1));
         $perPage = max(1, min((int) ($request->validated('per_page') ?? 25), 100));
         $sourceApp = $request->validated('source_app') ?: null;
+        $severity = $request->validated('severity') ?: null;
         $evaluatorKey = $request->validated('evaluator_key') ?: null;
         $search = $request->validated('search') ?: null;
         $sortBy = $request->validated('sort_by', 'name');
@@ -41,6 +42,7 @@ class NotificationRuleController extends Controller
             $page,
             $perPage,
             $sourceApp,
+            $severity,
             $evaluatorKey,
             $search,
             $sortBy,

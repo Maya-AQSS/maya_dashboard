@@ -30,6 +30,7 @@ class NotificationDefinitionController extends Controller
         $perPage = max(1, min((int) ($request->validated('per_page') ?? 25), 100));
         $category = $request->validated('category') ?: null;
         $sourceApp = $request->validated('source_app') ?: null;
+        $defaultSeverity = $request->validated('default_severity') ?: null;
         $search = $request->validated('search') ?: null;
         $sortBy = $request->validated('sort_by', 'label');
         $sortDir = $request->validated('sort_dir', 'asc');
@@ -39,6 +40,7 @@ class NotificationDefinitionController extends Controller
             $perPage,
             $category,
             $sourceApp,
+            $defaultSeverity,
             $search,
             $sortBy,
             $sortDir,

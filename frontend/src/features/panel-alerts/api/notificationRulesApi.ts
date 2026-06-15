@@ -18,6 +18,8 @@ interface FlatPaginatedResponse {
 }
 
 interface ListFilters {
+  source_app?: string
+  severity?: string
   page?: number
   per_page?: number
   search?: string
@@ -27,6 +29,8 @@ interface ListFilters {
 
 export async function listNotificationRules(filters?: ListFilters): Promise<PaginatedNotificationRules> {
   const qs = buildQueryString({
+    source_app: filters?.source_app,
+    severity: filters?.severity,
     page: filters?.page,
     per_page: filters?.per_page,
     search: filters?.search,

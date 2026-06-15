@@ -23,12 +23,16 @@ final class NotificationRuleRepository implements NotificationRuleRepositoryInte
             ->paginate($perPage);
     }
 
-    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): LengthAwarePaginator
+    public function paginateWithFilters(int $page, int $perPage, ?string $sourceApp = null, ?string $severity = null, ?string $evaluatorKey = null, ?string $search = null, string $sortBy = 'name', string $sortDir = 'asc'): LengthAwarePaginator
     {
         $query = NotificationRule::query();
 
         if ($sourceApp !== null && $sourceApp !== '') {
             $query->where('source_app', $sourceApp);
+        }
+
+        if ($severity !== null && $severity !== '') {
+            $query->where('severity', $severity);
         }
 
         if ($evaluatorKey !== null && $evaluatorKey !== '') {

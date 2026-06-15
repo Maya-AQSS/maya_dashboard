@@ -21,6 +21,7 @@ class ListNotificationDefinitionsRequest extends FormRequest
         return [
             'category' => ['nullable', 'string', 'in:event,scheduled'],
             'source_app' => ['nullable', 'string', 'max:64'],
+            'default_severity' => ['nullable', 'string', 'in:critical,high,medium,low,info'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'search' => ['nullable', 'string', 'max:255'],

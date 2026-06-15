@@ -26,7 +26,7 @@ final class NotificationDefinitionRepository implements NotificationDefinitionRe
             ->get();
     }
 
-    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): LengthAwarePaginator
+    public function paginateWithFilters(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $defaultSeverity = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): LengthAwarePaginator
     {
         $query = NotificationDefinition::query();
 
@@ -36,6 +36,10 @@ final class NotificationDefinitionRepository implements NotificationDefinitionRe
 
         if ($sourceApp !== null) {
             $query->where('source_app', $sourceApp);
+        }
+
+        if ($defaultSeverity !== null) {
+            $query->where('default_severity', $defaultSeverity);
         }
 
         if ($search !== null) {

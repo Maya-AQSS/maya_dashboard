@@ -30,9 +30,9 @@ final class NotificationDefinitionService implements NotificationDefinitionServi
     /**
      * @return PaginatedDto<NotificationDefinitionDto>
      */
-    public function paginate(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): PaginatedDto
+    public function paginate(int $page, int $perPage, ?string $category = null, ?string $sourceApp = null, ?string $defaultSeverity = null, ?string $search = null, string $sortBy = 'label', string $sortDir = 'asc'): PaginatedDto
     {
-        $paginated = $this->definitions->paginateWithFilters($page, $perPage, $category, $sourceApp, $search, $sortBy, $sortDir);
+        $paginated = $this->definitions->paginateWithFilters($page, $perPage, $category, $sourceApp, $defaultSeverity, $search, $sortBy, $sortDir);
 
         return PaginatedDto::fromPaginator(
             $paginated,

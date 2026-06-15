@@ -382,7 +382,8 @@
       "visibleDurationHoursPlaceholder": "E.g.: 24",
       "maxFrequencyMinutes": "Minimum frequency (minutes)",
       "isActive": "Rule active",
-      "lastTriggeredAt": "Last triggered"
+      "lastTriggeredAt": "Last triggered",
+      "sourceApp": "Service"
     },
     "audience": {
       "sectionTitle": "Recipients",
@@ -418,7 +419,8 @@
       "studyTypeRequired": "Select a study type.",
       "studyRequired": "Select a study.",
       "moduleRequired": "Select a module."
-    }
+    },
+    "sourceAppAll": "All services"
   },
   "notifications": {
     "pageTitle": "Notifications",

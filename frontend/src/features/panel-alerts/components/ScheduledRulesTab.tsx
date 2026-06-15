@@ -9,6 +9,7 @@ import {
   DataTable,
   FilterField,
   Pagination,
+  Select,
   TextInput,
   useTablePreferences,
   useToast,
@@ -18,6 +19,17 @@ import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { listNotificationRules, updateNotificationRule, deleteNotificationRule } from '../api/notificationRulesApi'
 import { fireNotificationSample } from '../api/notificationSampleApi'
 import type { NotificationRule } from '../types/notificationRule'
+
+// Apps del ecosistema Maya que pueden tener reglas programadas (source_app).
+const SOURCE_APP_OPTIONS = [
+  'maya-authorization',
+  'maya-audit',
+  'maya-dms',
+  'maya-logs',
+  'maya-dashboard',
+] as const
+
+const SEVERITY_OPTIONS = ['critical', 'high', 'medium', 'low', 'info'] as const
 
 type Props = {
   canManage: boolean
@@ -33,7 +45,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
     useTablePreferences({ storageKey: 'maya:dashboard:notification-rules-table' })
 
   const table = useServerTable({
-    defaults: { search: '' },
+    defaults: { search: '', source_app: '', severity: '' },
     sortableColumns: ['name', 'source_app', 'schedule_cron'],
     storageKey: 'maya:dashboard:notification-rules-table',
     defaultSort: { columnId: 'name', direction: 'asc' },
@@ -44,6 +56,8 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const { data: response, isLoading } = useQuery({
     queryKey: ['notification-rules', table.queryParams],
     queryFn: () => listNotificationRules({
+      source_app: table.queryParams.source_app || undefined,
+      severity: table.queryParams.severity || undefined,
       page: table.queryParams.page,
       per_page: table.queryParams.per_page,
       search: table.queryParams.search || undefined,
@@ -206,15 +220,41 @@ export function ScheduledRulesTab({ canManage }: Props) {
         filtersActiveCount={table.filtersActiveCount}
         onClearFilters={table.resetFilters}
         filtersPanel={
-          <FilterField label={t('scheduledRules.searchLabel')}>
-            <TextInput
-              fieldSize="sm"
-              type="search"
-              value={searchInput}
-              onChange={handleSearchChange}
-              placeholder={t('scheduledRules.searchPlaceholder')}
-            />
-          </FilterField>
+          <>
+            <FilterField label={t('scheduledRules.searchLabel')}>
+              <TextInput
+                fieldSize="sm"
+                type="search"
+                value={searchInput}
+                onChange={handleSearchChange}
+                placeholder={t('scheduledRules.searchPlaceholder')}
+              />
+            </FilterField>
+            <FilterField label={t('panelAlerts.fields.sourceApp')}>
+              <Select
+                fieldSize="sm"
+                value={table.queryParams.source_app ?? ''}
+                onChange={(e) => { table.setFilter('source_app', e.target.value || undefined) }}
+              >
+                <option value="">{t('panelAlerts.sourceAppAll')}</option>
+                {SOURCE_APP_OPTIONS.map((app) => (
+                  <option key={app} value={app}>{app}</option>
+                ))}
+              </Select>
+            </FilterField>
+            <FilterField label={t('panelAlerts.fields.severity')}>
+              <Select
+                fieldSize="sm"
+                value={table.queryParams.severity ?? ''}
+                onChange={(e) => { table.setFilter('severity', e.target.value || undefined) }}
+              >
+                <option value="">{t('panelAlerts.severityAll')}</option>
+                {SEVERITY_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{t(`severity.${s}`)}</option>
+                ))}
+              </Select>
+            </FilterField>
+          </>
         }
       />
 

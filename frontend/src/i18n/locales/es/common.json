@@ -382,7 +382,8 @@
       "visibleDurationHoursPlaceholder": "Ej: 24",
       "maxFrequencyMinutes": "Frecuencia mínima (minutos)",
       "isActive": "Regla activa",
-      "lastTriggeredAt": "Última activación"
+      "lastTriggeredAt": "Última activación",
+      "sourceApp": "Servicio"
     },
     "audience": {
       "sectionTitle": "Destinatarios",
@@ -418,7 +419,8 @@
       "studyTypeRequired": "Selecciona un tipo de estudio.",
       "studyRequired": "Selecciona un estudio.",
       "moduleRequired": "Selecciona un módulo."
-    }
+    },
+    "sourceAppAll": "Todos los servicios"
   },
   "notifications": {
     "pageTitle": "Notificaciones",

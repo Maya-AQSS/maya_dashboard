@@ -9,6 +9,7 @@ import {
   FilterField,
   formatDateTime,
   Pagination,
+  Select,
   TextInput,
   useTablePreferences,
   useToast,
@@ -26,6 +27,17 @@ const SEVERITY_BADGE: Record<Severity, 'danger' | 'warning' | 'info' | 'neutral'
   low: 'neutral',
   info: 'neutral',
 }
+
+// Apps del ecosistema Maya que pueden emitir notificaciones (source_app).
+const SOURCE_APP_OPTIONS = [
+  'maya-authorization',
+  'maya-audit',
+  'maya-dms',
+  'maya-logs',
+  'maya-dashboard',
+] as const
+
+const SEVERITY_OPTIONS: Severity[] = ['critical', 'high', 'medium', 'low', 'info']
 
 type Props = {
   canToggle: boolean
@@ -45,7 +57,7 @@ export function SystemNotificationsTab({ canToggle }: Props) {
     useTablePreferences({ storageKey: 'maya:dashboard:notification-definitions-table' })
 
   const table = useServerTable({
-    defaults: { search: '' },
+    defaults: { search: '', source_app: '', default_severity: '' },
     sortableColumns: ['label', 'source_app', 'default_severity', 'last_evaluated_at'],
     storageKey: 'maya:dashboard:notification-definitions-table',
     defaultSort: { columnId: 'label', direction: 'asc' },
@@ -58,6 +70,8 @@ export function SystemNotificationsTab({ canToggle }: Props) {
     queryKey: ['notification-definitions', 'event', table.queryParams],
     queryFn: () => listNotificationDefinitions({
       category: 'event' as DefinitionCategory,
+      source_app: table.queryParams.source_app || undefined,
+      default_severity: table.queryParams.default_severity || undefined,
       page: table.queryParams.page,
       per_page: table.queryParams.per_page,
       search: table.queryParams.search || undefined,
@@ -193,15 +207,41 @@ export function SystemNotificationsTab({ canToggle }: Props) {
         filtersActiveCount={table.filtersActiveCount}
         onClearFilters={table.resetFilters}
         filtersPanel={
-          <FilterField label={t('systemNotifications.searchLabel')}>
-            <TextInput
-              fieldSize="sm"
-              type="search"
-              value={searchInput}
-              onChange={handleSearchChange}
-              placeholder={t('systemNotifications.searchPlaceholder')}
-            />
-          </FilterField>
+          <>
+            <FilterField label={t('systemNotifications.searchLabel')}>
+              <TextInput
+                fieldSize="sm"
+                type="search"
+                value={searchInput}
+                onChange={handleSearchChange}
+                placeholder={t('systemNotifications.searchPlaceholder')}
+              />
+            </FilterField>
+            <FilterField label={t('panelAlerts.fields.sourceApp')}>
+              <Select
+                fieldSize="sm"
+                value={table.queryParams.source_app ?? ''}
+                onChange={(e) => { table.setFilter('source_app', e.target.value || undefined) }}
+              >
+                <option value="">{t('panelAlerts.sourceAppAll')}</option>
+                {SOURCE_APP_OPTIONS.map((app) => (
+                  <option key={app} value={app}>{app}</option>
+                ))}
+              </Select>
+            </FilterField>
+            <FilterField label={t('panelAlerts.fields.severity')}>
+              <Select
+                fieldSize="sm"
+                value={table.queryParams.default_severity ?? ''}
+                onChange={(e) => { table.setFilter('default_severity', e.target.value || undefined) }}
+              >
+                <option value="">{t('panelAlerts.severityAll')}</option>
+                {SEVERITY_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{t(`severity.${s}`)}</option>
+                ))}
+              </Select>
+            </FilterField>
+          </>
         }
       />
 

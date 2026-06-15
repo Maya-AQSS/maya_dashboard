@@ -20,6 +20,8 @@ interface PaginatedResponse {
 
 interface ListFilters {
   category?: DefinitionCategory
+  source_app?: string
+  default_severity?: string
   page?: number
   per_page?: number
   search?: string
@@ -40,6 +42,8 @@ interface ListResult {
 export async function listNotificationDefinitions(filters: ListFilters): Promise<ListResult> {
   const qs = buildQueryString({
     category: filters.category,
+    source_app: filters.source_app,
+    default_severity: filters.default_severity,
     page: filters.page,
     per_page: filters.per_page,
     search: filters.search,

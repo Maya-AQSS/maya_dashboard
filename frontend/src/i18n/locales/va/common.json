@@ -382,7 +382,8 @@
       "visibleDurationHoursPlaceholder": "Ex: 24",
       "maxFrequencyMinutes": "Freqüència mínima (minuts)",
       "isActive": "Regla activa",
-      "lastTriggeredAt": "Última activació"
+      "lastTriggeredAt": "Última activació",
+      "sourceApp": "Servici"
     },
     "audience": {
       "sectionTitle": "Destinataris",
@@ -418,7 +419,8 @@
       "studyTypeRequired": "Selecciona un tipus d'estudi.",
       "studyRequired": "Selecciona un estudi.",
       "moduleRequired": "Selecciona un mòdul."
-    }
+    },
+    "sourceAppAll": "Tots els servicis"
   },
   "notifications": {
     "pageTitle": "Notificacions",
