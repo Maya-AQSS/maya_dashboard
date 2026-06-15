@@ -415,6 +415,7 @@
       "alertTextRequired": "El texto de la alerta es obligatorio.",
       "textRequired": "El texto de la alerta es obligatorio.",
       "visibleFromRequired": "La fecha de inicio es obligatoria.",
+      "visibleFromPast": "La fecha de inicio no puede ser anterior al momento actual.",
       "teamRequired": "Selecciona un equipo o departamento.",
       "studyTypeRequired": "Selecciona un tipo de estudio.",
       "studyRequired": "Selecciona un estudio.",

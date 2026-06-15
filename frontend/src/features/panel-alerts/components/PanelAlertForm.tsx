@@ -112,6 +112,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
       return
     }
     if (!visibleFrom) { setError(t('panelAlerts.validation.visibleFromRequired')); return }
+    if (new Date(visibleFrom) < new Date()) { setError(t('panelAlerts.validation.visibleFromPast')); return }
     const audienceError = validateAudienceForm(audience, {
       teamRequired: t('panelAlerts.validation.teamRequired'),
       studyTypeRequired: t('panelAlerts.validation.studyTypeRequired'),

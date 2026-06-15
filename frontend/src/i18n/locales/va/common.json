@@ -415,6 +415,7 @@
       "alertTextRequired": "El text de l'alerta és obligatori.",
       "textRequired": "El text de l'alerta és obligatori.",
       "visibleFromRequired": "La data d'inici és obligatòria.",
+      "visibleFromPast": "La data d'inici no pot ser anterior al moment actual.",
       "teamRequired": "Selecciona un equip o departament.",
       "studyTypeRequired": "Selecciona un tipus d'estudi.",
       "studyRequired": "Selecciona un estudi.",

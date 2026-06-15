@@ -415,6 +415,7 @@
       "alertTextRequired": "Alert text is required.",
       "textRequired": "Alert text is required.",
       "visibleFromRequired": "Start date is required.",
+      "visibleFromPast": "Start date cannot be in the past.",
       "teamRequired": "Select a team or department.",
       "studyTypeRequired": "Select a study type.",
       "studyRequired": "Select a study.",

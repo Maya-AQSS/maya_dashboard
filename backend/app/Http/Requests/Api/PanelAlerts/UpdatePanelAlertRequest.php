@@ -31,7 +31,7 @@ class UpdatePanelAlertRequest extends FormRequest
             'severity' => ['sometimes', 'string', 'in:critical,high,medium,low,info'],
             'action_label' => ['sometimes', 'nullable', 'string', 'max:255'],
             'action_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
-            'visible_from' => ['sometimes', 'date'],
+            'visible_from' => ['sometimes', 'date', 'after_or_equal:now'],
             'visible_until' => ['sometimes', 'nullable', 'date', 'after:visible_from'],
             'schedule_cron' => ['sometimes', 'nullable', 'string', 'max:64'],
             'duration_minutes' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:525600'],
