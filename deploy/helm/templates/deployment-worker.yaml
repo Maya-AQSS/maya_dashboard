@@ -25,7 +25,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds | default 120 }}
       containers:
         - name: worker
           image: {{ include "maya-dashboard.image" (dict "root" . "name" .Values.image.backend.name) }}

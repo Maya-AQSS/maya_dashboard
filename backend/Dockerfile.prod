@@ -65,8 +65,8 @@ RUN apk add --no-cache \
     && docker-php-ext-enable redis \
     && rm -rf /tmp/phpredis-6.2.0 \
     && apk del .build-deps \
-    && addgroup -g "${WWW_GID}" -S app 2>/dev/null || true \
-    && adduser -u "${WWW_UID}" -G app -S -h /var/www/html app 2>/dev/null || true
+    && (getent group app >/dev/null 2>&1 || addgroup -g "${WWW_GID}" -S app) \
+    && (id -u app >/dev/null 2>&1 || adduser -u "${WWW_UID}" -G app -S -h /var/www/html app)
 
 # Config PHP de producción
 RUN { \
@@ -75,7 +75,6 @@ RUN { \
         echo 'opcache.memory_consumption=256'; \
         echo 'opcache.max_accelerated_files=20000'; \
         echo 'opcache.validate_timestamps=0'; \
-        echo 'opcache.preload_user=app'; \
         echo 'expose_php=Off'; \
         echo 'display_errors=Off'; \
         echo 'log_errors=On'; \
@@ -96,10 +95,10 @@ RUN { \
         echo 'group = app'; \
         echo 'listen = 127.0.0.1:9000'; \
         echo 'pm = dynamic'; \
-        echo 'pm.max_children = 20'; \
-        echo 'pm.start_servers = 4'; \
-        echo 'pm.min_spare_servers = 2'; \
-        echo 'pm.max_spare_servers = 6'; \
+        echo 'pm.max_children = 6'; \
+        echo 'pm.start_servers = 2'; \
+        echo 'pm.min_spare_servers = 1'; \
+        echo 'pm.max_spare_servers = 3'; \
         echo 'pm.max_requests = 500'; \
         echo 'catch_workers_output = yes'; \
         echo 'access.log = /dev/null'; \
@@ -156,7 +155,7 @@ NGINX
 COPY <<'SUPER' /etc/supervisor/conf.d/api.conf
 [supervisord]
 nodaemon=true
-user=root
+user=app
 logfile=/dev/stdout
 logfile_maxbytes=0
 pidfile=/run/supervisord.pid
@@ -184,6 +183,16 @@ WORKDIR /var/www/html
 
 # Vendor pre-compilado (sin dev, sin scripts)
 COPY --from=vendor /app/vendor /var/www/html/vendor
+
+# Fix laravel-queue-rabbitmq Consumer::$currentJob visibility (Laravel 13 compat).
+# Aplicado en build (no en runtime) para mantener la imagen inmutable y que
+# un cambio upstream rompa la build en lugar de fallar silenciosamente al arrancar.
+RUN _consumer=/var/www/html/vendor/vladimir-yuldashev/laravel-queue-rabbitmq/src/Consumer.php \
+    && if [ -f "$_consumer" ]; then \
+           sed -i 's/protected \$currentJob;/public \$currentJob;/' "$_consumer"; \
+       else \
+           echo "[build] WARNING: $_consumer not found; skipping currentJob visibility patch"; \
+       fi
 
 # Código de la app
 COPY . /var/www/html

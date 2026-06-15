@@ -12,7 +12,7 @@
       "properties": {
         "registry":   { "type": "string", "minLength": 1 },
         "repository": { "type": "string", "minLength": 1 },
-        "tag":        { "type": "string" },
+        "tag":        { "type": "string", "description": "Vacío permitido sólo si Chart.AppVersion está fijado; el helper falla en render si ambos quedan vacíos." },
         "backend": {
           "type": "object",
           "required": ["name", "pullPolicy"],
@@ -46,7 +46,14 @@
         "podAnnotations":{ "type": "object" },
         "nodeSelector":  { "type": "object" },
         "tolerations":   { "type": "array" },
-        "affinity":      { "type": "object" }
+        "affinity":      { "type": "object" },
+        "podDisruptionBudget": {
+          "type": "object",
+          "properties": {
+            "enabled":      { "type": "boolean" },
+            "minAvailable": { "type": "integer", "minimum": 0 }
+          }
+        }
       }
     },
     "frontend": {
@@ -54,7 +61,17 @@
       "required": ["replicas", "containerPort", "resources", "probes"],
       "properties": {
         "replicas":      { "type": "integer", "minimum": 1, "maximum": 20 },
-        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "resources":     { "type": "object" },
+        "probes":        { "type": "object" },
+        "affinity":      { "type": "object" },
+        "podDisruptionBudget": {
+          "type": "object",
+          "properties": {
+            "enabled":      { "type": "boolean" },
+            "minAvailable": { "type": "integer", "minimum": 0 }
+          }
+        }
       }
     },
     "worker": {
@@ -65,6 +82,7 @@
         "replicas": { "type": "integer", "minimum": 1, "maximum": 1, "description": "Worker es singleton: replicas=1." },
         "command":  { "type": "array", "items": { "type": "string" }, "minItems": 1 },
         "logStack": { "type": "string" },
+        "terminationGracePeriodSeconds": { "type": "integer", "minimum": 30, "description": "≥60s recomendado para ack AMQP limpio." },
         "resources":{ "type": "object" }
       }
     },
@@ -99,8 +117,15 @@
       "type": "object",
       "required": ["enabled"],
       "properties": {
-        "enabled":      { "type": "boolean" },
-        "backoffLimit": { "type": "integer", "minimum": 0 }
+        "enabled":                 { "type": "boolean" },
+        "backoffLimit":            { "type": "integer", "minimum": 0 },
+        "activeDeadlineSeconds":   { "type": "integer", "minimum": 60 },
+        "ttlSecondsAfterFinished": { "type": "integer", "minimum": 0 },
+        "seedMode": {
+          "enum": ["disabled", "if-empty"],
+          "description": "Sólo activar `if-empty` en primer install o entornos no productivos."
+        },
+        "resources": { "type": "object" }
       }
     },
     "ingress": {
@@ -178,7 +203,35 @@
       "type": "object",
       "required": ["enabled"],
       "properties": {
-        "enabled": { "type": "boolean" }
+        "enabled":              { "type": "boolean" },
+        "allowedFromNamespaces":{ "type": "array", "items": { "type": "string" } },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "traefikNamespace": { "type": "string", "minLength": 1 },
+            "traefikPodLabels": { "type": "object", "additionalProperties": { "type": "string" } },
+            "extraFrom":        { "type": "array" },
+            "monitoring": {
+              "type": "object",
+              "properties": {
+                "enabled":   { "type": "boolean" },
+                "namespace": { "type": "string", "minLength": 1 },
+                "ports":     { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 65535 } }
+              }
+            }
+          }
+        },
+        "allowedEgress": {
+          "type": "object",
+          "properties": {
+            "dns":                 { "type": "boolean" },
+            "patroniCidr":         { "type": "string" },
+            "keycloakNamespace":   { "type": "string" },
+            "rabbitmqNamespace":   { "type": "string" },
+            "redisNamespace":      { "type": "string" },
+            "mayaNamespaces":      { "type": "array", "items": { "type": "string" } }
+          }
+        }
       }
     }
   }

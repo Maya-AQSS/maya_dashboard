@@ -1,0 +1,29 @@
+{{- if and (hasKey .Values.backend "podDisruptionBudget") .Values.backend.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-backend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  minAvailable: {{ .Values.backend.podDisruptionBudget.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "backend") | nindent 6 }}
+{{- end }}
+{{- if and (hasKey .Values.frontend "podDisruptionBudget") .Values.frontend.podDisruptionBudget.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-frontend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  minAvailable: {{ .Values.frontend.podDisruptionBudget.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "frontend") | nindent 6 }}
+{{- end }}

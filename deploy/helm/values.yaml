@@ -52,7 +52,20 @@ backend:
   podAnnotations: {}
   nodeSelector: {}
   tolerations: []
-  affinity: {}
+  # Anti-affinity preferida (no required): que las 2 réplicas no caigan
+  # en el mismo nodo si hay alternativa, sin bloquear deploy en 1-node.
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: backend
+            topologyKey: kubernetes.io/hostname
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1                  # con replicas=2, asegura 1 viva en drains
 
 # ─── Frontend (SPA estática Nginx) ─────────────────────────────────────────
 frontend:
@@ -64,6 +77,18 @@ frontend:
   probes:
     liveness:  { path: /healthz, port: 8080, initialDelaySeconds: 5, periodSeconds: 15 }
     readiness: { path: /healthz, port: 8080, initialDelaySeconds: 2, periodSeconds: 10 }
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: frontend
+            topologyKey: kubernetes.io/hostname
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
 
 # ─── Worker (consumer AMQP notifications) ──────────────────────────────────
 worker:
@@ -72,6 +97,9 @@ worker:
   command: ["notifications:consume"] # matriz del plan: dashboard.worker = notifications:consume
   # dashboard worker SÍ usa rabbit (audit/logs lo quitan para evitar feedback loop).
   logStack: "daily,rabbit"
+  # 120s da margen al consumer AMQP para ack/cierre limpio en SIGTERM antes
+  # de que K8s mande SIGKILL (rabbitmq best-practice 60-120s).
+  terminationGracePeriodSeconds: 120
   resources:
     requests: { cpu: 50m,  memory: 192Mi }
     limits:   { cpu: 500m, memory: 384Mi }
@@ -101,6 +129,12 @@ reverb:
 migrate:
   enabled: true
   backoffLimit: 1
+  # Hard timeout: una migración wedgeada no debe bloquear upgrades indefinidamente.
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 3600
+  # `disabled` | `if-empty` — controla la ejecución de `db:seed` tras `migrate`.
+  # Solo activar `if-empty` en primer install o entornos no productivos.
+  seedMode: disabled
   resources:
     requests: { cpu: 50m, memory: 256Mi }
     limits:   { cpu: 500m, memory: 512Mi }
@@ -149,7 +183,9 @@ config:
   # ─── Session/cache (Redis in-cluster) ─────────────────────────────────────
   SESSION_DRIVER: redis
   SESSION_LIFETIME: "120"
-  SESSION_ENCRYPT: "false"
+  # Cifrado simétrico con APP_KEY: protege el contenido en Redis frente a
+  # lectura lateral si Redis o egress policy se ven comprometidos.
+  SESSION_ENCRYPT: "true"
   SESSION_PATH: "/"
   SESSION_DOMAIN: ".ceedcv.es"
   SESSION_SECURE_COOKIE: "true"      # forzado en HTTPS-only
@@ -183,6 +219,9 @@ config:
   # ─── CORS / proxies ──────────────────────────────────────────────────────
   CORS_ALLOWED_ORIGINS: "https://dashboard.ceedcv.es,https://dms.ceedcv.es,https://audit.ceedcv.es,https://logs.ceedcv.es"
   # IP/CIDR del Traefik interno (rango MetalLB), restringe trustProxies (W1).
+  # NOTA SEC: /24 cubre 254 IPs. Recomendado restringir a la IP concreta del
+  # Traefik LoadBalancer (`<traefik-vip>/32`) en cuanto esté fija; revisar
+  # cuando MetalLB asigne pool definitivo.
   TRUSTED_PROXIES: "172.29.71.0/24"
 
   # ─── Log Management DB (lectura, EvaluateAlertRules) ──────────────────────
@@ -192,6 +231,9 @@ config:
   LOG_MGMT_DB_USERNAME: log_mgmt_readonly
 
   # ─── Reverb (expuestos al frontend vía VITE_*; aquí van los del backend) ──
+  # Nota Reverb: REVERB_APP_KEY es un IDENTIFICADOR público (se publica al SPA
+  # vía VITE_REVERB_APP_KEY). El secreto real es REVERB_APP_SECRET, que NUNCA
+  # se expone como VITE_*. Mantener separación: KEY = identidad, SECRET = auth.
   REVERB_APP_ID: maya-dashboard
   REVERB_HOST: dashboard-reverb.ceedcv.es
   REVERB_PORT: "443"
@@ -256,11 +298,23 @@ containerSecurityContext:
 # ─── NetworkPolicy (W5) ──────────────────────────────────────────────────────
 networkPolicy:
   enabled: true
-  # Namespaces autorizados east-west (audit/logs pueden llamar a authz; dashboard
-  # no recibe llamadas de otros servicios salvo el frontend vía Ingress).
+  # Conservado por compatibilidad (no se usa con la nueva ingress.* abajo).
   allowedFromNamespaces:
-    - kube-system          # Traefik / probes
+    - kube-system
     - maya-dashboard
+  ingress:
+    # Restringe el ingress de Traefik a los pods Traefik concretos, no a todo
+    # kube-system (CoreDNS / metrics-server / kube-proxy quedarían bloqueados).
+    traefikNamespace: kube-system
+    traefikPodLabels:
+      app.kubernetes.io/name: traefik
+    # `extraFrom` permite añadir orígenes adicionales (lista YAML estándar de
+    # `NetworkPolicyPeer`). Vacío por defecto.
+    extraFrom: []
+    monitoring:
+      enabled: false                 # activar cuando se despliegue Prometheus
+      namespace: monitoring
+      ports: [8000]                  # backend /metrics; ampliar si reverb expone
   # Egress: DB Patroni, Redis, RabbitMQ, Keycloak, DNS. Sin salida a internet.
   allowedEgress:
     dns: true
@@ -268,4 +322,12 @@ networkPolicy:
     keycloakNamespace: keycloak
     rabbitmqNamespace: rabbitmq
     redisNamespace: redis
+    # East-west: otros servicios Maya a los que dashboard puede llamar
+    # (introspección, SSO relay). Lista vacía = sin egress east-west.
+    mayaNamespaces: []
+    # Ejemplo:
+    #   - maya-authorization
+    #   - maya-audit
+    #   - maya-logs
+    #   - maya-dms
 

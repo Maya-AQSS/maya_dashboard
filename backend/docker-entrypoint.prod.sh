@@ -29,19 +29,19 @@ mkdir -p \
 
 # Limpiar y regenerar caches por release. Si Laravel falla aquí, queremos
 # saberlo en el arranque del pod (probes en Failed → reinicio controlado).
-php artisan config:clear  >/dev/null 2>&1 || true
-php artisan route:clear   >/dev/null 2>&1 || true
-php artisan view:clear    >/dev/null 2>&1 || true
-php artisan event:clear   >/dev/null 2>&1 || true
+# Mantenemos `|| true` (el clear sobre un cache ausente no es error real) pero
+# NO redirigimos stderr, para que cualquier fallo real (APP_KEY, conexión, etc.)
+# aparezca en los logs del pod.
+php artisan config:clear  >/dev/null || true
+php artisan route:clear   >/dev/null || true
+php artisan view:clear    >/dev/null || true
+php artisan event:clear   >/dev/null || true
 
 php artisan config:cache
-php artisan route:cache  >/dev/null 2>&1 || true  # routes con closures lo aborta; no es bloqueante
-php artisan event:cache  >/dev/null 2>&1 || true
-
-# Fix laravel-queue-rabbitmq Consumer::$currentJob visibility (Laravel 13 compat)
-# Mismo patch que en docker-entrypoint.sh (dev). Idempotente.
-sed -i 's/protected \$currentJob;/public \$currentJob;/' \
-    /var/www/html/vendor/vladimir-yuldashev/laravel-queue-rabbitmq/src/Consumer.php 2>/dev/null || true
+# `route:cache` aborta si hay closures en las rutas (no bloqueante).
+# Capturamos stderr a stdout para visibilidad, pero permitimos fallo controlado.
+php artisan route:cache >/dev/null 2>&1 || echo "[entrypoint] route:cache skipped (closures present)"
+php artisan event:cache >/dev/null 2>&1 || echo "[entrypoint] event:cache skipped"
 
 case "${ROLE}" in
     api)

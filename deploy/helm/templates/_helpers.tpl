@@ -41,16 +41,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "maya-dashboard.componentSelector" -}}
-{{ include "maya-dashboard.selectorLabels" . }}
+{{- include "maya-dashboard.selectorLabels" . }}
 app.kubernetes.io/component: {{ .component }}
 {{- end -}}
 
-{{/* Construye la referencia completa de la imagen. */}}
+{{/* Construye la referencia completa de la imagen. Falla si tag queda vacío
+     (evita pulls accidentales a `:latest` o tag por defecto desactualizado). */}}
 {{- define "maya-dashboard.image" -}}
 {{- $registry := .root.Values.image.registry -}}
 {{- $repo := .root.Values.image.repository -}}
 {{- $name := .name -}}
 {{- $tag := default .root.Values.image.tag .root.Chart.AppVersion -}}
+{{- if not $tag -}}
+{{- fail "image.tag must be set (e.g. --set image.tag=<git-sha>) or Chart.AppVersion must be non-empty" -}}
+{{- end -}}
 {{- if $registry -}}
 {{- printf "%s/%s/%s:%s" $registry $repo $name $tag -}}
 {{- else -}}

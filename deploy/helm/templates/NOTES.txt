@@ -3,10 +3,18 @@ maya_dashboard {{ .Chart.AppVersion }} desplegado como release "{{ .Release.Name
 Componentes:
   - backend  : Deployment ({{ .Values.backend.replicas }} réplicas) / Service ClusterIP / Ingress {{ .Values.ingress.apiHost }}
   - frontend : Deployment ({{ .Values.frontend.replicas }} réplicas) / Service ClusterIP / Ingress {{ .Values.ingress.host }}
-  - worker   : Deployment 1 (notifications:consume)
-  - scheduler: Deployment 1 (schedule:work)
-  - reverb   : Deployment 1 / Ingress {{ .Values.reverb.ingress.host }}
-  - migrate  : Job hook pre-install/pre-upgrade (forward-only)
+{{- if .Values.worker.enabled }}
+  - worker   : Deployment {{ .Values.worker.replicas }} (notifications:consume)
+{{- end }}
+{{- if .Values.scheduler.enabled }}
+  - scheduler: Deployment {{ .Values.scheduler.replicas }} (schedule:work)
+{{- end }}
+{{- if .Values.reverb.enabled }}
+  - reverb   : Deployment {{ .Values.reverb.replicas }}{{- if .Values.reverb.ingress.enabled }} / Ingress {{ .Values.reverb.ingress.host }}{{- end }}
+{{- end }}
+{{- if .Values.migrate.enabled }}
+  - migrate  : Job hook pre-install/pre-upgrade (forward-only — helm rollback NO revierte el esquema)
+{{- end }}
 
 Verifica:
   kubectl -n {{ .Release.Namespace }} get pods
