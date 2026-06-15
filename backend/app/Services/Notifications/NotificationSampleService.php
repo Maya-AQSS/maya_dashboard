@@ -30,7 +30,8 @@ final class NotificationSampleService implements NotificationSampleServiceInterf
         // Return false immediately when the type is disabled so the API responds
         // with delivered:false — the ingestion path returns true for disabled
         // notifications (ACK for AMQP consumers), which would be misleading here.
-        if (! $this->definitions->isKeyEnabled($key)) {
+        $definition = $this->definitions->findByKey($key);
+        if ($definition !== null && ! $definition->enabled) {
             return false;
         }
 
