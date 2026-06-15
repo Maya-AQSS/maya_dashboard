@@ -19,6 +19,7 @@ import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { listNotificationDefinitions, setNotificationDefinitionEnabled } from '../api/notificationDefinitionsApi'
 import { fireNotificationSample } from '../api/notificationSampleApi'
 import type { NotificationDefinition, Severity, DefinitionCategory } from '../types/systemNotification'
+import { dropInvalidStoredPageSize } from '../../../lib/dataTablePageSize'
 
 const SEVERITY_BADGE: Record<Severity, 'danger' | 'warning' | 'info' | 'neutral'> = {
   critical: 'danger',
@@ -56,6 +57,7 @@ export function SystemNotificationsTab({ canToggle }: Props) {
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:notification-definitions-table' })
 
+  dropInvalidStoredPageSize('maya:dashboard:notification-definitions-table')
   const table = useServerTable({
     defaults: { search: '', source_app: '', default_severity: '' },
     sortableColumns: ['label', 'source_app', 'default_severity', 'last_evaluated_at'],

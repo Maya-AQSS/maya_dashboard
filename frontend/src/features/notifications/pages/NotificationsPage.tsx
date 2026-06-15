@@ -26,6 +26,7 @@ import { useNotifications } from '../hooks/useNotifications'
 import { useDebounce } from '../../../hooks/useDebounce'
 import { notificationAppLabel } from '../appLabel'
 import type { Notification, NotificationListFilters, NotificationSeverity } from '../types/notification'
+import { dropInvalidStoredPageSize } from '../../../lib/dataTablePageSize'
 
 const POLL_MS = 60_000
 
@@ -53,6 +54,7 @@ export default function NotificationsPage() {
   const [search, setSearch] = useState('')
   const [unreadOnly, setUnreadOnly] = useState(false)
 
+  dropInvalidStoredPageSize('maya:dashboard:notifications-table')
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
     useTablePreferences({ storageKey: 'maya:dashboard:notifications-table' })
 

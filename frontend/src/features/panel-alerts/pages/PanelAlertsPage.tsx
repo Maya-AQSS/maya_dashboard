@@ -24,6 +24,7 @@ import { usePanelAlerts } from '../hooks/usePanelAlerts'
 import { SystemNotificationsTab } from '../components/SystemNotificationsTab'
 import { ScheduledRulesTab } from '../components/ScheduledRulesTab'
 import type { PanelAlert, PanelAlertFilters, Severity } from '../types/panelAlert'
+import { dropInvalidStoredPageSize } from '../../../lib/dataTablePageSize'
 
 type Tab = 'alerts' | 'system' | 'rules'
 
@@ -74,6 +75,7 @@ export default function PanelAlertsPage() {
     setSearchParams((prev) => { value ? prev.delete('expired') : prev.set('expired', '0'); prev.delete('page'); return prev }, { replace: true })
   }
 
+  dropInvalidStoredPageSize('maya:dashboard:panel-alerts-table')
   const { hiddenIds, toggleHidden, sortBy, setSortBy, pageSize, setPageSize } =
     useTablePreferences({ storageKey: 'maya:dashboard:panel-alerts-table' })
 

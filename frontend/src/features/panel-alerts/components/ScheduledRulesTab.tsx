@@ -19,6 +19,7 @@ import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { listNotificationRules, updateNotificationRule, deleteNotificationRule } from '../api/notificationRulesApi'
 import { fireNotificationSample } from '../api/notificationSampleApi'
 import type { NotificationRule } from '../types/notificationRule'
+import { dropInvalidStoredPageSize } from '../../../lib/dataTablePageSize'
 
 // Apps del ecosistema Maya que pueden tener reglas programadas (source_app).
 const SOURCE_APP_OPTIONS = [
@@ -42,6 +43,7 @@ export function ScheduledRulesTab({ canManage }: Props) {
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:notification-rules-table' })
 
+  dropInvalidStoredPageSize('maya:dashboard:notification-rules-table')
   const table = useServerTable({
     defaults: { search: '', source_app: '' },
     sortableColumns: ['name', 'source_app', 'schedule_cron'],

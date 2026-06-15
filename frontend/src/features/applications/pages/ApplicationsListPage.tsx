@@ -19,6 +19,7 @@ import { listApplications } from '../api/applicationsApi'
 import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useFavoritesContext } from '../../favorites/context/FavoritesContext'
+import { dropInvalidStoredPageSize } from '../../../lib/dataTablePageSize'
 
 type App = {
   id: string
@@ -43,6 +44,7 @@ function ApplicationsListPage() {
   const { hiddenIds, toggleHidden } =
     useTablePreferences({ storageKey: 'maya:dashboard:applications-table' })
 
+  dropInvalidStoredPageSize('maya:dashboard:applications-table')
   const table = useServerTable({
     defaults: { search: '', favorite: '' },
     sortableColumns: ['name', 'description', 'updated_at'],
