@@ -120,7 +120,7 @@ export default function App() {
         navigate('/profile', { state: buildBackState(location) })
       }
       onNotificationNavigate={(notification) =>
-        navigate(`/notifications/${notification.id}`, { state: buildBackState(location) })
+        window.open(`/notifications/${notification.id}`, '_blank', 'noopener,noreferrer')
       }
       loadingInitializingMessage={t('auth.initializing')}
       loadingRedirectingMessage={t('auth.redirecting')}
