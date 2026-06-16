@@ -28,18 +28,45 @@ abstract class BaseAuditObserver
 
     public function created(Model $model): void
     {
-        DB::afterCommit(fn () => $this->publish('created', $model, null, $model->getAttributes()));
+        $new = $this->enrichNew('created', $model, $model->getAttributes());
+        DB::afterCommit(fn () => $this->publish('created', $model, null, $new));
     }
 
     public function updated(Model $model): void
     {
         $previous = array_intersect_key($model->getOriginal(), $model->getChanges());
-        DB::afterCommit(fn () => $this->publish('updated', $model, $previous, $model->getChanges()));
+        $new = $this->enrichNew('updated', $model, $model->getChanges());
+        $previous = $this->enrichPrevious('updated', $model, $previous);
+        DB::afterCommit(fn () => $this->publish('updated', $model, $previous, $new));
     }
 
     public function deleted(Model $model): void
     {
-        DB::afterCommit(fn () => $this->publish('deleted', $model, $model->getAttributes(), null));
+        $previous = $this->enrichPrevious('deleted', $model, $model->getAttributes());
+        DB::afterCommit(fn () => $this->publish('deleted', $model, $previous, null));
+    }
+
+    /**
+     * Hook para enriquecer new_value con contexto adicional legible por el auditor.
+     * Las subclases pueden sobreescribir este método para añadir campos como _context.
+     *
+     * @param  array<string, mixed>|null  $new
+     * @return array<string, mixed>|null
+     */
+    protected function enrichNew(string $action, Model $model, ?array $new): ?array
+    {
+        return $new;
+    }
+
+    /**
+     * Hook para enriquecer previous_value con contexto adicional.
+     *
+     * @param  array<string, mixed>|null  $previous
+     * @return array<string, mixed>|null
+     */
+    protected function enrichPrevious(string $action, Model $model, ?array $previous): ?array
+    {
+        return $previous;
     }
 
     /**
