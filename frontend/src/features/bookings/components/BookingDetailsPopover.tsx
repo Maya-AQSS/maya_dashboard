@@ -115,7 +115,7 @@ export function BookingDetailsPopover({
             type="button"
             onClick={onClose}
             aria-label={t('actions.cancel')}
-            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-md text-text-secondary hover:text-text-primary hover:bg-text-primary/5 dark:hover:bg-text-inverse/10 text-lg leading-none"
+            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-md text-text-secondary dark:text-text-dark-secondary hover:text-text-primary dark:hover:text-text-dark-primary hover:bg-text-primary/5 dark:hover:bg-text-inverse/10 text-lg leading-none"
           >
             ×
           </button>

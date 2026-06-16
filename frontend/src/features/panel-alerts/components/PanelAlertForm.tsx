@@ -157,8 +157,8 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
               onClick={() => setActiveLang(l.code)}
               className={`px-3 py-1.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 isActive
-                  ? 'border-odoo-purple text-odoo-purple'
-                  : 'border-transparent text-text-secondary dark:text-text-dark-secondary hover:text-text-primary'
+                  ? 'border-odoo-purple dark:border-odoo-dark-purple text-odoo-purple dark:text-odoo-dark-purple'
+                  : 'border-transparent text-text-secondary dark:text-text-dark-secondary hover:text-text-primary dark:hover:text-text-dark-primary'
               }`}
             >
               {t(`languageNames.${l.code}`, { defaultValue: l.name })}

@@ -42,7 +42,7 @@ function FavoriteCard({ fav, onRemove }: FavoriteCardProps) {
             type="button"
             aria-label={t('favorites.removeFromFavorites')}
             onClick={handleStarClick}
-            className="py-1 px-2 rounded-full bg-warning-light dark:bg-warning-dark/40 border border-odoo-purple/20 dark:border-ui-dark-border text-odoo-purple text-xs font-semibold uppercase tracking-wide cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-warning dark:focus-visible:ring-offset-ui-dark-card"
+            className="py-1 px-2 rounded-full bg-warning-light dark:bg-warning-dark/40 border border-odoo-purple/20 dark:border-ui-dark-border text-odoo-purple dark:text-odoo-dark-purple text-xs font-semibold uppercase tracking-wide cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-warning dark:focus-visible:ring-offset-ui-dark-card"
           >
             {FAVORITE_STAR_FILLED_CHAR}
           </button>
