@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertAudienceFields } from './AlertAudienceFields'
+import { ConditionBuilder } from './ConditionBuilder'
 import {
   audienceFormStateFromApi,
   buildAudiencePayload,
@@ -10,7 +11,7 @@ import {
   type AlertAudienceFormState,
 } from '../types/alertAudience'
 import { useNotificationDefinitions } from '../hooks/useNotificationDefinitions'
-import type { CreateNotificationRuleInput, NotificationRule } from '../types/notificationRule'
+import type { CreateNotificationRuleInput, NotificationRule, RuleConditions } from '../types/notificationRule'
 import type { Severity } from '../types/systemNotification'
 
 interface Props {
@@ -54,6 +55,7 @@ export function NotificationRuleForm({ initial, onSubmit, onCancel, loading }: P
   const [severity, setSeverity] = useState<Severity | ''>(initial?.severity ?? '')
   const [enabled, setEnabled] = useState(initial?.enabled ?? true)
   const [paramRows, setParamRows] = useState<ParamRow[]>(paramsToRows(initial?.params))
+  const [conditions, setConditions] = useState<RuleConditions | null>(initial?.conditions ?? null)
   const [audience, setAudience] = useState<AlertAudienceFormState>(() =>
     initial ? audienceFormStateFromApi(initial) : defaultAudienceFormState(),
   )
@@ -68,6 +70,7 @@ export function NotificationRuleForm({ initial, onSubmit, onCancel, loading }: P
       setSeverity(initial.severity ?? '')
       setEnabled(initial.enabled)
       setParamRows(paramsToRows(initial.params))
+      setConditions(initial.conditions ?? null)
       setAudience(audienceFormStateFromApi(initial))
     }
   }, [initial])
@@ -95,6 +98,7 @@ export function NotificationRuleForm({ initial, onSubmit, onCancel, loading }: P
         name: name.trim(),
         description: description.trim() || null,
         params: rowsToParams(paramRows),
+        conditions: conditions ?? null,
         schedule_cron: scheduleCron.trim(),
         severity: severity || null,
         enabled,
@@ -157,6 +161,12 @@ export function NotificationRuleForm({ initial, onSubmit, onCancel, loading }: P
             + {t('scheduledRules.addParam')}
           </Button>
         </div>
+      </div>
+
+      {/* Condition engine: only meaningful for dms.generic_condition evaluator */}
+      <div>
+        <label className="block text-sm font-medium mb-1">{t('scheduledRules.fields.conditions')}</label>
+        <ConditionBuilder value={conditions} onChange={setConditions} disabled={loading} />
       </div>
 
       <AlertAudienceFields value={audience} onChange={setAudience} disabled={loading} />

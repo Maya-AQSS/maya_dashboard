@@ -24,6 +24,7 @@ class NotificationRule extends Model
         'name',
         'description',
         'params',
+        'conditions',
         'schedule_cron',
         'audience',
         'severity',
@@ -35,6 +36,7 @@ class NotificationRule extends Model
     {
         return [
             'params' => 'array',
+            'conditions' => 'array',
             'audience' => AsAudience::class,
             'enabled' => 'boolean',
             'created_at' => 'datetime',

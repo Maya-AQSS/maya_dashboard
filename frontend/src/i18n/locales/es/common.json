@@ -503,7 +503,45 @@
       "severityOverride": "Severidad",
       "params": "Parámetros",
       "enabled": "Activa",
-      "sourceApp": "Servicio"
+      "sourceApp": "Servicio",
+      "conditions": "Condiciones de campo"
+    },
+    "conditions": {
+      "legend": "Condiciones (motor genérico)",
+      "hint": "Solo para reglas de tipo «Condición genérica». Define qué registros de la BD activan la notificación.",
+      "logic": "Lógica",
+      "logicAnd": "Todas (AND)",
+      "logicOr": "Alguna (OR)",
+      "addCondition": "+ Añadir condición",
+      "removeCondition": "Eliminar",
+      "table": "Tabla",
+      "field": "Campo",
+      "op": "Operador",
+      "value": "Valor",
+      "valuePlaceholderIn": "val1, val2, val3",
+      "valuePlaceholderDays": "Nº días",
+      "ops": {
+        "eq": "igual a (=)",
+        "ne": "distinto de (≠)",
+        "gt": "mayor que (>)",
+        "lt": "menor que (<)",
+        "gte": "mayor o igual (≥)",
+        "lte": "menor o igual (≤)",
+        "contains": "contiene",
+        "starts_with": "empieza por",
+        "ends_with": "termina en",
+        "in": "en lista",
+        "not_in": "no en lista",
+        "is_null": "es nulo",
+        "is_not_null": "no es nulo",
+        "older_than_days": "más antiguo que N días",
+        "within_days": "dentro de los últimos N días"
+      },
+      "validation": {
+        "tableField": "Tabla y campo son obligatorios.",
+        "opRequired": "El operador es obligatorio.",
+        "valueRequired": "El valor es obligatorio para este operador."
+      }
     },
     "validation": {
       "evaluatorRequired": "Selecciona un tipo de regla.",

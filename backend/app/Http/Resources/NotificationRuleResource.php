@@ -27,6 +27,7 @@ class NotificationRuleResource extends JsonResource
             'name' => $dto->name,
             'description' => $dto->description,
             'params' => $dto->params,
+            'conditions' => $dto->conditions,
             'schedule_cron' => $dto->scheduleCron,
             'severity' => $dto->severity,
             'enabled' => $dto->enabled,

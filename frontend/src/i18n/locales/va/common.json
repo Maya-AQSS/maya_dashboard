@@ -503,7 +503,45 @@
       "severityOverride": "Severitat",
       "params": "Paràmetres",
       "enabled": "Activa",
-      "sourceApp": "Servici"
+      "sourceApp": "Servici",
+      "conditions": "Condicions de camp"
+    },
+    "conditions": {
+      "legend": "Condicions (motor genèric)",
+      "hint": "Sols per a regles de tipus «Condició genèrica». Definix quins registres de la BD activen la notificació.",
+      "logic": "Lògica",
+      "logicAnd": "Totes (AND)",
+      "logicOr": "Alguna (OR)",
+      "addCondition": "+ Afegir condició",
+      "removeCondition": "Eliminar",
+      "table": "Taula",
+      "field": "Camp",
+      "op": "Operador",
+      "value": "Valor",
+      "valuePlaceholderIn": "val1, val2, val3",
+      "valuePlaceholderDays": "Nre. dies",
+      "ops": {
+        "eq": "igual a (=)",
+        "ne": "distint de (≠)",
+        "gt": "major que (>)",
+        "lt": "menor que (<)",
+        "gte": "major o igual (≥)",
+        "lte": "menor o igual (≤)",
+        "contains": "conté",
+        "starts_with": "comença per",
+        "ends_with": "acaba en",
+        "in": "en llista",
+        "not_in": "no en llista",
+        "is_null": "és nul",
+        "is_not_null": "no és nul",
+        "older_than_days": "més antic que N dies",
+        "within_days": "dins dels últims N dies"
+      },
+      "validation": {
+        "tableField": "Taula i camp són obligatoris.",
+        "opRequired": "L'operador és obligatori.",
+        "valueRequired": "El valor és obligatori per a este operador."
+      }
     },
     "validation": {
       "evaluatorRequired": "Selecciona un tipus de regla.",

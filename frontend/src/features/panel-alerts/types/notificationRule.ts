@@ -1,6 +1,30 @@
 import type { AlertAudienceFields } from './alertAudience'
 import type { Severity } from './systemNotification'
 
+// ── Condition engine types ───────────────────────────────────────────────────
+
+export type ConditionOp =
+  | 'eq' | 'ne'
+  | 'gt' | 'lt' | 'gte' | 'lte'
+  | 'contains' | 'starts_with' | 'ends_with'
+  | 'in' | 'not_in'
+  | 'is_null' | 'is_not_null'
+  | 'older_than_days' | 'within_days'
+
+export interface ConditionItem {
+  table: string
+  field: string
+  op: ConditionOp
+  value?: string | number | string[] | null
+}
+
+export interface RuleConditions {
+  logic: 'AND' | 'OR'
+  items: ConditionItem[]
+}
+
+// ── Rule types ───────────────────────────────────────────────────────────────
+
 /**
  * A configurable instance of a scheduled notification rule (level B). The
  * owning service reads its active rules via FDW and evaluates them.
@@ -12,6 +36,7 @@ export interface NotificationRule extends AlertAudienceFields {
   name: string
   description: string | null
   params: Record<string, unknown>
+  conditions: RuleConditions | null
   schedule_cron: string
   severity: Severity | null
   enabled: boolean
@@ -25,6 +50,7 @@ export interface CreateNotificationRuleInput {
   name: string
   description?: string | null
   params?: Record<string, unknown>
+  conditions?: RuleConditions | null
   schedule_cron: string
   severity?: Severity | null
   enabled?: boolean

@@ -118,6 +118,7 @@ return [
 
     'notification_rule' => [
         'evaluator_key_invalid' => 'evaluator_key must reference an existing scheduled notification definition.',
+        'condition_days_value' => 'The value for older_than_days/within_days must be a non-negative integer.',
     ],
 
     'attributes' => [],

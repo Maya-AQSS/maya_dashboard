@@ -6,12 +6,14 @@ namespace App\Http\Requests\Api\Notifications;
 
 use App\Http\Requests\Concerns\AuthorizesByPermission;
 use App\Http\Requests\Concerns\ValidatesAlertAudience;
+use App\Http\Requests\Concerns\ValidatesNotificationConditions;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreNotificationRuleRequest extends FormRequest
 {
     use AuthorizesByPermission;
     use ValidatesAlertAudience;
+    use ValidatesNotificationConditions;
 
     public function authorize(): bool
     {
@@ -36,6 +38,6 @@ class StoreNotificationRuleRequest extends FormRequest
             'schedule_cron' => ['required', 'string', 'max:64'],
             'severity' => ['nullable', 'string', 'in:critical,high,medium,low,info'],
             'enabled' => ['nullable', 'boolean'],
-        ], $this->alertAudienceRules());
+        ], $this->alertAudienceRules(), $this->conditionsRules());
     }
 }

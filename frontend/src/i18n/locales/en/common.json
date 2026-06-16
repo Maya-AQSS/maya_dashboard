@@ -503,7 +503,45 @@
       "severityOverride": "Severity",
       "params": "Parameters",
       "enabled": "Enabled",
-      "sourceApp": "Service"
+      "sourceApp": "Service",
+      "conditions": "Field conditions"
+    },
+    "conditions": {
+      "legend": "Conditions (generic engine)",
+      "hint": "Only for «Generic condition» rule types. Defines which DB records trigger the notification.",
+      "logic": "Logic",
+      "logicAnd": "All must match (AND)",
+      "logicOr": "Any must match (OR)",
+      "addCondition": "+ Add condition",
+      "removeCondition": "Remove",
+      "table": "Table",
+      "field": "Field",
+      "op": "Operator",
+      "value": "Value",
+      "valuePlaceholderIn": "val1, val2, val3",
+      "valuePlaceholderDays": "No. of days",
+      "ops": {
+        "eq": "equals (=)",
+        "ne": "not equal (≠)",
+        "gt": "greater than (>)",
+        "lt": "less than (<)",
+        "gte": "greater or equal (≥)",
+        "lte": "less or equal (≤)",
+        "contains": "contains",
+        "starts_with": "starts with",
+        "ends_with": "ends with",
+        "in": "in list",
+        "not_in": "not in list",
+        "is_null": "is null",
+        "is_not_null": "is not null",
+        "older_than_days": "older than N days",
+        "within_days": "within the last N days"
+      },
+      "validation": {
+        "tableField": "Table and field are required.",
+        "opRequired": "Operator is required.",
+        "valueRequired": "Value is required for this operator."
+      }
     },
     "validation": {
       "evaluatorRequired": "Select a rule type.",
