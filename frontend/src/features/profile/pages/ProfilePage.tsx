@@ -140,10 +140,10 @@ function ProfilePage() {
   // cambiar el select (evita que la UI cambie de idioma a mitad de edición).
   const [pendingLocale, setPendingLocale] = useState<string>(locale)
 
-  // Nombre legible del idioma actual para la vista de solo-lectura.
+  // Nombre legible del idioma actual para la vista de solo-lectura (en el idioma del usuario).
   const currentLanguageName = useMemo(
-    () => languages.find((l) => l.code === locale)?.name ?? locale,
-    [languages, locale],
+    () => t(`languageNames.${locale}`, { defaultValue: languages.find((l) => l.code === locale)?.name ?? locale }),
+    [languages, locale, t],
   )
 
   const schema = useMemo(() => createEmployeeFormSchema(t), [t])
@@ -509,7 +509,7 @@ function PreferencesCard({
         >
           {languages.map((opt) => (
             <option key={opt.code} value={opt.code}>
-              {opt.name}
+              {t(`languageNames.${opt.code}`, { defaultValue: opt.name })}
             </option>
           ))}
         </Select>

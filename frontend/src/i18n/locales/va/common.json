@@ -634,5 +634,10 @@
     "friday": "Divendres",
     "saturday": "Dissabte",
     "sunday": "Diumenge"
+  },
+  "languageNames": {
+    "es": "Espanyol",
+    "va": "Valencià",
+    "en": "Anglès"
   }
 }

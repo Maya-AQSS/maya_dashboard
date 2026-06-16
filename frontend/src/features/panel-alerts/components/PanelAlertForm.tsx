@@ -10,6 +10,7 @@ import { MayaEditor } from '@ceedcv-maya/shared-editor-react'
 import { useDarkMode } from '@ceedcv-maya/shared-layout-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertAudienceFields } from './AlertAudienceFields'
+import { CronSchedulePicker } from './CronSchedulePicker'
 import {
   audienceFormStateFromApi,
   buildAudiencePayload,
@@ -160,7 +161,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
                   : 'border-transparent text-text-secondary dark:text-text-dark-secondary hover:text-text-primary'
               }`}
             >
-              {l.name}
+              {t(`languageNames.${l.code}`, { defaultValue: l.name })}
               {l.code === defaultLocale && <span className="text-danger"> *</span>}
               {filled && l.code !== defaultLocale && <span className="ml-1 text-success">●</span>}
             </button>
@@ -263,15 +264,7 @@ export function PanelAlertForm({ initial, onSubmit, onCancel, loading }: Props) 
             <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">
               {t('panelAlerts.fields.scheduleCron')}
             </label>
-            <TextInput
-              fieldSize="sm"
-              value={scheduleCron}
-              onChange={(e) => setScheduleCron(e.target.value)}
-              placeholder="0 9 * * 1"
-            />
-            <p className="mt-1 text-xs text-text-secondary dark:text-text-dark-secondary">
-              {t('panelAlerts.recurrence.cronHelp')}
-            </p>
+            <CronSchedulePicker value={scheduleCron} onChange={setScheduleCron} />
           </div>
           <div>
             <label className="block text-sm font-medium text-text-primary dark:text-text-dark-primary mb-1">

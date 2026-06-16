@@ -101,89 +101,77 @@ export function CronSchedulePicker({ value, onChange, disabled }: Props) {
   const domOptions = Array.from({ length: 28 }, (_, i) => String(i + 1))
 
   return (
-    <div className="space-y-2">
-      {/* Preset selector */}
+    <div className="flex items-center gap-1.5 overflow-x-auto">
       <Select
         fieldSize="sm"
         value={state.preset}
         onChange={(e) => update({ preset: e.target.value as Preset })}
         disabled={disabled}
+        className="!w-auto"
       >
         {PRESETS.map((p) => (
           <option key={p.value} value={p.value}>{p.label}</option>
         ))}
       </Select>
 
-      {/* Daily / Weekly / Monthly: time picker */}
-      {(state.preset === 'daily' || state.preset === 'weekly' || state.preset === 'monthly') && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-secondary dark:text-text-dark-secondary">{t('schedule.at')}</span>
-          <Select fieldSize="sm" value={state.hour} onChange={(e) => update({ hour: e.target.value })} disabled={disabled} className="w-24">
-            {hours.map((h) => <option key={h} value={h}>{h}h</option>)}
-          </Select>
-          <span className="text-sm">:</span>
-          <Select fieldSize="sm" value={state.minute} onChange={(e) => update({ minute: e.target.value })} disabled={disabled} className="w-24">
-            {minutes.map((m) => <option key={m} value={m}>{m}m</option>)}
-          </Select>
-        </div>
-      )}
-
-      {/* Weekly: day of week */}
       {state.preset === 'weekly' && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-secondary dark:text-text-dark-secondary">{t('schedule.onDay')}</span>
-          <Select fieldSize="sm" value={state.dayOfWeek} onChange={(e) => update({ dayOfWeek: e.target.value })} disabled={disabled}>
+        <>
+          <span className="text-sm text-text-secondary dark:text-text-dark-secondary whitespace-nowrap">{t('schedule.onDay')}</span>
+          <Select fieldSize="sm" value={state.dayOfWeek} onChange={(e) => update({ dayOfWeek: e.target.value })} disabled={disabled} className="!w-auto">
             {DOW_OPTIONS.map((d) => (
               <option key={d.value} value={d.value}>{t(d.labelKey)}</option>
             ))}
           </Select>
-        </div>
+        </>
       )}
 
-      {/* Monthly: day of month */}
       {state.preset === 'monthly' && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-secondary dark:text-text-dark-secondary">{t('schedule.onDayOfMonth')}</span>
-          <Select fieldSize="sm" value={state.dayOfMonth} onChange={(e) => update({ dayOfMonth: e.target.value })} disabled={disabled} className="w-24">
+        <>
+          <span className="text-sm text-text-secondary dark:text-text-dark-secondary whitespace-nowrap">{t('schedule.onDayOfMonth')}</span>
+          <Select fieldSize="sm" value={state.dayOfMonth} onChange={(e) => update({ dayOfMonth: e.target.value })} disabled={disabled} className="!w-14">
             {domOptions.map((d) => <option key={d} value={d}>{d}</option>)}
           </Select>
-        </div>
+        </>
       )}
 
-      {/* Hourly: every N hours */}
+      {(state.preset === 'daily' || state.preset === 'weekly' || state.preset === 'monthly') && (
+        <>
+          <span className="text-sm text-text-secondary dark:text-text-dark-secondary whitespace-nowrap">{t('schedule.at')}</span>
+          <Select fieldSize="sm" value={state.hour} onChange={(e) => update({ hour: e.target.value })} disabled={disabled} className="!w-14">
+            {hours.map((h) => <option key={h} value={h}>{h}</option>)}
+          </Select>
+          <span className="text-sm font-medium">:</span>
+          <Select fieldSize="sm" value={state.minute} onChange={(e) => update({ minute: e.target.value })} disabled={disabled} className="!w-14">
+            {minutes.map((m) => <option key={m} value={m}>{m}</option>)}
+          </Select>
+        </>
+      )}
+
       {state.preset === 'hourly' && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-text-secondary dark:text-text-dark-secondary">{t('schedule.everyNHours')}</span>
-          <Select fieldSize="sm" value={state.everyHours} onChange={(e) => update({ everyHours: e.target.value })} disabled={disabled} className="w-24">
+        <>
+          <span className="text-sm text-text-secondary dark:text-text-dark-secondary whitespace-nowrap">{t('schedule.everyNHours')}</span>
+          <Select fieldSize="sm" value={state.everyHours} onChange={(e) => update({ everyHours: e.target.value })} disabled={disabled} className="!w-14">
             {['1','2','3','4','6','8','12'].map((n) => (
               <option key={n} value={n}>{n}h</option>
             ))}
           </Select>
-        </div>
+        </>
       )}
 
-      {/* Custom: raw cron */}
       {state.preset === 'custom' && (
-        <div className="flex items-center gap-2">
+        <>
           <TextInput
             fieldSize="sm"
             value={state.rawCron}
             onChange={(e) => update({ rawCron: e.target.value })}
             placeholder="0 7 * * 1"
             disabled={disabled}
-            className="font-mono"
+            className="!w-36 font-mono"
           />
           <span className="text-xs text-text-secondary dark:text-text-dark-secondary whitespace-nowrap">
             {t('schedule.customHint')}
           </span>
-        </div>
-      )}
-
-      {/* Preview */}
-      {state.preset !== 'custom' && (
-        <p className="text-xs text-text-secondary dark:text-text-dark-secondary font-mono">
-          cron: <span className="text-text-primary dark:text-text-dark-primary">{toCron(state)}</span>
-        </p>
+        </>
       )}
     </div>
   )
