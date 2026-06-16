@@ -3,6 +3,7 @@ import { Button, Select, TextInput } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { AlertAudienceFields } from './AlertAudienceFields'
 import { ConditionBuilder } from './ConditionBuilder'
+import { CronSchedulePicker } from './CronSchedulePicker'
 import {
   audienceFormStateFromApi,
   buildAudiencePayload,
@@ -135,7 +136,7 @@ export function NotificationRuleForm({ initial, onSubmit, onCancel, loading }: P
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1">{t('scheduledRules.fields.scheduleCron')} <span className="text-danger">*</span></label>
-          <TextInput fieldSize="sm" value={scheduleCron} onChange={(e) => setScheduleCron(e.target.value)} placeholder="0 7 * * *" />
+          <CronSchedulePicker value={scheduleCron} onChange={setScheduleCron} disabled={loading} />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t('scheduledRules.fields.severityOverride')}</label>
