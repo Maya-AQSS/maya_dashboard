@@ -56,6 +56,7 @@ final class NotificationObserver extends BaseAuditObserver
             'resolved_body' => $resolvedBody,
             'recipient' => $recipient,
             'url' => $model->url,
+            'target_app' => $model->target_app,
             'severity' => $model->severity,
         ], fn ($v) => $v !== null && $v !== '');
     }
