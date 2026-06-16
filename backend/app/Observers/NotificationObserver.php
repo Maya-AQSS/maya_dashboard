@@ -121,17 +121,17 @@ final class NotificationObserver extends BaseAuditObserver
      */
     private function buildDescription(string $action, Model $model, array $new, ?string $resolvedTitle, ?string $recipient): string
     {
-        $label = $resolvedTitle ?? $model->type ?? 'notificación';
+        $label = $resolvedTitle ?? $model->type ?? trans('audit.notification.unknown', [], 'es');
         $actor = $this->resolveUser((string) (Auth::id() ?? '')) ?? 'sistema';
         $to = $recipient ?? $model->recipient_id ?? '—';
 
         return match (true) {
-            $action === 'created' => "Notificación creada: '{$label}' para {$to}",
-            $action === 'deleted' => "Notificación eliminada: '{$label}'",
-            $action === 'updated' && array_key_exists('read_at', $new) => "Notificación '{$label}' marcada como leída por {$actor}",
-            $action === 'updated' && array_key_exists('acknowledged_at', $new) => "Notificación '{$label}' reconocida por {$actor}",
-            $action === 'updated' && array_key_exists('resolved_at', $new) => "Notificación '{$label}' resuelta por {$actor}",
-            default => "Notificación '{$label}' actualizada por {$actor}",
+            $action === 'created' => trans('audit.notification.created', ['label' => $label, 'recipient' => $to], 'es'),
+            $action === 'deleted' => trans('audit.notification.deleted', ['label' => $label], 'es'),
+            $action === 'updated' && array_key_exists('read_at', $new) => trans('audit.notification.read', ['label' => $label, 'actor' => $actor], 'es'),
+            $action === 'updated' && array_key_exists('acknowledged_at', $new) => trans('audit.notification.acknowledged', ['label' => $label, 'actor' => $actor], 'es'),
+            $action === 'updated' && array_key_exists('resolved_at', $new) => trans('audit.notification.resolved', ['label' => $label, 'actor' => $actor], 'es'),
+            default => trans('audit.notification.updated', ['label' => $label, 'actor' => $actor], 'es'),
         };
     }
 }
