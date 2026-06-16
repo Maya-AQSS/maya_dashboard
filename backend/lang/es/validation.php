@@ -118,6 +118,7 @@ return [
 
     'notification_rule' => [
         'evaluator_key_invalid' => 'evaluator_key debe referenciar una definición de notificación programada existente.',
+        'condition_days_value' => 'El valor para older_than_days/within_days debe ser un entero no negativo.',
     ],
 
     'attributes' => [],

@@ -83,6 +83,9 @@ class NotificationDefinitionSeeder extends Seeder
             ['key' => 'dms.validation_deadline_approaching', 'source_app' => 'maya-dms', 'category' => 'scheduled', 'label' => 'Fecha límite de validación próxima', 'description' => 'Documentos cuya fecha de validación final vence en menos de una semana.', 'default_severity' => 'high', 'url_template' => '/documents/{document_id}', 'schedule_cron' => '0 7 * * *'],
             ['key' => 'dms.pending_validations_threshold', 'source_app' => 'maya-dms', 'category' => 'scheduled', 'label' => 'Demasiados documentos por validar', 'description' => 'Usuarios con más de N documentos pendientes de validar.', 'default_severity' => 'medium', 'url_template' => '/documents', 'schedule_cron' => '0 7 * * *'],
             ['key' => 'logs.error_spike', 'source_app' => 'maya-logs', 'category' => 'scheduled', 'label' => 'Pico de errores críticos', 'description' => 'Reemplaza la antigua alert_rule de salud (>N logs críticos en una ventana).', 'default_severity' => 'critical', 'url_template' => '/logs', 'schedule_cron' => '* * * * *'],
+
+            // ── generic condition engine ─────────────────────────────────
+            ['key' => 'dms.generic_condition', 'source_app' => 'maya-dms', 'category' => 'scheduled', 'label' => 'Condición genérica (DMS)', 'description' => 'Regla configurable mediante condiciones de campo. Define las condiciones en el campo "Condiciones" de la regla.', 'default_severity' => 'medium', 'schedule_cron' => '0 7 * * *'],
         ];
     }
 }

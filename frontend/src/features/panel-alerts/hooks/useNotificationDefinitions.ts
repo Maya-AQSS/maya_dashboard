@@ -25,9 +25,9 @@ export function useNotificationDefinitions(options: Options = {}) {
     [queryClient],
   )
 
-  const query = useQuery<NotificationDefinition[], Error>({
+  const query = useQuery({
     queryKey,
-    queryFn: () => listNotificationDefinitions(options.category),
+    queryFn: () => listNotificationDefinitions({ category: options.category }),
     enabled,
     retry: 1,
     staleTime: 30_000,
@@ -40,7 +40,7 @@ export function useNotificationDefinitions(options: Options = {}) {
   })
 
   return {
-    definitions: query.data ?? [],
+    definitions: (query.data?.data ?? []) as NotificationDefinition[],
     loading: query.isPending,
     error: query.error?.message ?? null,
     onToggle: (id: number, value: boolean) => toggleMutation.mutateAsync({ id, value }),

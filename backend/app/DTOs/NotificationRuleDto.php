@@ -10,6 +10,7 @@ final readonly class NotificationRuleDto
 {
     /**
      * @param  array<string, mixed>  $params
+     * @param  array{logic: string, items: list<array<string, mixed>>}|null  $conditions
      */
     public function __construct(
         public int $id,
@@ -18,6 +19,7 @@ final readonly class NotificationRuleDto
         public string $name,
         public ?string $description,
         public array $params,
+        public ?array $conditions,
         public string $scheduleCron,
         public ?string $severity,
         public bool $enabled,
@@ -36,6 +38,7 @@ final readonly class NotificationRuleDto
             name: (string) $m->name,
             description: $m->description,
             params: is_array($m->params) ? $m->params : [],
+            conditions: is_array($m->conditions) ? $m->conditions : null,
             scheduleCron: (string) $m->schedule_cron,
             severity: $m->severity,
             enabled: (bool) $m->enabled,
