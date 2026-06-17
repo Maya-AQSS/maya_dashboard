@@ -465,7 +465,8 @@
       "createdAt": "Recibida",
       "readAt": "Leída",
       "messageId": "ID de mensaje",
-      "metadata": "Metadatos"
+      "metadata": "Metadatos",
+      "actions": "Acciones"
     },
     "status": {
       "read": "Leída",

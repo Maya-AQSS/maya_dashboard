@@ -462,7 +462,8 @@
       "readAt": "Read at",
       "messageId": "Message ID",
       "metadata": "Metadata",
-      "severity": "Severity"
+      "severity": "Severity",
+      "actions": "Actions"
     },
     "status": {
       "read": "Read",

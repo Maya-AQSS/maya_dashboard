@@ -128,7 +128,7 @@ export default function NotificationsPage() {
     () => [
       {
         id: 'read_at',
-        header: '',
+        header: t('notifications.fields.status'),
         cell: (n) =>
           n.read_at ? null : (
             <span className="w-2 h-2 rounded-full bg-info block" title={t('notifications.unread')} />
@@ -203,7 +203,7 @@ export default function NotificationsPage() {
       },
       {
         id: 'actions',
-        header: '',
+        header: t('notifications.fields.actions'),
         cell: (n) => (
           <Button
             variant="danger"
