@@ -73,7 +73,17 @@ final class NotificationSampleService implements NotificationSampleServiceInterf
     private function paramsFor(string $key): array
     {
         return match (true) {
+            $key === 'document.ownership_transferred' => [
+                'document_id' => 'DOC-123',
+                'document_title' => 'Acta de ejemplo',
+                'actor_name' => 'Coordinador Ejemplo',
+            ],
             str_starts_with($key, 'document.') => ['document_id' => 'DOC-123', 'document_title' => 'Acta de ejemplo', 'reason' => 'Formato incorrecto'],
+            $key === 'template.ownership_transferred' => [
+                'template_id' => 'TPL-7',
+                'template_name' => 'Plantilla de ejemplo',
+                'actor_name' => 'Coordinador Ejemplo',
+            ],
             str_starts_with($key, 'template.') => ['template_id' => 'TPL-7', 'template_name' => 'Plantilla de ejemplo', 'version' => 2, 'document_id' => 'DOC-123'],
             $key === 'role.assigned', $key === 'role.revoked' => ['role_name' => 'Coordinador'],
             $key === 'log.comment_added' => ['log_id' => 'LOG-9'],

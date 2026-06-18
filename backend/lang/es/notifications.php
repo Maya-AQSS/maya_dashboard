@@ -56,6 +56,10 @@ return [
             'title' => 'Documento rechazado',
             'body' => 'El documento :document_title ha sido rechazado.',
         ],
+        'ownership_transferred' => [
+            'title' => 'Te han cedido un documento',
+            'body' => ':actor_name te ha cedido el documento :document_title.',
+        ],
     ],
     'template' => [
         'validation_requested' => [
@@ -69,6 +73,10 @@ return [
         'published' => [
             'title' => 'Plantilla publicada',
             'body' => 'La plantilla :template_name ha sido publicada.',
+        ],
+        'ownership_transferred' => [
+            'title' => 'Te han cedido una plantilla',
+            'body' => ':actor_name te ha cedido la plantilla :template_name.',
         ],
         'version' => [
             'affects_my_document' => [

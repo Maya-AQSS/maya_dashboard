@@ -52,6 +52,10 @@ return [
             'title' => 'Document rebutjat',
             'body' => 'El document :document_title ha sigut rebutjat.',
         ],
+        'ownership_transferred' => [
+            'title' => "T'han cedit un document",
+            'body' => ':actor_name t\'ha cedit el document :document_title.',
+        ],
     ],
     'template' => [
         'validation_requested' => [
@@ -65,6 +69,10 @@ return [
         'published' => [
             'title' => 'Plantilla publicada',
             'body' => 'La plantilla :template_name ha sigut publicada.',
+        ],
+        'ownership_transferred' => [
+            'title' => "T'han cedit una plantilla",
+            'body' => ':actor_name t\'ha cedit la plantilla :template_name.',
         ],
         'version' => [
             'affects_my_document' => [

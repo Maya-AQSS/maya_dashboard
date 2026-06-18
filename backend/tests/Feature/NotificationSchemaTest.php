@@ -68,9 +68,10 @@ it('seeds the notification definition catalog', function () {
     expect(NotificationDefinition::where('key', 'document.validation_requested')->exists())->toBeTrue();
     expect(NotificationDefinition::query()->scheduled()->count())->toBeGreaterThanOrEqual(3);
 
-    $def = NotificationDefinition::where('key', 'document.published')->first();
-    expect($def->title_key)->toBe('notifications.document.published.title');
-    expect($def->url_template)->toBe('/documents/{document_id}');
+    expect(NotificationDefinition::where('key', 'document.published')->first()->title_key)->toBe('notifications.document.published.title');
+    expect(NotificationDefinition::where('key', 'document.published')->first()->url_template)->toBe('/documents/{document_id}');
+    expect(NotificationDefinition::where('key', 'template.ownership_transferred')->exists())->toBeTrue();
+    expect(NotificationDefinition::where('key', 'document.ownership_transferred')->exists())->toBeTrue();
 });
 
 it('gates ingestion by the enabled flag with unknown keys allowed', function () {

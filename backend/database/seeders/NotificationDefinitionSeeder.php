@@ -68,9 +68,11 @@ class NotificationDefinitionSeeder extends Seeder
             ['key' => 'document.validation_requested', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Solicitud de validación de documento', 'default_severity' => 'high', 'url_template' => '/documents/{document_id}'],
             ['key' => 'document.published', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Documento publicado', 'default_severity' => 'info', 'url_template' => '/documents/{document_id}'],
             ['key' => 'document.rejected', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Documento rechazado', 'default_severity' => 'high', 'url_template' => '/documents/{document_id}'],
+            ['key' => 'document.ownership_transferred', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Documento cedido', 'default_severity' => 'info', 'url_template' => '/documents/{document_id}'],
             ['key' => 'template.validation_requested', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Solicitud de validación de plantilla', 'default_severity' => 'high', 'url_template' => '/templates/{template_id}'],
             ['key' => 'template.rejected', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Plantilla rechazada', 'default_severity' => 'high', 'url_template' => '/templates/{template_id}'],
             ['key' => 'template.published', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Plantilla publicada', 'default_severity' => 'info', 'url_template' => '/templates/{template_id}'],
+            ['key' => 'template.ownership_transferred', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Plantilla cedida', 'default_severity' => 'info', 'url_template' => '/templates/{template_id}'],
             ['key' => 'template.version.affects_my_document', 'source_app' => 'maya-dms', 'category' => 'event', 'label' => 'Nueva versión de plantilla afecta a tu documento', 'default_severity' => 'medium', 'url_template' => '/documents/{document_id}'],
 
             // ── maya-logs (event) ────────────────────────────────────────

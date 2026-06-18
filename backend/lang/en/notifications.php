@@ -52,6 +52,10 @@ return [
             'title' => 'Document rejected',
             'body' => 'The document :document_title has been rejected.',
         ],
+        'ownership_transferred' => [
+            'title' => 'A document has been assigned to you',
+            'body' => ':actor_name has assigned you the document :document_title.',
+        ],
     ],
     'template' => [
         'validation_requested' => [
@@ -65,6 +69,10 @@ return [
         'published' => [
             'title' => 'Template published',
             'body' => 'The template :template_name has been published.',
+        ],
+        'ownership_transferred' => [
+            'title' => 'A template has been assigned to you',
+            'body' => ':actor_name has assigned you the template :template_name.',
         ],
         'version' => [
             'affects_my_document' => [

@@ -24,8 +24,11 @@ return new class extends Migration
                 ->comment('Optional condition engine payload: {logic: AND|OR, items: [{table, field, op, value}]}');
         });
 
+        // Postgres no permite insertar columnas en medio con CREATE OR REPLACE VIEW.
+        DB::statement('DROP VIEW IF EXISTS v_notification_rules');
+
         DB::statement(<<<'SQL'
-            CREATE OR REPLACE VIEW v_notification_rules AS
+            CREATE VIEW v_notification_rules AS
             SELECT
                 r.id,
                 r.evaluator_key,
@@ -40,13 +43,17 @@ return new class extends Migration
             WHERE r.enabled = TRUE
               AND d.enabled = TRUE
         SQL);
+
+        DB::statement('GRANT SELECT ON v_notification_rules TO PUBLIC');
     }
 
     public function down(): void
     {
         // Restore the view without `conditions` before dropping the column.
+        DB::statement('DROP VIEW IF EXISTS v_notification_rules');
+
         DB::statement(<<<'SQL'
-            CREATE OR REPLACE VIEW v_notification_rules AS
+            CREATE VIEW v_notification_rules AS
             SELECT
                 r.id,
                 r.evaluator_key,
@@ -60,6 +67,8 @@ return new class extends Migration
             WHERE r.enabled = TRUE
               AND d.enabled = TRUE
         SQL);
+
+        DB::statement('GRANT SELECT ON v_notification_rules TO PUBLIC');
 
         Schema::table('notification_rules', function (Blueprint $table) {
             $table->dropColumn('conditions');
