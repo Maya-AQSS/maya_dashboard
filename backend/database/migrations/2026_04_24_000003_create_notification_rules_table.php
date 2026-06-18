@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Schema;
  * Configurable instances of scheduled notification rules (level B).
  *
  * A rule references a scheduled notification_definition (by `evaluator_key`)
- * and carries the admin-tunable bits: params (thresholds/windows), cron,
- * audience and severity override. The owning service reads its active rules
+ * and carries the admin-tunable bits: params (thresholds/windows), optional
+ * conditions (structured field comparisons), cron, audience and severity
+ * override. The owning service reads its active rules
  * through the `v_notification_rules` view via postgres_fdw and runs the
  * matching evaluator. The view is the stable cross-DB contract.
  */
@@ -25,6 +26,8 @@ return new class extends Migration
             $table->string('name', 200);
             $table->text('description')->nullable();
             $table->jsonb('params')->default('{}')->comment('Evaluator params: thresholds, windows, etc.');
+            $table->jsonb('conditions')->nullable()
+                ->comment('Optional condition engine payload: {logic: AND|OR, items: [{table, field, op, value}]}');
             $table->string('schedule_cron', 64);
             $table->jsonb('audience')->nullable();
             $table->enum('severity', ['critical', 'high', 'medium', 'low', 'info'])->nullable()->comment('Overrides the definition default when set');
@@ -47,6 +50,7 @@ return new class extends Migration
                 r.evaluator_key,
                 r.source_app,
                 r.params,
+                r.conditions,
                 r.schedule_cron,
                 r.audience,
                 COALESCE(r.severity, d.default_severity, 'info') AS severity
