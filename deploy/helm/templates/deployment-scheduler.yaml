@@ -1,0 +1,49 @@
+{{- if .Values.scheduler.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-scheduler
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+spec:
+  replicas: {{ .Values.scheduler.replicas }}
+  strategy:
+    type: Recreate                 # singleton estricto
+  selector:
+    matchLabels:
+      {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "scheduler") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "scheduler") | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: scheduler
+          image: {{ include "maya-dashboard.image" (dict "root" . "name" .Values.image.backend.name) }}
+          imagePullPolicy: {{ .Values.image.backend.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          args: ["scheduler"]
+          env:
+            - name: CONTAINER_ROLE
+              value: scheduler
+          envFrom:
+            {{- include "maya-dashboard.envFrom" . | nindent 12 }}
+          resources: {{- toYaml .Values.scheduler.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "maya-dashboard.writableVolumeMounts" . | nindent 12 }}
+            - name: run
+              mountPath: /run
+      volumes:
+        {{- include "maya-dashboard.writableVolumes" . | nindent 8 }}
+        - name: run
+          emptyDir: {}
+{{- end }}

@@ -1,31 +1,299 @@
+name: ${MAYA_SLOT_PROJECT:-maya}-dashboard
+
 services:
 
-  # ─── Frontend (React 19 + Vite 7) ────────────────────────────
+  # ─── Backend (Laravel) ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-}
+      APP_URL: ${APP_URL}
+      DB_CONNECTION: pgsql
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://maya_auth_keycloak:8080}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-maya}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-maya-dashboard-backend}
+      JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend,maya-audit,maya-dms,maya-logs}
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MAYA_MESSAGING_APP: maya-dashboard
+      LOG_STACK: "daily,rabbit"
+      LOG_RABBIT_LEVEL: warning
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+      # ─── Reverb (necesario para que routes/channels.php arranque) ──
+      REVERB_APP_ID: ${REVERB_APP_ID:-maya-dashboard}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-}
+      # Internal addressing for the Pusher HTTP API — backend → reverb container
+      # over the maya_network bridge. Frontend gets its own VITE_REVERB_HOST (public).
+      REVERB_HOST: reverb
+      REVERB_PORT: 8080
+      REVERB_SCHEME: http
+      BROADCAST_CONNECTION: reverb
+    volumes:
+      - ./backend:/var/www/html
+      # Dev-override PHP: fuente local de maya_platform para composer.local.json (symlink:false → copia a vendor).
+      - ../maya_platform/packages/php:/var/maya_platform/packages/php
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 150s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-api.rule=Host(`${HOST_PREFIX}dashboard-api.${DOMAIN_SUFFIX}`)"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-api.service=${MAYA_SLOT_PROJECT}-maya-dashboard-api"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-api.entrypoints=websecure"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-api.tls=true"
+      - "traefik.http.services.${MAYA_SLOT_PROJECT}-maya-dashboard-api.loadbalancer.server.port=8000"
+    networks:
+      - maya_network
+
+  # ─── Worker: consumer AMQP (notifications.ingest) ───
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    mem_limit: 256m
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: pgsql
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MAYA_MESSAGING_APP: maya-dashboard
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+      QUEUE_CONNECTION: database
+      WORKER_LABEL: "[worker]"
+      WORKER_WAIT_MIGRATION: create_notifications_table
+      WORKER_PATCH_CONSUMER: "1"
+      WORKER_CONSUMERS: "notifications:consume"
+      LOG_STACK: "daily"
+    entrypoint: ["/maya_infra/scripts/worker-entrypoint.sh"]
+    command: []
+    volumes:
+      - ./backend:/var/www/html
+      - ../maya_infra/scripts:/maya_infra/scripts:ro
+    networks:
+      - maya_network
+
+  # ─── Scheduler ───────────────────────────────────────────────────
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    mem_limit: 256m
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: pgsql
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      CACHE_STORE: redis
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-maya_rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-admin}
+      MAYA_MESSAGING_APP: maya-dashboard
+      LOG_STACK: "daily,rabbit"
+      LOG_RABBIT_LEVEL: warning
+      LOG_MGMT_DB_HOST: ${LOG_MGMT_DB_HOST:-maya_infra_postgres}
+      LOG_MGMT_DB_DATABASE: ${LOG_MGMT_DB_DATABASE:-log_mgmt_db}
+      LOG_MGMT_DB_USERNAME: ${LOG_MGMT_DB_USERNAME:-log_mgmt_user}
+      LOG_MGMT_DB_PASSWORD: ${LOG_MGMT_DB_PASSWORD:-secret}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cd /var/www/html
+        if [ ! -f vendor/autoload.php ]; then
+          echo "[scheduler] waiting for vendor (backend composer install)..."
+          while [ ! -f vendor/autoload.php ]; do sleep 3; done
+        fi
+        until php artisan migrate:status --no-interaction 2>/dev/null | grep -q "create_alert_rules_table"; do
+          echo "[scheduler] waiting for migrations..."
+          sleep 3
+        done
+        echo "[scheduler] ready — starting schedule:work"
+        exec php artisan schedule:work --no-interaction
+    command: []
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - maya_network
+
+  # ─── Reverb (WebSockets — notificaciones tiempo real) ──────
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    mem_limit: 256m
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_KEY: ${APP_KEY:-}
+      APP_URL: ${APP_URL}
+      BROADCAST_CONNECTION: reverb
+      DB_CONNECTION: pgsql
+      DB_HOST: ${DB_HOST:-maya_infra_postgres}
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-maya_dashboard}
+      DB_USERNAME: ${MAYA_DASHBOARD_DB_USERNAME:-dashboard_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+      REDIS_HOST: ${REDIS_HOST:-maya_redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
+      REDIS_PORT: 6379
+      REVERB_APP_ID: ${REVERB_APP_ID:-maya-dashboard}
+      REVERB_APP_KEY: ${REVERB_APP_KEY}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET}
+      REVERB_HOST: ${HOST_PREFIX}dashboard-reverb.${DOMAIN_SUFFIX}
+      REVERB_PORT: 443
+      REVERB_SCHEME: https
+      REVERB_SERVER_HOST: 0.0.0.0
+      REVERB_SERVER_PORT: 8080
+      JWKS_URL: ${JWKS_URL:-http://maya_auth_keycloak:8080/realms/maya/protocol/openid-connect/certs}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-maya-dashboard-backend,maya-audit,maya-dms,maya-logs}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cd /var/www/html
+        if [ ! -f vendor/autoload.php ]; then
+          echo "[reverb] waiting for vendor (backend composer install)..."
+          while [ ! -f vendor/autoload.php ]; do sleep 3; done
+        fi
+        echo "[reverb] starting reverb server"
+        exec php artisan reverb:start --host=0.0.0.0 --port=8080
+    command: []
+    volumes:
+      - ./backend:/var/www/html
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'fsockopen(\"127.0.0.1\", 8080) or exit(1);'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-reverb.rule=Host(`${HOST_PREFIX}dashboard-reverb.${DOMAIN_SUFFIX}`)"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-reverb.service=${MAYA_SLOT_PROJECT}-maya-dashboard-reverb"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-reverb.entrypoints=websecure"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-reverb.tls=true"
+      - "traefik.http.services.${MAYA_SLOT_PROJECT}-maya-dashboard-reverb.loadbalancer.server.port=8080"
+    networks:
+      - maya_network
+
+  # ─── Frontend (React 19 + Vite 8) ────────────────────────────
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: maya_dashboard_frontend
     restart: unless-stopped
+    # 512m bastaba para vite dev, pero vitest + jsdom necesita >1g para correr
+    # la suite completa sin OOM (exit 137). Single-fork pool en vitest.config.ts
+    # mantiene la huella controlada.
+    mem_limit: 2g
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://api.localhost}
-      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL:-http://keycloak.localhost}
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_KEYCLOAK_URL: ${VITE_KEYCLOAK_URL}
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-maya}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-maya-dashboard}
+      VITE_REVERB_HOST: ${HOST_PREFIX}dashboard-reverb.${DOMAIN_SUFFIX}
+      VITE_REVERB_APP_KEY: ${REVERB_APP_KEY}
+      VITE_REVERB_PORT: 443
+      VITE_REVERB_SCHEME: https
+      MAYA_DEV_OVERRIDE_DIR: ${MAYA_DEV_OVERRIDE_DIR:-}
+    depends_on:
+      backend:
+        condition: service_healthy
     volumes:
-      - .:/app
+      - ./frontend:/app
+      - ../maya_infra/configs:/maya_infra/configs:ro
       - /app/node_modules
+      # shared-editor-react only exists in maya_platform/ working tree (not on any
+      # registry yet) — mount maya_platform so the vite alias (driven by
+      # MAYA_DEV_OVERRIDE_DIR, ADR-001 F4) resolves the import.
+      - ../maya_platform/packages/js:/maya_platform/packages/js
+      # Live source mounts (equivalent to composer.local.json) — overrides installed
+      # npm package with the working tree so changes are visible without rebuild.
+      #- ../maya_platform/packages/js/shared-auth-react:/app/node_modules/@ceedcv-maya/shared-auth-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-dashboard-react:/app/node_modules/@ceedcv-maya/shared-dashboard-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-hooks-react:/app/node_modules/@ceedcv-maya/shared-hooks-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      # - ../maya_platform/packages/js/shared-i18n-react:/app/node_modules/@ceedcv-maya/shared-i18n-react:ro  # disabled F4
+      #- ../maya_platform/packages/js/shared-layout-react:/app/node_modules/@ceedcv-maya/shared-layout-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-profile-react:/app/node_modules/@ceedcv-maya/shared-profile-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-realtime-react:/app/node_modules/@ceedcv-maya/shared-realtime-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-sidebar-react:/app/node_modules/@ceedcv-maya/shared-sidebar-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-styles:/app/node_modules/@ceedcv-maya/shared-styles:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
+      #- ../maya_platform/packages/js/shared-ui-react:/app/node_modules/@ceedcv-maya/shared-ui-react:ro  # disabled: usar MAYA_DEV_OVERRIDE_DIR via vite alias (ADR-001 F4)
     ports:
       - "${FRONTEND_PORT:-5175}:5173"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.maya-dashboard.rule=Host(`dashboard.localhost`)"
-      - "traefik.http.routers.maya-dashboard.entrypoints=web"
-      - "traefik.http.services.maya-dashboard.loadbalancer.server.port=5173"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-front.rule=Host(`${HOST_PREFIX}dashboard.${DOMAIN_SUFFIX}`)"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-front.service=${MAYA_SLOT_PROJECT}-maya-dashboard-front"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-front.entrypoints=websecure"
+      - "traefik.http.routers.${MAYA_SLOT_PROJECT}-maya-dashboard-front.tls=true"
+      - "traefik.http.services.${MAYA_SLOT_PROJECT}-maya-dashboard-front.loadbalancer.server.port=5173"
     networks:
       - maya_network
 
 networks:
   maya_network:
     external: true
-    name: maya_network
+    name: ${MAYA_NETWORK_NAME:-maya_network}

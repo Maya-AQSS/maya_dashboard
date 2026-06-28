@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+
+echo "[entrypoint] Clearing bootstrap cache..."
+rm -f /var/www/html/bootstrap/cache/packages.php
+rm -f /var/www/html/bootstrap/cache/services.php
+# config.php cacheado congela env() — eliminarlo permite que tests/bootstrap.php
+# imponga sqlite ANTES de Laravel cargar config. Sin esto, pest --coverage ejecuta
+# contra la BD pgsql cacheada.
+rm -f /var/www/html/bootstrap/cache/config.php
+
+# Sync only ceedcv-maya/* path packages in lock (handles stale lock when a new shared package is added)
+composer update "ceedcv-maya/*" --no-install --no-interaction --ignore-platform-reqs --no-scripts 2>/dev/null || true
+echo "[entrypoint] Running composer install..." --no-scripts
+composer install --optimize-autoloader --no-interaction --ignore-platform-reqs --no-scripts
+
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs
+chmod -R 775 storage
+chown -R www-data:www-data storage 2>/dev/null || true
+
+
+
+echo "[entrypoint] Running package:discover..."
+
+# Fix laravel-queue-rabbitmq Consumer::$currentJob visibility (Laravel 13 compat)
+sed -i 's/protected \$currentJob;/public \$currentJob;/' \
+  /var/www/html/vendor/vladimir-yuldashev/laravel-queue-rabbitmq/src/Consumer.php 2>/dev/null || true
+
+php artisan package:discover --ansi 2>/dev/null || true
+
+# Devolver al UID/GID del host los archivos generados por composer (que corre
+# como root en este entrypoint). Detectamos el UID del host mirando el owner
+# del composer.json bind-mounted (siempre presente, conserva UID original).
+# Sin esto, `composer update` desde el host falla con "Permission denied"
+# porque vendor/ y composer.lock quedan root:root tras este script.
+HOST_UID="$(stat -c %u /var/www/html/composer.json 2>/dev/null || echo 0)"
+HOST_GID="$(stat -c %g /var/www/html/composer.json 2>/dev/null || echo 0)"
+if [ "$HOST_UID" != "0" ]; then
+    chown -R "${HOST_UID}:${HOST_GID}" \
+        /var/www/html/vendor \
+        /var/www/html/composer.lock \
+        /var/www/html/bootstrap/cache \
+        2>/dev/null || true
+fi
+
+exec "$@"

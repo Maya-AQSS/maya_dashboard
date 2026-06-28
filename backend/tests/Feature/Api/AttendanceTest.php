@@ -1,0 +1,154 @@
+<?php
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\DB;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
+    $this->user = User::factory()->create();
+
+    $userId = $this->user->id;
+    $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
+        $event->request->attributes->set('jwt_user', [
+            'id' => $userId,
+            'sub' => $userId,
+        ]);
+    });
+});
+
+function insertAttendance(string $userId, string $checkIn, ?string $checkOut = null, string $source = 'kiosk'): void
+{
+    DB::table('attendances')->insert([
+        'id' => uniqid('att_', true),
+        'user_id' => $userId,
+        'check_in' => $checkIn,
+        'check_out' => $checkOut,
+        'source' => $source,
+    ]);
+}
+
+it('returns empty list when user has no attendances on the given date', function () {
+    $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances?date=2026-05-21")
+        ->assertOk()
+        ->assertJson(['data' => [], 'meta' => ['date' => '2026-05-21', 'count' => 0]]);
+});
+
+it('lists attendances for the day ordered by check_in', function () {
+    insertAttendance($this->user->id, '2026-05-21 14:00:00', '2026-05-21 18:00:00');
+    insertAttendance($this->user->id, '2026-05-21 08:30:00', '2026-05-21 13:30:00');
+    insertAttendance($this->user->id, '2026-05-20 09:00:00', '2026-05-20 17:00:00');
+
+    $response = $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances?date=2026-05-21");
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(2);
+    expect($response->json('data.0.check_in'))->toContain('08:30');
+    expect($response->json('data.1.check_in'))->toContain('14:00');
+    expect($response->json('meta.count'))->toBe(2);
+});
+
+it('does not return attendances of other users', function () {
+    $other = User::factory()->create();
+    insertAttendance($other->id, '2026-05-21 09:00:00', '2026-05-21 17:00:00');
+
+    $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances?date=2026-05-21")
+        ->assertOk()
+        ->assertJson(['data' => []]);
+});
+
+it('defaults to today when date is omitted', function () {
+    $today = now()->format('Y-m-d');
+    insertAttendance($this->user->id, $today.' 09:00:00', $today.' 17:00:00');
+
+    $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances")
+        ->assertOk()
+        ->assertJson(['meta' => ['date' => $today, 'count' => 1]]);
+});
+
+it('rejects invalid date format', function () {
+    $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances?date=21/05/2026")
+        ->assertStatus(422);
+});
+
+it('returns open attendances with null check_out', function () {
+    insertAttendance($this->user->id, '2026-05-21 09:00:00', null);
+
+    $response = $this->getJson("/api/v1/dashboard/user/{$this->user->id}/attendances?date=2026-05-21");
+
+    $response->assertOk();
+    expect($response->json('data.0.check_out'))->toBeNull();
+});
+
+it('clocks the user in with current timestamp', function () {
+    $before = now()->subSecond();
+    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", []);
+    $after = now()->addSecond();
+
+    $response->assertStatus(201);
+    expect($response->json('user_id'))->toBe($this->user->id);
+    expect($response->json('check_out'))->toBeNull();
+
+    $checkIn = \Carbon\Carbon::parse($response->json('check_in'));
+    expect($checkIn->greaterThanOrEqualTo($before))->toBeTrue();
+    expect($checkIn->lessThanOrEqualTo($after))->toBeTrue();
+
+    expect(\Illuminate\Support\Facades\DB::table('attendances')->where('user_id', $this->user->id)->count())->toBe(1);
+});
+
+it('defaults the source to manual when not provided', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", [])
+        ->assertStatus(201)
+        ->assertJsonFragment(['source' => 'manual']);
+});
+
+it('accepts a custom source string', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => 'mobile'])
+        ->assertStatus(201)
+        ->assertJsonFragment(['source' => 'mobile']);
+});
+
+it('rejects a source longer than 64 chars', function () {
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => str_repeat('a', 65)])
+        ->assertStatus(422);
+});
+
+it('closes the open attendance via check-out endpoint', function () {
+    insertAttendance($this->user->id, '2026-05-22 09:00:00', null);
+
+    $before = now()->subSecond();
+    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out");
+    $after = now()->addSecond();
+
+    $response->assertStatus(200);
+    expect($response->json('check_out'))->not->toBeNull();
+
+    $checkOut = \Carbon\Carbon::parse($response->json('check_out'));
+    expect($checkOut->greaterThanOrEqualTo($before))->toBeTrue();
+    expect($checkOut->lessThanOrEqualTo($after))->toBeTrue();
+});
+
+it('returns 409 from check-out when no open attendance exists', function () {
+    insertAttendance($this->user->id, '2026-05-22 09:00:00', '2026-05-22 13:00:00');
+
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
+        ->assertStatus(409)
+        ->assertJsonStructure(['message']);
+});
+
+it('closes only the most recent open attendance when several exist', function () {
+    insertAttendance($this->user->id, '2026-05-22 08:00:00', '2026-05-22 09:00:00');
+    insertAttendance($this->user->id, '2026-05-22 10:00:00', null);
+
+    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
+        ->assertStatus(200);
+
+    $openCount = DB::table('attendances')
+        ->where('user_id', $this->user->id)
+        ->whereNull('check_out')
+        ->count();
+    expect($openCount)->toBe(0);
+});

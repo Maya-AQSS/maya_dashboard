@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-backend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "backend") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "backend") | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.backend.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: backend
+          image: {{ include "maya-dashboard.image" (dict "root" . "name" .Values.image.backend.name) }}
+          imagePullPolicy: {{ .Values.image.backend.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          env:
+            - name: CONTAINER_ROLE
+              value: api
+          envFrom:
+            {{- include "maya-dashboard.envFrom" . | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.containerPort }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.backend.probes.liveness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.backend.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.backend.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.backend.probes.readiness.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.backend.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.backend.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.backend.probes.readiness.failureThreshold }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+          resources: {{- toYaml .Values.backend.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "maya-dashboard.writableVolumeMounts" . | nindent 12 }}
+            - name: run
+              mountPath: /run
+            - name: nginx-lib
+              mountPath: /var/lib/nginx
+            - name: nginx-log
+              mountPath: /var/log/nginx
+      volumes:
+        {{- include "maya-dashboard.writableVolumes" . | nindent 8 }}
+        - name: run
+          emptyDir: {}
+        - name: nginx-lib
+          emptyDir: {}
+        - name: nginx-log
+          emptyDir: {}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}

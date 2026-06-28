@@ -1,0 +1,111 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Repositories\Eloquent;
+
+use App\DTOs\AlertAudienceDto;
+use App\DTOs\PanelAlertDto;
+use App\Models\PanelAlert;
+use App\Repositories\Contracts\AlertAudienceRepositoryInterface;
+use App\Repositories\Contracts\PanelAlertRepositoryInterface;
+use App\Support\Search\AccentSearch;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+
+final class PanelAlertRepository implements PanelAlertRepositoryInterface
+{
+    public function __construct(
+        private readonly AlertAudienceRepositoryInterface $audience,
+    ) {}
+
+    public function paginate(
+        int $perPage,
+        ?string $severity,
+        ?string $search,
+        bool $includeExpired,
+        string $sortBy,
+        string $sortDir,
+    ): LengthAwarePaginator {
+        $query = PanelAlert::query()->with('translations');
+
+        if (! $includeExpired) {
+            $query->active();
+        }
+
+        if ($severity !== null && $severity !== '') {
+            $query->where('severity', $severity);
+        }
+
+        if ($search !== null && $search !== '') {
+            // Búsqueda accent-insensitive — ver changes.md.
+            AccentSearch::apply($query, ['text'], $search);
+        }
+
+        $allowedSortColumns = ['visible_from', 'visible_until', 'created_at', 'severity'];
+        $column = in_array($sortBy, $allowedSortColumns, true) ? $sortBy : 'visible_from';
+        $direction = strtolower($sortDir) === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($column, $direction);
+        // Orden estable por fecha de ejecución y de finalización.
+        if ($column !== 'visible_from') {
+            $query->orderBy('visible_from', $direction);
+        }
+        $query->orderBy('visible_until', $direction);
+
+        return $query->paginate($perPage);
+    }
+
+    /**
+     * @return Collection<int, PanelAlert>
+     */
+    public function activeNow(int $limit, string $userId): Collection
+    {
+        return PanelAlert::query()
+            ->with('translations')
+            ->active()
+            ->orderByDesc('visible_from')
+            ->limit($limit * 3)
+            ->get()
+            ->filter(function (PanelAlert $alert) use ($userId): bool {
+                return $this->audience->userMatchesAudience($userId, AlertAudienceDto::fromModel($alert));
+            })
+            ->take($limit)
+            ->values();
+    }
+
+    public function findOrFail(int $id): PanelAlert
+    {
+        return PanelAlert::with('translations')->findOrFail($id);
+    }
+
+    public function findDtoOrFail(int $id): PanelAlertDto
+    {
+        return PanelAlertDto::fromModel($this->findOrFail($id));
+    }
+
+    /**
+     * @return Collection<int, PanelAlert>
+     */
+    public function allRecurring(): Collection
+    {
+        return PanelAlert::query()->with('translations')->recurring()->orderBy('id')->get();
+    }
+
+    public function create(array $attributes): PanelAlert
+    {
+        return PanelAlert::create($attributes);
+    }
+
+    public function update(PanelAlert $alert, array $attributes): PanelAlert
+    {
+        $alert->update($attributes);
+
+        return $alert->refresh();
+    }
+
+    public function delete(PanelAlert $alert): void
+    {
+        $alert->delete();
+    }
+}

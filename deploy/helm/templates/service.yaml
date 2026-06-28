@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-backend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "backend") | nindent 4 }}
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-frontend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "frontend") | nindent 4 }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+{{- if .Values.reverb.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-reverb
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: reverb
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "maya-dashboard.componentSelector" (dict "Release" .Release "Chart" .Chart "Values" .Values "component" "reverb") | nindent 4 }}
+  ports:
+    - name: ws
+      port: 8080
+      targetPort: ws
+      protocol: TCP
+{{- end }}

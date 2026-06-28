@@ -1,0 +1,90 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-frontend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ .Values.ingress.host | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "maya-dashboard.fullname" . }}-frontend
+                port: { name: http }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-backend
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ .Values.ingress.apiHost | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}-api
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.apiHost | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "maya-dashboard.fullname" . }}-backend
+                port: { name: http }
+{{- if and .Values.reverb.enabled .Values.reverb.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-reverb
+  labels:
+    {{- include "maya-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: reverb
+  {{- with .Values.reverb.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts: [{{ .Values.reverb.ingress.host | quote }}]
+      secretName: {{ .Values.ingress.tls.secretName }}-reverb
+  {{- end }}
+  rules:
+    - host: {{ .Values.reverb.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "maya-dashboard.fullname" . }}-reverb
+                port: { name: ws }
+{{- end }}
+{{- end }}

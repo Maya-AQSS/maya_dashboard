@@ -1,0 +1,130 @@
+{{- if .Values.networkPolicy.enabled }}
+# Defensa en profundidad: deny-all + allow east-west explícito.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-deny-all
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# Ingress Traefik: restringido a pods Traefik por podSelector (no todo kube-system).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-allow-ingress-traefik
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "maya-dashboard.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingress.traefikNamespace | default "kube-system" | quote }}
+          podSelector:
+            matchLabels:
+              {{- toYaml (.Values.networkPolicy.ingress.traefikPodLabels | default (dict "app.kubernetes.io/name" "traefik")) | nindent 14 }}
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 8080 }
+{{- with .Values.networkPolicy.ingress.extraFrom }}
+    - from:
+        {{- toYaml . | nindent 8 }}
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 8080 }
+{{- end }}
+{{- if .Values.networkPolicy.ingress.monitoring.enabled }}
+---
+# Monitoring scrape (Prometheus / kube-prometheus-stack).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-allow-ingress-monitoring
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "maya-dashboard.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingress.monitoring.namespace | default "monitoring" | quote }}
+      ports:
+        {{- range .Values.networkPolicy.ingress.monitoring.ports | default (list 8000) }}
+        - { protocol: TCP, port: {{ . }} }
+        {{- end }}
+{{- end }}
+---
+# Egress: DNS + DB Patroni + Keycloak + RabbitMQ + Redis (+ otros maya namespaces si se configura). Sin internet.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "maya-dashboard.fullname" . }}-allow-egress
+  labels: {{- include "maya-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "maya-dashboard.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes: [Egress]
+  egress:
+    {{- if .Values.networkPolicy.allowedEgress.dns }}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    {{- end }}
+    # Patroni VIP (fuera de Pod CIDR, va a ipBlock).
+    - to:
+        - ipBlock:
+            cidr: {{ .Values.networkPolicy.allowedEgress.patroniCidr | quote }}
+      ports:
+        - { protocol: TCP, port: 5432 }
+    # Keycloak namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.keycloakNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 443 }
+    # RabbitMQ namespace — sólo el puerto que realmente usamos (plain AMQP en cluster).
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.rabbitmqNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 5672 }
+    # Redis namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.networkPolicy.allowedEgress.redisNamespace | quote }}
+      ports:
+        - { protocol: TCP, port: 6379 }
+    {{- with .Values.networkPolicy.allowedEgress.mayaNamespaces }}
+    # East-west a otros servicios Maya (introspección de tokens / SSO relay).
+    - to:
+        {{- range . }}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+        {{- end }}
+      ports:
+        - { protocol: TCP, port: 8000 }
+        - { protocol: TCP, port: 80 }
+        - { protocol: TCP, port: 443 }
+    {{- end }}
+{{- end }}
