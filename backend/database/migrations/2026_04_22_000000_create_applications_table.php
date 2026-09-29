@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Aplicaciones: FDW → maya_auth.applications (fuente de verdad del ecosistema).
  *
- * maya_auth_server se crea aquí porque maya es superuser en maya_dashboard.
+ * maya_auth_server y su user mapping se crean aquí con la conexión de
+ * config('database.fdw.applications') (en producción, el rol lector maya_fdw_reader).
  * Columnas: id, name, slug, description, traefik_url, is_active, created_at, updated_at.
  *
  * Producción/staging: FOREIGN TABLE → maya_auth.applications.
@@ -72,24 +73,37 @@ return new class extends Migration
     {
         DB::statement('CREATE EXTENSION IF NOT EXISTS postgres_fdw');
 
-        DB::statement("
-            CREATE SERVER IF NOT EXISTS " . self::SERVER . "
-            FOREIGN DATA WRAPPER postgres_fdw
-            OPTIONS (host 'maya_infra_postgres', port '5432', dbname 'maya_auth')
-        ");
+        // Conexión al maya_auth remoto desde config (FDW_APPLICATIONS_* / FDW_USER_PERMISSIONS_*).
+        $host     = (string) config('database.fdw.applications.host', env('DB_HOST', 'maya_infra_postgres'));
+        $port     = (string) config('database.fdw.applications.port', '5432');
+        $database = (string) config('database.fdw.applications.database', 'maya_auth');
+        $username = (string) config('database.fdw.applications.username', 'maya');
+        $password = (string) config('database.fdw.applications.password', 'secret');
+        $schema   = (string) config('database.fdw.applications.schema', 'public');
+        $table    = (string) config('database.fdw.applications.table', 'applications');
 
-        DB::statement("
-            DO \$\$ BEGIN
+        DB::statement(sprintf(
+            "CREATE SERVER IF NOT EXISTS %s FOREIGN DATA WRAPPER postgres_fdw OPTIONS (host %s, port %s, dbname %s)",
+            self::SERVER,
+            DB::getPdo()->quote($host),
+            DB::getPdo()->quote($port),
+            DB::getPdo()->quote($database),
+        ));
+
+        DB::statement(sprintf(
+            "DO \$\$ BEGIN
                 IF NOT EXISTS (
                     SELECT 1 FROM pg_user_mappings
-                    WHERE srvname = '" . self::SERVER . "' AND usename = CURRENT_USER
+                    WHERE srvname = '%s' AND usename = CURRENT_USER
                 ) THEN
-                    CREATE USER MAPPING FOR CURRENT_USER
-                    SERVER " . self::SERVER . "
-                    OPTIONS (user 'maya', password 'secret');
+                    CREATE USER MAPPING FOR CURRENT_USER SERVER %s OPTIONS (user %s, password %s);
                 END IF;
-            END \$\$
-        ");
+            END \$\$",
+            self::SERVER,
+            self::SERVER,
+            DB::getPdo()->quote($username),
+            DB::getPdo()->quote($password),
+        ));
 
         // Idempotente: drop primero para que migrate:fresh no falle
         DB::statement('DROP FOREIGN TABLE IF EXISTS ' . self::FDW_TBL . ' CASCADE');
@@ -109,7 +123,7 @@ return new class extends Migration
                 updated_at            timestamp
             )
             SERVER " . self::SERVER . "
-            OPTIONS (schema_name 'public', table_name 'applications')
+            OPTIONS (schema_name " . DB::getPdo()->quote($schema) . ", table_name " . DB::getPdo()->quote($table) . ")
         ");
     }
 };

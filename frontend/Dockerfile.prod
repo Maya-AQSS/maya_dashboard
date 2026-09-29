@@ -1,98 +1,62 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
 #
-# maya_dashboard frontend — imagen de producción (K3s)
-# ----------------------------------------------------
-# Multi-stage node:24 -> nginx:1.29.
-# Los VITE_* deben declararse como ARG en la etapa builder para que los
-# --build-arg del Buildx surtan efecto; si no se declaran, Vite hornea
-# undefined y la SPA se rompe en runtime.
+# maya_dashboard — frontend de producción (React + Vite → nginx estático).
 #
-# Uso:
-#   docker buildx build -f frontend/Dockerfile.prod \
-#     --build-arg VITE_API_URL=https://dashboard-api.ceedcv.es/api/v1 \
-#     --build-arg VITE_KEYCLOAK_URL=https://keycloak.ceedcv.es \
-#     --build-arg VITE_KEYCLOAK_REALM=maya \
-#     --build-arg VITE_KEYCLOAK_CLIENT_ID=maya-dashboard \
-#     --build-arg VITE_DASHBOARD_API_URL=https://dashboard-api.ceedcv.es \
-#     --build-arg VITE_REVERB_HOST=dashboard-reverb.ceedcv.es \
-#     --build-arg VITE_REVERB_APP_KEY=<reverb-key> \
-#     --build-arg VITE_REVERB_PORT=443 \
-#     --build-arg VITE_REVERB_SCHEME=https \
-#     -t <registry>/maya/maya-dashboard-frontend:<sha> frontend
+# Este fichero es IDÉNTICO en todas las apps Maya salvo el bloque "Parámetros
+# de la app". nginx, cabeceras, /healthz y la configuración en ejecución
+# (/config.js a partir de MAYA_PUBLIC_*) viven en la base maya/web-base.
+#
+# Build local:
+#   docker build -f frontend/Dockerfile.prod -t maya/maya-dashboard-frontend:dev frontend
+#
+# TRANSITORIO: mientras la SPA lea import.meta.env en vez de window.__MAYA_CONFIG__,
+# los VITE_* siguen horneándose en el build (--build-arg). Cuando las apps pasen a
+# la configuración en ejecución, este bloque desaparece y la misma imagen sirve
+# para cualquier entorno.
 
-FROM node:24-alpine AS builder
+# ─── Parámetros de la app ─────────────────────────────────────────────────────
+ARG MAYA_WEB_BASE=maya/web-base:1.29
+ARG MAYA_APP=maya-dashboard
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ─── 1. build: npm ci + vite build ───────────────────────────────────────────
+FROM node:24-alpine AS build
 
 WORKDIR /app
+ENV CI=true
 
-# ─── ARGs de build (deben ir antes de `npm run build`) ──────────────────────
-ARG VITE_API_URL
-ARG VITE_KEYCLOAK_URL
-ARG VITE_KEYCLOAK_REALM
-ARG VITE_KEYCLOAK_CLIENT_ID
-ARG VITE_DASHBOARD_API_URL
-ARG VITE_DASHBOARD_URL
-ARG VITE_REVERB_HOST
-ARG VITE_REVERB_APP_KEY
-ARG VITE_REVERB_PORT=443
-ARG VITE_REVERB_SCHEME=https
-ARG VITE_APP_NAME="Maya Dashboard"
-
-ENV VITE_API_URL=${VITE_API_URL} \
-    VITE_KEYCLOAK_URL=${VITE_KEYCLOAK_URL} \
-    VITE_KEYCLOAK_REALM=${VITE_KEYCLOAK_REALM} \
-    VITE_KEYCLOAK_CLIENT_ID=${VITE_KEYCLOAK_CLIENT_ID} \
-    VITE_DASHBOARD_API_URL=${VITE_DASHBOARD_API_URL} \
-    VITE_DASHBOARD_URL=${VITE_DASHBOARD_URL} \
-    VITE_REVERB_HOST=${VITE_REVERB_HOST} \
-    VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY} \
-    VITE_REVERB_PORT=${VITE_REVERB_PORT} \
-    VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME} \
-    VITE_APP_NAME=${VITE_APP_NAME}
-
-COPY package*.json ./
-RUN npm ci
+COPY package.json package-lock.json .npmrc ./
+# --include=dev: vite y typescript son devDependencies y hacen falta para compilar.
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --include=dev --no-audit --no-fund
 
 COPY . .
-RUN npm run build
 
-# ─── Producción ───────────────────────────────────────────────────────────────
-FROM nginx:1.29-alpine
+# Transitorio (ver cabecera): variables horneadas por Vite.
+ARG VITE_API_URL
+ARG VITE_KEYCLOAK_URL
+ARG VITE_KEYCLOAK_REALM=CEED
+ARG VITE_KEYCLOAK_CLIENT_ID=maya-dashboard
+ARG VITE_DASHBOARD_URL
+ARG VITE_DASHBOARD_API_URL
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT=443
+ARG VITE_REVERB_SCHEME=https
+ARG VITE_REVERB_APP_KEY
+ARG VITE_APP_NAME="Maya Dashboard"
+ARG VITE_EDITOR_BACKEND
 
-# Usuario no-root para nginx (la imagen oficial trae `nginx` UID 101)
-RUN apk add --no-cache curl \
-    && mkdir -p /var/cache/nginx /var/run/nginx \
-    && chown -R nginx:nginx /var/cache/nginx /var/run/nginx
+# Solo el bundle (esbuild). La comprobación de tipos (`tsc -b`, que incluye los
+# tests) es un paso del CI, no de la imagen: un error de tipos en un test no debe
+# impedir publicar, y un bundle no debe depender de que el checker esté verde.
+ENV NODE_ENV=production
+RUN npx vite build \
+    && test -f dist/index.html
 
-COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
+# ─── 2. runtime: nginx sin privilegios (maya/web-base) ───────────────────────
+FROM ${MAYA_WEB_BASE}
 
-RUN printf 'server {\n\
-    listen 8080;\n\
-    server_name _;\n\
-    root /usr/share/nginx/html;\n\
-    index index.html;\n\
-    server_tokens off;\n\
-    add_header X-Frame-Options "SAMEORIGIN" always;\n\
-    add_header X-Content-Type-Options "nosniff" always;\n\
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;\n\
-    location = /healthz { access_log off; return 200 "ok\\n"; }\n\
-    location / {\n\
-        try_files $uri $uri/ /index.html;\n\
-    }\n\
-    location ~* \\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {\n\
-        expires max;\n\
-        add_header X-Frame-Options "SAMEORIGIN" always;\n\
-        add_header X-Content-Type-Options "nosniff" always;\n\
-        add_header Referrer-Policy "strict-origin-when-cross-origin" always;\n\
-        add_header Cache-Control "public, immutable" always;\n\
-    }\n\
-}\n' > /etc/nginx/conf.d/default.conf \
-    && sed -i 's/user  nginx;/user nginx;/; s|/var/run/nginx.pid|/var/run/nginx/nginx.pid|' /etc/nginx/nginx.conf
+ARG MAYA_APP
+LABEL org.opencontainers.image.title="${MAYA_APP}-frontend"
 
-USER nginx
-
-EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8080/healthz || exit 1
-
-CMD ["nginx", "-g", "daemon off;"]
+COPY --from=build --chown=root:root /app/dist /usr/share/nginx/html

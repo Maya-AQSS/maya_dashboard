@@ -3,6 +3,20 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+// ─── Conexión FDW a Odoo (maya_erp) ──────────────────────────────────────────
+// Compartida por los catálogos federados (usuarios, equipos, estudios...) que
+// crean las migraciones de ceedcv-maya/shared-profile-laravel. En desarrollo
+// apunta al Postgres de maya_infra con el superusuario; en producción FDW_ODOO_*
+// apunta a la VIP de Patroni con el rol lector maya_fdw_reader.
+$odooFdw = [
+    'host'     => env('FDW_ODOO_HOST', env('DB_HOST', 'maya_infra_postgres')),
+    'port'     => env('FDW_ODOO_PORT', '5432'),
+    'database' => env('FDW_ODOO_DATABASE', 'odoo'),
+    'username' => env('FDW_ODOO_USERNAME', 'maya'),
+    'password' => env('FDW_ODOO_PASSWORD', 'secret'),
+    'schema'   => env('FDW_ODOO_SCHEMA', 'public'),
+];
+
 return [
 
     /*
@@ -108,8 +122,10 @@ return [
             'port'     => env('LOG_MGMT_DB_PORT', '5432'),
             'database' => env('LOG_MGMT_DB_DATABASE', 'log_mgmt_db'),
             'username' => env('LOG_MGMT_DB_USERNAME', 'log_mgmt_readonly'),
-            'password' => env('LOG_MGMT_DB_PASSWORD')
-                ?: throw new \RuntimeException('LOG_MGMT_DB_PASSWORD is not set in the environment.'),
+            // Sin contraseña la conexión simplemente fallará al usarse; no debe
+            // impedir arrancar la app (esta conexión es opcional y hoy no la usa
+            // ningún código de producción).
+            'password' => env('LOG_MGMT_DB_PASSWORD'),
             'charset'  => 'utf8',
             'prefix'   => '',
             'search_path' => 'public',
@@ -164,6 +180,28 @@ return [
     */
 
     'fdw' => [
+        // ─── Fuente Odoo (maya_erp): grupos leídos por las migraciones FDW compartidas ───
+        'users'          => $odooFdw + ['table' => env('FDW_USERS_TABLE', 'v_app_users')],
+        'teams'          => $odooFdw + ['table' => env('FDW_TEAMS_TABLE', 'v_dms_teams')],
+        'team_members'   => $odooFdw + ['table' => env('FDW_TEAM_MEMBERS_TABLE', 'v_dms_team_members')],
+        'studies'        => $odooFdw,
+        'study_types'    => $odooFdw,
+        'course_modules' => $odooFdw,
+        'languages'      => $odooFdw,
+        // Vistas de Odoo propias del dashboard (migraciones locales).
+        'attendances'       => $odooFdw + ['table' => env('FDW_ATTENDANCES_TABLE', 'v_app_attendances')],
+        'bookings'          => $odooFdw + ['table' => env('FDW_BOOKINGS_TABLE', 'v_app_bookings')],
+        'employee_profiles' => $odooFdw + ['table' => env('FDW_EMPLOYEE_PROFILES_TABLE', 'v_app_employee_profile')],
+        // maya_auth.applications (misma BD y credenciales que user_permissions salvo override).
+        'applications' => [
+            'host'     => env('FDW_APPLICATIONS_HOST', env('FDW_USER_PERMISSIONS_HOST', env('DB_HOST', 'maya_infra_postgres'))),
+            'port'     => env('FDW_APPLICATIONS_PORT', env('FDW_USER_PERMISSIONS_PORT', '5432')),
+            'database' => env('FDW_APPLICATIONS_DATABASE', 'maya_auth'),
+            'username' => env('FDW_APPLICATIONS_USERNAME', env('FDW_USER_PERMISSIONS_USERNAME', 'maya')),
+            'password' => env('FDW_APPLICATIONS_PASSWORD', env('FDW_USER_PERMISSIONS_PASSWORD', 'secret')),
+            'schema'   => env('FDW_APPLICATIONS_SCHEMA', 'public'),
+            'table'    => env('FDW_APPLICATIONS_TABLE', 'applications'),
+        ],
         // Vista de permisos resueltos por maya_authorization (resolución de
         // roles + overrides). Cada app declara su vista específica
         // (`v_audit_user_permissions`, `v_logs_user_permissions`, …).
