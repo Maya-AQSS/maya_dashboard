@@ -48,7 +48,7 @@ C4Container
     Container(spa, "React SPA", "React 19 + TypeScript + Vite 7\nTailwind 4 + Odoo 19 tokens", "Interfaz de usuario. SPA que corre en el\nnavegador. Gestiona sesión OIDC (PKCE),\nrutas, widgets y WebSocket")
     Container(api, "Laravel API", "Laravel 13 / PHP 8.3\nApiController → Services → Repositories", "API REST pura JSON. Valida JWT via JWKS.\nGestiona notificaciones, fichajes, perfil,\ntools, audit log y errores de sistema")
     Container(reverb, "Laravel Reverb", "WebSocket server\n(nativo Laravel 11+)", "Entrega notificaciones urgentes en\ntiempo real. Canales privados por usuario")
-    ContainerDb(db, "PostgreSQL 16", "Base de datos principal", "Tablas: registros_ceed, notifications,\ntools, user_tools_favorites,\nmatrículas, activity_log")
+    ContainerDb(db, "PostgreSQL 17", "Base de datos principal", "Tablas: registros_ceed, notifications,\ntools, user_tools_favorites,\nmatrículas, activity_log")
   }
 
   System_Ext(keycloak, "Keycloak", "Identity Provider (OIDC)")

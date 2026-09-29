@@ -86,7 +86,7 @@ Otros subcomandos:
 | Servicio | URL (vía Traefik) | URL directa |
 | --- | --- | --- |
 | Dashboard | <http://dashboard.localhost> | <http://localhost:5175> |
-| Keycloak | <https://keycloak.maya.test> | <http://localhost:8180> |
+| Keycloak | <https://keycloak.localhost> | <http://localhost:8180> |
 | Traefik dashboard | <http://localhost:8888> | — |
 
 ## Variables de entorno
@@ -95,8 +95,8 @@ El `.env` se crea automáticamente desde `.env.example`. Variables disponibles:
 
 ```env
 VITE_API_URL=http://api.localhost              # API de maya_authorization
-VITE_KEYCLOAK_URL=https://keycloak.maya.test    # Keycloak IdP
-VITE_KEYCLOAK_REALM=maya                       # Realm de Keycloak
+VITE_KEYCLOAK_URL=https://keycloak.localhost   # Keycloak IdP (local: localhost; prod: keycloak.ceedcv.es)
+VITE_KEYCLOAK_REALM=maya                       # Realm (local: maya; producción: CEED)
 VITE_KEYCLOAK_CLIENT_ID=maya-dashboard         # Client ID en Keycloak
 VITE_APP_KEY=<app-key-maquina-registrada>      # X-App-Key para catálogo de apps
 FRONTEND_PORT=5175                             # Puerto host directo
