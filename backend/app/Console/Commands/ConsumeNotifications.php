@@ -22,7 +22,7 @@ use PhpAmqpLib\Message\AMQPMessage;
  */
 class ConsumeNotifications extends ConsumeQueueCommand
 {
-    protected $signature = 'notifications:consume {--queue=notifications.ingest}';
+    protected $signature = 'notifications:consume {--queue= : Cola (por defecto messaging.queues.notifications_ingest, estándar de mensajería)}';
 
     protected $description = 'Consume notifications.ingest and persist each notification in the notifications table';
 
@@ -34,7 +34,7 @@ class ConsumeNotifications extends ConsumeQueueCommand
 
     public function queueName(): string
     {
-        return (string) $this->option('queue');
+        return (string) ($this->option('queue') ?: config('messaging.queues.notifications_ingest', 'notifications.ingest'));
     }
 
     public function ingest(array $payload, AMQPMessage $message): void

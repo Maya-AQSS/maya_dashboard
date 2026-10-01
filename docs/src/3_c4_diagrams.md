@@ -495,7 +495,7 @@ C4Deployment
       Container(reverb_local, "Laravel Reverb", "puerto 8080", "WebSocket para notificaciones urgentes")
     }
 
-    Deployment_Node(db_node, "PostgreSQL", "postgres:16 — puerto 5432") {
+    Deployment_Node(db_node, "PostgreSQL", "postgres:17 — puerto 5432") {
       ContainerDb(db_laravel, "BD Laravel", "database: maya_dashboard", "Tablas propias de la aplicación")
       ContainerDb(db_keycloak, "BD Keycloak local", "database: keycloak", "Compartida con instancia Keycloak local.\nSin FDW en local — se usan claims JWT")
     }
