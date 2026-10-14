@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { MayaAppShell } from '@ceedcv-maya/shared-layout-react'
-import { useAuth } from '@ceedcv-maya/shared-auth-react'
+import { publicConfig, useAuth } from '@ceedcv-maya/shared-auth-react'
 import { buildBackState } from '@ceedcv-maya/shared-hooks-react'
 import { SkeletonPage } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
@@ -10,8 +10,9 @@ import { useUserProfile } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
 import { DASHBOARD_PERMISSIONS } from './permissions'
 
+// Configuración en ejecución (D26 R6): /config.js (MAYA_PUBLIC_*) o, en Vite, VITE_*.
 const DASHBOARD_API_URL = resolveServiceUrl(
-  import.meta.env.VITE_DASHBOARD_API_URL as string | undefined,
+  publicConfig('DASHBOARD_API_URL'),
   'dashboard-api',
 )
 
@@ -19,7 +20,7 @@ const DASHBOARD_API_URL = resolveServiceUrl(
 // que el enlace "Mi perfil" del shell resuelve a la ruta local `/profile`.
 // La navegación SPA con back-state se cablea vía `onProfileNavigate` (ver App()).
 const DASHBOARD_URL = resolveServiceUrl(
-  import.meta.env.VITE_DASHBOARD_URL as string | undefined,
+  publicConfig('DASHBOARD_URL'),
   'dashboard',
 )
 

@@ -9,10 +9,10 @@
 # Build local:
 #   docker build -f frontend/Dockerfile.prod -t maya/maya-dashboard-frontend:dev frontend
 #
-# TRANSITORIO: mientras la SPA lea import.meta.env en vez de window.__MAYA_CONFIG__,
-# los VITE_* siguen horneándose en el build (--build-arg). Cuando las apps pasen a
-# la configuración en ejecución, este bloque desaparece y la misma imagen sirve
-# para cualquier entorno.
+# TRANSITORIO: la SPA ya lee /config.js (window.__MAYA_CONFIG__, D26 R6) y los VITE_*
+# horneados en el build (--build-arg) solo son el respaldo si falta una clave. Este
+# bloque desaparece cuando build-app.yml construya una sola imagen de frontend por
+# versión (maya_platform 0.22), que sirve para cualquier entorno.
 
 # ─── Parámetros de la app ─────────────────────────────────────────────────────
 ARG MAYA_WEB_BASE=maya/web-base:1.29
@@ -32,7 +32,7 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY . .
 
-# Transitorio (ver cabecera): variables horneadas por Vite.
+# Transitorio (ver cabecera): variables horneadas por Vite, respaldo de /config.js.
 ARG VITE_API_URL
 ARG VITE_KEYCLOAK_URL
 ARG VITE_KEYCLOAK_REALM=CEED

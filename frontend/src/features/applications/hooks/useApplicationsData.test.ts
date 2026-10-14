@@ -9,6 +9,8 @@ vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   // paquete; el mock debe stubear lo que se evalúa al importar el hook.
   peerOrigin: vi.fn(() => 'https://dashboard-api.maya.test'),
   resolveServiceUrl: vi.fn(() => 'https://dashboard-api.maya.test'),
+  publicConfig: vi.fn(() => undefined),
+  publicKeycloakConfig: vi.fn(() => ({ url: '', realm: '', clientId: '' })),
   createOidcAdapter: vi.fn(() => ({
     oidcAuthService: { keycloak: {} },
     appendBearerAuthorization: vi.fn(),
