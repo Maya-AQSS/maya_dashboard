@@ -36,7 +36,7 @@ concurrency:
 jobs:
   publish:
     # TRANSITORIO (plan-dev-k3s): @main cuando build-app.yml esté fusionado en main de maya_platform.
-    uses: Maya-AQSS/maya_platform/.github/workflows/build-app.yml@plan-dev-k3s
+    uses: Maya-AQSS/maya_platform/.github/workflows/build-app.yml@v0.22.0
     permissions:
       contents: read
       packages: write
