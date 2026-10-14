@@ -53,7 +53,7 @@ config:
   FILESYSTEM_DISK: local
   JWKS_CACHE_TTL: '3600'
   JWKS_URL: http://keycloak-maya-app.maya-iam.svc.cluster.local:8080/realms/CEED/protocol/openid-connect/certs
-  JWT_AUDIENCE: maya-dashboard-backend,maya-audit,maya-dms,maya-logs
+  JWT_AUDIENCE: maya-dashboard
   JWT_ISSUER: https://keycloak.ceedcv.es/realms/CEED
   LOG_CHANNEL: stack
   LOG_DEPRECATIONS_CHANNEL: 'null'
