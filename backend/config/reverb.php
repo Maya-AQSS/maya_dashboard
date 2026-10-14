@@ -1,5 +1,33 @@
 <?php
 
+/*
+ * Orígenes que pueden abrir el WebSocket (cabecera Origin; Reverb compara solo el host, con
+ * comodines `*` de Str::is). La barra lateral de las 5 apps escucha este Reverb (D37), así que
+ * se admiten las mismas SPAs que en CORS (config/cors.php): cualquier subdominio de
+ * CORS_REGEX_DOMAIN (`*.ceedcv` en producción; en desarrollo, el dominio que pone
+ * gen-values.py), localhost (y `*.localhost`) y los hosts de CORS_ADDITIONAL_ORIGINS.
+ * REVERB_ALLOWED_ORIGINS (lista separada por comas, p. ej. `*.ceedcv,localhost`; `*` = todos)
+ * sustituye a esa lista.
+ */
+$reverbAllowedOrigins = (static function (): array {
+    $split = static fn (string $list): array => array_values(array_filter(array_map('trim', explode(',', $list))));
+
+    $explicit = $split((string) env('REVERB_ALLOWED_ORIGINS', ''));
+    if ($explicit !== []) {
+        return $explicit;
+    }
+
+    $hosts = ['*.'.env('CORS_REGEX_DOMAIN', 'localhost'), 'localhost', '*.localhost'];
+    foreach ($split((string) env('CORS_ADDITIONAL_ORIGINS', '')) as $origin) {
+        $host = parse_url($origin, PHP_URL_HOST);
+        if (is_string($host) && $host !== '') {
+            $hosts[] = $host;
+        }
+    }
+
+    return array_values(array_unique($hosts));
+})();
+
 return [
 
     /*
@@ -78,7 +106,7 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'http'),
                     'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
                 ],
-                'allowed_origins' => ['*'],
+                'allowed_origins' => $reverbAllowedOrigins,
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'pong_timeout' => env('REVERB_APP_PONG_TIMEOUT', 10),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
