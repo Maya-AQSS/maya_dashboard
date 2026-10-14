@@ -59,7 +59,11 @@ use App\Services\Notifications\NotificationService;
 use App\Services\PanelAlerts\PanelAlertNotificationService;
 use App\Services\PanelAlerts\PanelAlertService;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Maya\Auth\Models\BaseJwtUser;
+use Maya\Auth\Support\JwtSubject;
 use Maya\Messaging\Publishers\LogPublisher;
 use Maya\Messaging\Publishers\ResilientLogPublisher;
 use Maya\Platform\Support\RegistersFdwBootstrap;
@@ -151,6 +155,17 @@ class AppServiceProvider extends ServiceProvider
                 TranslationMigrations::translations(),
             ],
         ]);
+
+        // Guard `jwt-claims` (config/auth.php): el usuario son los claims que JwtMiddleware deja
+        // en `jwt_user`, sin buscarlo en la vista FDW `users`. Autoriza los canales de
+        // notificaciones (routes/channels.php), que piden las 5 apps con su propio token (D37:
+        // audiencia maya-dashboard): el canal depende solo del `sub` del token, no de la app ni de
+        // que el usuario esté ya en Odoo.
+        Auth::viaRequest('jwt-claims', static function (Request $request): ?BaseJwtUser {
+            return JwtSubject::fromRequest($request) !== null
+                ? new BaseJwtUser(JwtSubject::claims($request))
+                : null;
+        });
 
         // Morph alias estable para la tabla `translations` (evita guardar el FQCN).
         Relation::enforceMorphMap([
