@@ -8,6 +8,7 @@ import { SkeletonPage } from '@ceedcv-maya/shared-ui-react'
 import { useNavItems } from './components/layout'
 import { useUserProfile } from './features/user-profile'
 import { resolveServiceUrl } from './lib/peerService'
+import { isAllowedReturnUrl } from './lib/returnUrl'
 import { DASHBOARD_PERMISSIONS } from './permissions'
 
 // Configuración en ejecución (D26 R6): /config.js (MAYA_PUBLIC_*) o, en Vite, VITE_*.
@@ -26,17 +27,7 @@ const DASHBOARD_URL = resolveServiceUrl(
 
 // SSO return_to handler: server-rendered apps redirect here with ?return_to=<url>,
 // the dashboard authenticates with Keycloak and redirects back with ?session_token=<jwt>.
-function isAllowedReturnUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url)
-    const isAllowedScheme = parsed.protocol === 'http:' || parsed.protocol === 'https:'
-    const isAllowedHost = parsed.hostname.endsWith('.localhost') || parsed.hostname === 'localhost'
-    return isAllowedScheme && isAllowedHost
-  } catch {
-    return false
-  }
-}
-
+// Destinos admitidos: los frontends Maya del mismo despliegue (lib/returnUrl.ts).
 function ReturnToHandler() {
   const { isLoading, isAuthenticated, token } = useAuth()
   useEffect(() => {
