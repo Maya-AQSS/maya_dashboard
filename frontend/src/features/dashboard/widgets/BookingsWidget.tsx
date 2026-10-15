@@ -9,6 +9,8 @@ import { useAuth } from '@ceedcv-maya/shared-auth-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useBookings } from '../../bookings/hooks/useBookings'
 import type { Booking } from '../../bookings/types/booking'
+import { useUserProfile } from '../../user-profile'
+import { DASHBOARD_PERMISSIONS } from '../../../permissions'
 
 const TONE_BY_STATUS: Record<string, CalendarEvent['tone']> = {
   confirmed: 'primary',
@@ -68,7 +70,7 @@ function rangeForView(view: View, date: Date): [Date, Date] {
   }
 }
 
-function BookingsWidget() {
+function BookingsCalendarWidget() {
   const { user } = useAuth()
   const { t, dateLocale } = useLocale()
   const [view, setView] = useState<View>('month')
@@ -152,6 +154,17 @@ function BookingsWidget() {
       />
     </div>
   )
+}
+
+/**
+ * D27: las reservas (widget y calendario) solo con `dashboard.bookings`, que nadie tiene hasta que
+ * maya_booking esté terminado. Sin el permiso no se pinta nada ni se piden reservas (la API también
+ * responde 403); la página ya lo quita del registro de widgets (widgetPermissions).
+ */
+function BookingsWidget() {
+  const { hasPermission } = useUserProfile()
+  if (!hasPermission(DASHBOARD_PERMISSIONS.bookings)) return null
+  return <BookingsCalendarWidget />
 }
 
 export default BookingsWidget

@@ -8,8 +8,15 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['cache.default' => 'array']);
     $this->withoutMiddleware(\Maya\Auth\Middleware\JwtMiddleware::class);
     $this->user = User::factory()->create();
+
+    // D27: las reservas solo se ven con dashboard.bookings (en producción no lo tiene nadie).
+    DB::table('user_resolved_permissions')->insert([
+        'user_id' => $this->user->id,
+        'permission_slug' => 'dashboard.bookings',
+    ]);
 
     $userId = $this->user->id;
     $this->app['events']->listen(RouteMatched::class, function ($event) use ($userId) {
@@ -98,4 +105,15 @@ it('orders results by start_at ascending', function () {
     $response->assertOk();
     expect($response->json('data.0.title'))->toBe('manana');
     expect($response->json('data.1.title'))->toBe('tarde');
+});
+
+it('denies bookings without dashboard.bookings (D27)', function () {
+    DB::table('user_resolved_permissions')
+        ->where('user_id', $this->user->id)
+        ->where('permission_slug', 'dashboard.bookings')
+        ->delete();
+    insertBooking($this->user->id, '2026-05-21 09:00:00', '2026-05-21 11:00:00');
+
+    $this->getJson("/api/v1/dashboard/user/{$this->user->id}/bookings?from=2026-05-21&to=2026-05-21")
+        ->assertForbidden();
 });

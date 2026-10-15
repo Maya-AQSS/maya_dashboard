@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo } from 'react'
 import useDashboardLayout, { DEFAULT_LAYOUT } from '../../dashboard-layout/hooks/useDashboardLayout'
 
 type LayoutItem = {
@@ -19,6 +19,7 @@ import {
   type SkeletonBlock,
 } from '@ceedcv-maya/shared-dashboard-react'
 import { WIDGET_REGISTRY } from '../widgets/registry'
+import { allowedWidgets } from '../widgets/widgetPermissions'
 import { PageTitle, useToast } from '@ceedcv-maya/shared-ui-react'
 import { useLocale } from '@ceedcv-maya/shared-i18n-react'
 import { useUserProfile } from '../../user-profile'
@@ -34,6 +35,9 @@ function DashboardPage() {
   const { layout, loading, saveLayout, resetToDefault } = useDashboardLayout()
   const { hasPermission } = useUserProfile()
   const canEditLayout = hasPermission(DASHBOARD_PERMISSIONS.dashboardUpdate)
+  // Solo los widgets que el usuario puede ver (D27: reservas con dashboard.bookings). WidgetGrid
+  // no pinta los del layout que no están en el registro, pero los conserva al guardar.
+  const registry = useMemo(() => allowedWidgets(WIDGET_REGISTRY, hasPermission), [hasPermission])
   const [editable, setEditable] = useState(false)
   const [draftLayout, setDraftLayout] = useState<Layout | null>(null)
   const snapshotRef = useRef<Layout | null>(null)
@@ -81,7 +85,7 @@ function DashboardPage() {
   }, [layout])
 
   const handleAddWidget = useCallback((widgetId: string) => {
-    const def = WIDGET_REGISTRY[widgetId as keyof typeof WIDGET_REGISTRY]
+    const def = registry[widgetId]
     if (!def) return
     const current = (draftLayout ?? layout) as Layout
     const maxY = current.reduce((m, item) => Math.max(m, item.y + item.h), 0)
@@ -94,7 +98,7 @@ function DashboardPage() {
       minW: def.minSize.w,
       minH: def.minSize.h,
     }])
-  }, [draftLayout, layout])
+  }, [draftLayout, layout, registry])
 
   const handleReset = useCallback(async () => {
     try {
@@ -121,7 +125,7 @@ function DashboardPage() {
           canEditLayout && editable ? (
             <DashboardEditToolbar
               layout={activeLayout}
-              registry={WIDGET_REGISTRY}
+              registry={registry}
               t={t}
               onSave={handleSave}
               onCancel={handleCancel}
@@ -141,7 +145,7 @@ function DashboardPage() {
       />
 
       <WidgetGrid
-        registry={WIDGET_REGISTRY}
+        registry={registry}
         layout={activeLayout}
         onLayoutChange={handleLayoutChange}
         editable={editable}

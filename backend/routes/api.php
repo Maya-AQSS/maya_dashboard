@@ -36,7 +36,9 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::get('attendances', [AttendanceController::class, 'index']);
         Route::post('attendances', [AttendanceController::class, 'store']);
         Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);
-        Route::get('bookings', [BookingController::class, 'index']);
+        // D27: reservas ocultas hasta que maya_booking esté terminado; nadie tiene el permiso.
+        Route::get('bookings', [BookingController::class, 'index'])
+            ->middleware('permission:dashboard.bookings');
     });
 
 // Perfil del usuario autenticado — maya/shared-profile-laravel.
