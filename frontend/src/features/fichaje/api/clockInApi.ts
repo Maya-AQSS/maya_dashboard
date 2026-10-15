@@ -9,19 +9,21 @@ interface ClockInResponse {
 }
 
 /**
- * Registra un check-in para el usuario con timestamp = ahora (server-side).
- * `source` permite distinguir el origen ('manual', 'kiosk', 'mobile', …).
+ * Registra la entrada del usuario con la hora de ahora: el backend la registra en Odoo con el
+ * endpoint de maya_attendance (D21), que pone la hora.
+ * `source` es el origen que se guarda como terminal del fichaje; sin él, el backend usa el del
+ * dashboard ('dashboard').
  */
 export async function postClockIn(
   userId: string,
-  source: string = 'manual',
+  source?: string,
 ): Promise<ClockInResponse> {
   if (!userId) throw new Error('dashboard.fichaje.errorLoad')
 
   try {
     return await apiFetchJson<ClockInResponse>(
       `/dashboard/user/${encodeURIComponent(userId)}/attendances`,
-      { method: 'POST', body: { source } },
+      { method: 'POST', body: source ? { source } : {} },
     )
   } catch (err) {
     throw mapApiError(err, 'dashboard.fichaje')
@@ -29,8 +31,8 @@ export async function postClockIn(
 }
 
 /**
- * Cierra el check-in abierto del usuario actualizando `check_out = now`.
- * Devuelve la fila actualizada. Lanza si no hay ningún check-in abierto.
+ * Registra la salida del usuario (cierra su entrada abierta de hoy) con la hora de ahora.
+ * Devuelve el tramo cerrado. Lanza si hoy no hay ninguna entrada abierta.
  */
 export async function postClockOut(userId: string): Promise<ClockInResponse> {
   if (!userId) throw new Error('dashboard.fichaje.errorLoad')

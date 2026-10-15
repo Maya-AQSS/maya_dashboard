@@ -31,7 +31,8 @@ Route::middleware(['auth.keycloak', 'user.owns.resource'])
         Route::put('dashboard-layout', [UserDashboardLayoutController::class, 'update'])
             ->middleware('permission:dashboard.dashboard.update');
 
-        // Widgets alimentados desde Odoo vía FDW.
+        // Widgets alimentados desde Odoo: lectura por FDW; los fichajes se registran con el
+        // endpoint de maya_attendance (D21), nunca escribiendo por FDW.
         Route::get('attendances', [AttendanceController::class, 'index']);
         Route::post('attendances', [AttendanceController::class, 'store']);
         Route::post('attendances/check-out', [AttendanceController::class, 'checkOut']);

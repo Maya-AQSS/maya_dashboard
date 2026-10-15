@@ -5,6 +5,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\DB;
 
+// Lectura de fichajes (vista FDW `attendances`, tabla física en testing). La escritura va al endpoint
+// de Odoo (D21): AttendanceClockTest.
+
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
@@ -81,74 +84,4 @@ it('returns open attendances with null check_out', function () {
 
     $response->assertOk();
     expect($response->json('data.0.check_out'))->toBeNull();
-});
-
-it('clocks the user in with current timestamp', function () {
-    $before = now()->subSecond();
-    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", []);
-    $after = now()->addSecond();
-
-    $response->assertStatus(201);
-    expect($response->json('user_id'))->toBe($this->user->id);
-    expect($response->json('check_out'))->toBeNull();
-
-    $checkIn = \Carbon\Carbon::parse($response->json('check_in'));
-    expect($checkIn->greaterThanOrEqualTo($before))->toBeTrue();
-    expect($checkIn->lessThanOrEqualTo($after))->toBeTrue();
-
-    expect(\Illuminate\Support\Facades\DB::table('attendances')->where('user_id', $this->user->id)->count())->toBe(1);
-});
-
-it('defaults the source to manual when not provided', function () {
-    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", [])
-        ->assertStatus(201)
-        ->assertJsonFragment(['source' => 'manual']);
-});
-
-it('accepts a custom source string', function () {
-    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => 'mobile'])
-        ->assertStatus(201)
-        ->assertJsonFragment(['source' => 'mobile']);
-});
-
-it('rejects a source longer than 64 chars', function () {
-    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances", ['source' => str_repeat('a', 65)])
-        ->assertStatus(422);
-});
-
-it('closes the open attendance via check-out endpoint', function () {
-    insertAttendance($this->user->id, '2026-05-22 09:00:00', null);
-
-    $before = now()->subSecond();
-    $response = $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out");
-    $after = now()->addSecond();
-
-    $response->assertStatus(200);
-    expect($response->json('check_out'))->not->toBeNull();
-
-    $checkOut = \Carbon\Carbon::parse($response->json('check_out'));
-    expect($checkOut->greaterThanOrEqualTo($before))->toBeTrue();
-    expect($checkOut->lessThanOrEqualTo($after))->toBeTrue();
-});
-
-it('returns 409 from check-out when no open attendance exists', function () {
-    insertAttendance($this->user->id, '2026-05-22 09:00:00', '2026-05-22 13:00:00');
-
-    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
-        ->assertStatus(409)
-        ->assertJsonStructure(['message']);
-});
-
-it('closes only the most recent open attendance when several exist', function () {
-    insertAttendance($this->user->id, '2026-05-22 08:00:00', '2026-05-22 09:00:00');
-    insertAttendance($this->user->id, '2026-05-22 10:00:00', null);
-
-    $this->postJson("/api/v1/dashboard/user/{$this->user->id}/attendances/check-out")
-        ->assertStatus(200);
-
-    $openCount = DB::table('attendances')
-        ->where('user_id', $this->user->id)
-        ->whereNull('check_out')
-        ->count();
-    expect($openCount)->toBe(0);
 });

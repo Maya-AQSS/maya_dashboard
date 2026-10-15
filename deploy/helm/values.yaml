@@ -3,7 +3,10 @@
 #
 # Secretos: Vault, ruta secret/data/maya-dashboard con las claves de vault.keys
 # (REDIS_PASSWORD = SESSION_PASS de secret/data/redis; FDW_*_PASSWORD = contraseña
-# del rol lector maya_fdw_reader). image.tag lo fija helmfile (misma versión que el chart).
+# del rol lector maya_fdw_reader; ODOO_ATTENDANCE_API_KEY = clave de API del usuario técnico de
+# fichajes de Odoo, la misma que registra en Odoo scripts/registrar_usuario_fichajes.py de
+# maya_attendance: D21, a Odoo solo se escribe por sus endpoints). image.tag lo fija helmfile (misma
+# versión que el chart).
 # Hosts (D24, solo .ceedcv): dashboard.ceedcv (SPA) y api.dashboard.ceedcv (API y WebSocket en /app).
 # Emisor de los tokens: https://keycloak.ceedcv/realms/CEED (D26, R2); el dashboard acepta solo
 # la audiencia maya-dashboard, que el realm añade a los tokens de todas las SPAs (D26, R3).
@@ -25,6 +28,7 @@ vault:
   - FDW_ODOO_PASSWORD
   - FDW_USER_PERMISSIONS_PASSWORD
   - LOG_MGMT_DB_PASSWORD
+  - ODOO_ATTENDANCE_API_KEY
 config:
   APP_FAKER_LOCALE: es_ES
   APP_FALLBACK_LOCALE: es
@@ -70,6 +74,8 @@ config:
   MAIL_FROM_NAME: Maya Dashboard
   MAIL_MAILER: log
   MAYA_MESSAGING_APP: maya-dashboard
+  # D21: los fichajes se registran con POST /api/v1/attendance/clock de maya_attendance (la lectura, por FDW)
+  ODOO_URL: http://odoo-maya-app.maya-erp.svc.cluster.local:8069
   QUEUE_CONNECTION: redis
   RABBITMQ_HOST: rabbitmq-maya-app.maya-sync.svc.cluster.local
   RABBITMQ_PORT: '5672'
@@ -138,4 +144,8 @@ networkPolicy:
     - name: maya-iam
       ports:
       - 8080
+    # Odoo: endpoint de fichajes (D21)
+    - name: maya-erp
+      ports:
+      - 8069
     internet: false

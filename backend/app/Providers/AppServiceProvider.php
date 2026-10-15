@@ -31,12 +31,14 @@ use App\Repositories\Resolvers\DashboardProfileResolver;
 use App\Services\Alerts\AlertAudienceService;
 use App\Services\Alerts\AlertAudienceValidator;
 use App\Services\Attendance\AttendanceService;
+use App\Services\Attendance\OdooAttendanceClient;
 use App\Services\Booking\BookingService;
 use App\Services\Contracts\AlertAudienceServiceInterface;
 use App\Services\Contracts\AlertAudienceValidatorInterface;
 use App\Services\Contracts\ApplicationServiceInterface;
 use App\Services\Contracts\AttendanceReminderServiceInterface;
 use App\Services\Contracts\AttendanceServiceInterface;
+use App\Services\Contracts\AttendanceWriterInterface;
 use App\Services\Contracts\BookingServiceInterface;
 use App\Services\Contracts\NotificationDefinitionServiceInterface;
 use App\Services\Contracts\NotificationIngestionServiceInterface;
@@ -110,9 +112,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PanelAlertNotificationServiceInterface::class, PanelAlertNotificationService::class);
         $this->app->singleton(PanelAlertServiceInterface::class, PanelAlertService::class);
 
-        // Odoo-sourced widgets (read-only via postgres_fdw).
+        // Odoo-sourced widgets (read-only via postgres_fdw). Los fichajes se escriben por el
+        // endpoint de maya_attendance (D21), nunca por FDW.
         $this->app->singleton(AttendanceRepositoryInterface::class, AttendanceRepository::class);
-        $this->app->singleton(AttendanceServiceInterface::class, AttendanceService::class);
+        $this->app->singleton(AttendanceWriterInterface::class, fn (): OdooAttendanceClient => new OdooAttendanceClient(
+            baseUrl: config('services.odoo.url'),
+            apiKey: config('services.odoo.attendance_api_key'),
+            timeout: (float) config('services.odoo.timeout', 5),
+        ));
+        $this->app->singleton(AttendanceServiceInterface::class, fn ($app): AttendanceService => new AttendanceService(
+            $app->make(AttendanceRepositoryInterface::class),
+            $app->make(AttendanceWriterInterface::class),
+            (string) config('services.odoo.attendance_terminal_id', 'dashboard'),
+        ));
         $this->app->singleton(BookingRepositoryInterface::class, BookingRepository::class);
         $this->app->singleton(BookingServiceInterface::class, BookingService::class);
 

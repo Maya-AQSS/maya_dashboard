@@ -9,7 +9,10 @@ use Maya\Platform\Database\PostgresFdwMigration;
  * vía postgres_fdw.
  *
  * Fuente de verdad: módulo Odoo de fichajes (read-only). El dashboard solo lee
- * — nunca escribe — el listado de eventos clock-in/out del empleado.
+ * — nunca escribe — el listado de eventos clock-in/out del empleado. Los fichajes
+ * se registran con el endpoint de maya_attendance (D21), así que la foreign table
+ * queda de solo lectura, como la deja PostgresFdwMigration (antes se daban INSERT y
+ * UPDATE al usuario de la app para fichar por FDW).
  *
  * Rutas:
  * - `testing`:                  tabla física `attendances` (factories pueden insertar).
@@ -57,24 +60,6 @@ return new class extends Migration
             DB::statement('DROP TABLE IF EXISTS '.self::VIEW_NAME);
 
             return;
-        }
-
-        // Revoke INSERT and UPDATE grants before dropping the table.
-        if (config('database.default') === 'pgsql') {
-            $appUser = config('database.connections.pgsql.username');
-            if (is_string($appUser) && $appUser !== '') {
-                try {
-                    DB::statement('REVOKE INSERT ON '.self::FDW_TABLE.' FROM "'.$appUser.'"');
-                } catch (\Throwable $e) {
-                    logger()->warning('FDW: could not REVOKE INSERT on '.self::FDW_TABLE.': '.$e->getMessage());
-                }
-
-                try {
-                    DB::statement('REVOKE UPDATE ON '.self::FDW_TABLE.' FROM "'.$appUser.'"');
-                } catch (\Throwable $e) {
-                    logger()->warning('FDW: could not REVOKE UPDATE on '.self::FDW_TABLE.': '.$e->getMessage());
-                }
-            }
         }
 
         PostgresFdwMigration::dropViewOrTableInPublic(self::VIEW_NAME);
@@ -133,26 +118,5 @@ return new class extends Migration
             $schema,
             $source,
         );
-
-        // Grant INSERT and UPDATE on attendances_fdw to app user.
-        // The dashboard needs to record check-in via "Fichar" button and allow
-        // closing the open check-in with "Fichar salida", which translates to
-        // INSERT and UPDATE operations on the foreign table.
-        if (config('database.default') === 'pgsql') {
-            $appUser = config('database.connections.pgsql.username');
-            if (is_string($appUser) && $appUser !== '') {
-                try {
-                    DB::statement('GRANT INSERT ON '.self::FDW_TABLE.' TO "'.$appUser.'"');
-                } catch (\Throwable $e) {
-                    logger()->warning('FDW: could not GRANT INSERT on '.self::FDW_TABLE.': '.$e->getMessage());
-                }
-
-                try {
-                    DB::statement('GRANT UPDATE ON '.self::FDW_TABLE.' TO "'.$appUser.'"');
-                } catch (\Throwable $e) {
-                    logger()->warning('FDW: could not GRANT UPDATE on '.self::FDW_TABLE.': '.$e->getMessage());
-                }
-            }
-        }
     }
 };
