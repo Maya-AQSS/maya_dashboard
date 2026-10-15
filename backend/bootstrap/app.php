@@ -21,16 +21,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Config común Maya (CORS prepend) + aliases propios de dashboard.
-        // `trustProxies => false`: dashboard no confiaba en proxies antes de la
-        // unificación; se preserva el comportamiento actual.
+        // Config común Maya (CORS prepend + trustProxies) + aliases propios de dashboard.
+        // trustProxies por defecto: TRUSTED_PROXIES (el pod CIDR, desde el ConfigMap de
+        // maya-common). Tras Traefik, sin él la IP de cliente (auditoría de alertas) sería la
+        // de Traefik y las URLs generadas, http.
         CommonMiddleware::register($middleware, [
             'auth.keycloak' => JwtMiddleware::class,
             'user.owns.resource' => EnsureRouteUserMatchesToken::class,
             'permission' => RequirePermissionMiddleware::class,
             'role' => RequireRoleMiddleware::class,
         ], [
-            'trustProxies' => false,
             'apiPrepend' => [
                 \App\Http\Middleware\SetLocaleFromAcceptLanguage::class,
             ],
