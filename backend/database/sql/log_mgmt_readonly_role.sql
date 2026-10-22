@@ -35,7 +35,10 @@ GRANT USAGE ON SCHEMA public TO log_mgmt_readonly;
 --    Extend this list as the schema evolves; do NOT grant on tables that
 --    contain credentials or other secrets.
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO log_mgmt_readonly;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
+-- Las tablas las crean las migraciones de maya_logs como log_mgmt_user: el privilegio
+-- por defecto tiene que ir FOR ROLE log_mgmt_user (sin FOR ROLE solo cubre las tablas
+-- que cree quien ejecuta este script).
+ALTER DEFAULT PRIVILEGES FOR ROLE log_mgmt_user IN SCHEMA public
     GRANT SELECT ON TABLES TO log_mgmt_readonly;
 
 -- 4. Explicitly revoke EXECUTE on dangerous server-side functions.
@@ -52,8 +55,9 @@ REVOKE EXECUTE ON FUNCTION pg_sleep(double precision)               FROM log_mgm
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'dblink') THEN
+        -- count(*) vive en pg_catalog: no le afecta (el GRANT que lo «restauraba» era
+        -- un error de sintaxis que abortaba este bloque).
         EXECUTE 'REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM log_mgmt_readonly';
-        EXECUTE 'GRANT EXECUTE ON FUNCTION count(*) TO log_mgmt_readonly';  -- restore innocuous aggregate
     END IF;
 END
 $$;

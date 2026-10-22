@@ -48,7 +48,7 @@ C4Container
     Container(spa, "React SPA", "React 19 + TypeScript + Vite 7\nTailwind 4 + Odoo 19 tokens", "Interfaz de usuario. SPA que corre en el\nnavegador. Gestiona sesión OIDC (PKCE),\nrutas, widgets y WebSocket")
     Container(api, "Laravel API", "Laravel 13 / PHP 8.3\nApiController → Services → Repositories", "API REST pura JSON. Valida JWT via JWKS.\nGestiona notificaciones, fichajes, perfil,\ntools, audit log y errores de sistema")
     Container(reverb, "Laravel Reverb", "WebSocket server\n(nativo Laravel 11+)", "Entrega notificaciones urgentes en\ntiempo real. Canales privados por usuario")
-    ContainerDb(db, "PostgreSQL 16", "Base de datos principal", "Tablas: registros_ceed, notifications,\ntools, user_tools_favorites,\nmatrículas, activity_log")
+    ContainerDb(db, "PostgreSQL 17", "Base de datos principal", "Tablas: registros_ceed, notifications,\ntools, user_tools_favorites,\nmatrículas, activity_log")
   }
 
   System_Ext(keycloak, "Keycloak", "Identity Provider (OIDC)")
@@ -495,7 +495,7 @@ C4Deployment
       Container(reverb_local, "Laravel Reverb", "puerto 8080", "WebSocket para notificaciones urgentes")
     }
 
-    Deployment_Node(db_node, "PostgreSQL", "postgres:16 — puerto 5432") {
+    Deployment_Node(db_node, "PostgreSQL", "postgres:17 — puerto 5432") {
       ContainerDb(db_laravel, "BD Laravel", "database: maya_dashboard", "Tablas propias de la aplicación")
       ContainerDb(db_keycloak, "BD Keycloak local", "database: keycloak", "Compartida con instancia Keycloak local.\nSin FDW en local — se usan claims JWT")
     }

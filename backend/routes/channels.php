@@ -17,20 +17,20 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 /**
- * Canal privado de notificaciones por usuario.
+ * Los canales se autorizan en `POST /api/v1/broadcasting/auth` (JwtMiddleware, audiencia
+ * maya-dashboard). Los piden el dashboard y la barra lateral de las otras 4 apps, cada una con
+ * el token de su SPA (D37: escuchan este Reverb, que es quien emite las notificaciones).
  *
- * El {userId} es el Keycloak UUID del destinatario. Solo se autoriza cuando
- * el usuario autenticado (guardado en `id` por el guard jwt-token) coincide
- * con el userId del canal, evitando que un usuario pueda escuchar las
- * notificaciones de otro.
+ * Guard `jwt-claims` (AppServiceProvider): el usuario es un `Maya\Auth\Models\BaseJwtUser`
+ * construido con los claims del token, cuyo identificador es el `sub`. No se busca en la vista
+ * FDW `users`, así que la autorización no depende de la app que la pide ni de que el usuario
+ * esté ya proyectado desde Odoo.
+ *
+ * Type-hint `Authenticatable` (no `App\Models\User`): con `App\Models\User` cada llamada a
+ * `/api/v1/broadcasting/auth` acababa en un TypeError 500.
  */
-/**
- * Type-hint is `Authenticatable` (not `App\Models\User`) because the JWT
- * middleware from shared-auth-laravel resolves authenticated users to
- * `Maya\Auth\Models\BaseJwtUser` (or `App\Models\JwtUser` in maya_dms) —
- * a DTO of JWT claims, NOT an Eloquent `User`. Strict-typing to `User`
- * caused a TypeError 500 on every `/api/v1/broadcasting/auth` call.
- */
+$notificationChannelOptions = ['guards' => ['jwt-claims']];
+
 /**
  * Canal compartido del dashboard para alertas de scope=dashboard|both.
  * Cualquier usuario autenticado puede escucharlo (alertas globales del panel).
@@ -38,8 +38,13 @@ use Illuminate\Support\Facades\Broadcast;
  */
 Broadcast::channel('notifications.dashboard', function (Authenticatable $user): bool {
     return $user->getAuthIdentifier() !== null;
-});
+}, $notificationChannelOptions);
 
+/**
+ * Canal privado de notificaciones por usuario. El {userId} es el `sub` de Keycloak del
+ * destinatario: solo se autoriza si coincide con el `sub` del token, para que nadie pueda
+ * escuchar las notificaciones de otro.
+ */
 Broadcast::channel('notifications.{userId}', function (Authenticatable $user, string $userId): bool {
     return $user->getAuthIdentifier() === $userId;
-});
+}, $notificationChannelOptions);

@@ -37,6 +37,9 @@ vi.mock('react-i18next', () => ({
 vi.mock('@ceedcv-maya/shared-auth-react', () => ({
   // ReturnToHandler (beforeLayout) consume useAuth.
   useAuth: vi.fn(() => ({ isLoading: false, isAuthenticated: true, token: 'tok' })),
+  // Configuración en ejecución: sin /config.js en los tests, los VITE_* (como el paquete).
+  publicConfig: (key: string) =>
+    (import.meta.env[`VITE_${key}`] as string | undefined)?.trim() || undefined,
   // src/lib/peerService re-exporta estos helpers del paquete compartido.
   peerOrigin: (slug: string) => `https://${slug}.maya.test`,
   resolveServiceUrl: (env: string | undefined, slug: string) =>

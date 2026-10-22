@@ -12,7 +12,8 @@ use Maya\Platform\Database\PostgresFdwMigration;
  * Read-only. La vista remota ya resuelve nombres de supervisor y mentor.
  *
  * Columnas expuestas:
- *   user_id                  — UUID Keycloak del empleado (clave de lookup)
+ *   user_id                  — `sub` de Keycloak del empleado (clave de lookup): en Odoo,
+ *                              `res_users.oauth_uid` (D26 R4)
  *   personal_email           — email personal (editable por el propio empleado)
  *   position_type            — tipo de plaza (AJC, PRM, ESPJ, …)
  *   supervisor_name          — nombre del responsable (nullable)

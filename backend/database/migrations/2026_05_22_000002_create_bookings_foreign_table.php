@@ -17,7 +17,7 @@ use Maya\Platform\Database\PostgresFdwMigration;
  *
  * Columnas expuestas en la vista local `bookings`:
  *   id            — PK de la reserva (varchar)
- *   user_id       — UUID Keycloak del usuario
+ *   user_id       — `sub` de Keycloak del usuario: en Odoo, `res_users.oauth_uid` (D26 R4)
  *   title         — descripción visible
  *   resource_id   — id del recurso reservado (nullable)
  *   resource_name — nombre del recurso (aula, equipo, …)

@@ -26,7 +26,10 @@ apps server-rendered (patrón `?return_to=<url>` + `?session_token=<jwt>`).
 El dashboard autentica con Keycloak y puede redirigir a otras apps con un JWT de sesión:
 - App server-rendered redirige aquí con `?return_to=<url>`
 - `ReturnToHandler` en `App.tsx` detecta el param y añade `?session_token=<jwt>` al retorno
-- Solo se permite redirect a dominios `*.localhost` (ver `isAllowedReturnUrl`)
+- **Limitación en validación de dominios**: `isAllowedReturnUrl()` (frontend/src/App.tsx) solo permite hosts `*.localhost` o `localhost`
+  - En **desarrollo local**: funciona correctamente (p. ej. `?return_to=http://app.localhost/...`)
+  - En **producción con dominios `.ceedcv.es`**: **NO funciona** — el relay falla la validación
+  - **Por verificar**: determinar si esto es intencional (security by design) o un defecto que requiere corrección
 
 ## Paquetes compartidos
 Provienen del mono-repo `Maya-AQSS/maya_platform` y se distribuyen como

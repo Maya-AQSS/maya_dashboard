@@ -5,6 +5,13 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./src/test/setup.ts'],
+    // Configuración pública de prueba (D26 R6): oidcAdapter exige KEYCLOAK_* al importarse
+    // (publicKeycloakConfig) y en los tests no hay /config.js ni frontend/.env.
+    env: {
+      VITE_KEYCLOAK_URL: 'https://keycloak.maya.test',
+      VITE_KEYCLOAK_REALM: 'CEED',
+      VITE_KEYCLOAK_CLIENT_ID: 'maya-dashboard',
+    },
     // Vitest 4: poolOptions se aplana — pool sigue como top-level + nuevas
     // opciones top-level (maxWorkers, minWorkers). Single fork serializa la
     // suite para mantener heap bajo en contenedor con mem_limit.

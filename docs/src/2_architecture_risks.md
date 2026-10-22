@@ -104,7 +104,7 @@ C4Container
     Container(spa, "React SPA", "React 19 + TypeScript + Vite 7 + Tailwind 4", "Interfaz de usuario. Corre en el navegador del usuario")
     Container(api, "Laravel API", "Laravel 13 / PHP 8.3", "API REST pura JSON. ApiController → Services → Repositories. Valida JWT via JWKS")
     Container(reverb, "Laravel Reverb", "WebSocket server (nativo Laravel 11+)", "Entrega notificaciones urgentes en tiempo real al frontend")
-    ContainerDb(db, "PostgreSQL", "PostgreSQL 16", "BD principal: registros_ceed, notifications, tools, activity_log, user_widget_configurations")
+    ContainerDb(db, "PostgreSQL", "PostgreSQL 17", "BD principal: registros_ceed, notifications, tools, activity_log, user_widget_configurations")
   }
 
   System_Ext(keycloak, "Keycloak", "Identity Provider")

@@ -17,7 +17,7 @@ use Maya\Platform\Database\PostgresFdwMigration;
  *
  * Columnas expuestas en la vista local `attendances`:
  *   id        — PK del evento (varchar)
- *   user_id   — UUID Keycloak del empleado (varchar 255)
+ *   user_id   — `sub` de Keycloak del empleado (varchar 255): en Odoo, `res_users.oauth_uid` (D26 R4)
  *   check_in  — timestamp de entrada
  *   check_out — timestamp de salida (nullable mientras fichaje abierto)
  *   source    — origen ('manual', 'kiosk', 'mobile', 'auto', …)

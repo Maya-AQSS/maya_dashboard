@@ -45,6 +45,11 @@ return [
         'api' => [
             'driver' => 'jwt-token',
         ],
+        // Usuario = claims del token (sin la vista FDW `users`): autoriza los canales de
+        // notificaciones de la barra lateral de las 5 apps (D37, routes/channels.php).
+        'jwt-claims' => [
+            'driver' => 'jwt-claims',
+        ],
     ],
 
     /*
