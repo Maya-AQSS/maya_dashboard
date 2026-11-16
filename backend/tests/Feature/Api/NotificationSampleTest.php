@@ -58,8 +58,10 @@ it('respects the gate — disabled type is not delivered', function () {
     $response = $this->postJson('/api/v1/notifications/fire-sample', ['key' => 'document.rejected']);
 
     $response->assertOk();
-    expect($response->json('data.delivered'))->toBeTrue(); // ingest returns true (acknowledged/dropped)
-    expect(Notification::where('type', 'document.rejected')->count())->toBe(0); // but nothing persisted
+    // The sample service short-circuits disabled types so the UI can warn instead of
+    // showing success (the AMQP ingest path would ACK them with true).
+    expect($response->json('data.delivered'))->toBeFalse();
+    expect(Notification::where('type', 'document.rejected')->count())->toBe(0); // nothing persisted
 });
 
 it('fires a dashboard-scoped sample without a recipient', function () {
