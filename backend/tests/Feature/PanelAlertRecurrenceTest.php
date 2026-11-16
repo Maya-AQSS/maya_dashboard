@@ -42,9 +42,13 @@ function recurringAlert(array $overrides = []): PanelAlert
 // ─── Materializer (recurrence) ──────────────────────────────────────────────
 
 it('re-materializes a recurring alert whose cron is due', function () {
+    $now = Carbon::parse('2026-06-08 10:00:00'); // a Monday, after 09:00
+    // The fixture's dates are relative to now(): freeze it so last_materialized_at
+    // (now − 8 days) falls before the Monday 09:00 run, whatever the real date is.
+    $this->travelTo($now);
+
     $alert = recurringAlert();
 
-    $now = Carbon::parse('2026-06-08 10:00:00'); // a Monday, after 09:00
     $count = app(PanelAlertMaterializer::class)->run($now);
 
     expect($count)->toBe(1);
