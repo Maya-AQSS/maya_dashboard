@@ -20,3 +20,15 @@ o el chart maya-common copiado en `charts/`):
 helm dependency update deploy/helm
 helm template maya-dashboard deploy/helm -n maya-dashboard --set image.tag=1.0.0 | kubeconform -strict
 ```
+
+## Comandos a mano en producción
+
+Los datos de referencia no se cargan en el despliegue (el Job de migración solo migra).
+Se lanzan a mano, una vez, con [`deploy/jobs/artisan-job.yaml`](../jobs/artisan-job.yaml):
+un Job con la imagen *-worker de la versión desplegada, el ConfigMap y los secretos de Vault
+de la app y el mismo `securityContext` que el Job de migración. Las instrucciones están en la
+cabecera del fichero.
+
+- `db:seed --class=ProductionSeeder --force`: definiciones de notificación (conserva el
+  interruptor `enabled` que se haya cambiado) y una regla por defecto para cada evaluador que no
+  tenga ninguna. Idempotente.

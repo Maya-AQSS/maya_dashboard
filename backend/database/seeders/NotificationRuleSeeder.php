@@ -16,7 +16,22 @@ class NotificationRuleSeeder extends Seeder
 {
     public function run(): void
     {
-        $rules = [
+        foreach (self::defaults() as $rule) {
+            NotificationRule::updateOrCreate(
+                ['evaluator_key' => $rule['evaluator_key'], 'name' => $rule['name']],
+                array_merge($rule, ['enabled' => true]),
+            );
+        }
+    }
+
+    /**
+     * Default rule per scheduled evaluator (also used by ProductionSeeder).
+     *
+     * @return list<array{evaluator_key: string, source_app: string, name: string, params: array<string, int>, schedule_cron: string}>
+     */
+    public static function defaults(): array
+    {
+        return [
             [
                 'evaluator_key' => 'dms.validation_deadline_approaching',
                 'source_app' => 'maya-dms',
@@ -39,12 +54,5 @@ class NotificationRuleSeeder extends Seeder
                 'schedule_cron' => '* * * * *',
             ],
         ];
-
-        foreach ($rules as $rule) {
-            NotificationRule::updateOrCreate(
-                ['evaluator_key' => $rule['evaluator_key'], 'name' => $rule['name']],
-                array_merge($rule, ['enabled' => true]),
-            );
-        }
     }
 }

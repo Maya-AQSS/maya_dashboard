@@ -2,6 +2,8 @@
 export const DASHBOARD_PERMISSIONS = {
   login: 'dashboard.login',
   dashboardUpdate: 'dashboard.dashboard.update',
+  /** D27: widget y calendario de reservas; nadie lo tiene hasta que maya_booking esté terminado. */
+  bookings: 'dashboard.bookings',
   profileShow: 'profile.show',
   profileUpdate: 'profile.update',
   panelAlertsIndex: 'dashboard.panel_alerts.index',

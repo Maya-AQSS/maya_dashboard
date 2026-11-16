@@ -23,7 +23,7 @@ final class MeEmployeeController extends Controller
     public function update(UpdateMeEmployeeRequest $request): JsonResponse
     {
         $userId = (string) $request->user()->id;
-        $data   = $request->validated();
+        $data = $request->validated();
 
         // ODOO_BRIDGE — Upsert en tabla local de overrides.
         DB::table('employee_profile_overrides')->upsert(

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Attendance\CreateAttendanceRequest;
 use App\Http\Requests\Api\Attendance\ListAttendanceRequest;
 use App\Http\Resources\AttendanceResource;
+use App\Services\Attendance\AttendanceWriteException;
 use App\Services\Contracts\AttendanceServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,11 +34,19 @@ class AttendanceController extends Controller
         ]);
     }
 
+    /**
+     * Registra la entrada en Odoo (D21). 201 con el tramo abierto; 409 si ya hay una entrada abierta
+     * hoy; 422 si el usuario no es empleado en Odoo; 503 si Odoo no está disponible.
+     */
     public function store(CreateAttendanceRequest $request, string $user): JsonResponse
     {
         $source = $request->validated('source');
 
-        $dto = $this->attendances->clockIn($user, is_string($source) ? $source : null);
+        try {
+            $dto = $this->attendances->clockIn($user, is_string($source) ? $source : null);
+        } catch (AttendanceWriteException $e) {
+            return $this->writeFailed($e);
+        }
 
         return response()->json(
             (new AttendanceResource($dto))->resolve($request),
@@ -46,21 +55,27 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Cierra el check-in abierto del usuario (UPDATE check_out = now).
-     * Devuelve 200 con el DTO actualizado o 409 si no hay fila abierta.
+     * Registra la salida en Odoo (D21). 200 con el tramo cerrado; 409 si hoy no hay ninguna entrada
+     * abierta; 422 si el usuario no es empleado en Odoo; 503 si Odoo no está disponible.
      */
     public function checkOut(Request $request, string $user): JsonResponse
     {
-        $dto = $this->attendances->clockOut($user);
-
-        if ($dto === null) {
-            return response()->json([
-                'message' => __('attendance.no_open_check_in'),
-            ], 409);
+        try {
+            $dto = $this->attendances->clockOut($user);
+        } catch (AttendanceWriteException $e) {
+            return $this->writeFailed($e);
         }
 
         return response()->json(
             (new AttendanceResource($dto))->resolve($request),
         );
+    }
+
+    private function writeFailed(AttendanceWriteException $e): JsonResponse
+    {
+        return response()->json([
+            'message' => __('attendance.'.$e->reason),
+            'code' => $e->reason,
+        ], $e->httpStatus());
     }
 }

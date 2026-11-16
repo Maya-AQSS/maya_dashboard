@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Concerns;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
 
 /**
@@ -32,12 +31,12 @@ trait ValidatesNotificationConditions
     protected function conditionsRules(): array
     {
         return [
-            'conditions'              => ['nullable', 'array'],
-            'conditions.logic'        => ['required_with:conditions', 'string', Rule::in(['AND', 'OR'])],
-            'conditions.items'        => ['required_with:conditions', 'array', 'min:1'],
+            'conditions' => ['nullable', 'array'],
+            'conditions.logic' => ['required_with:conditions', 'string', Rule::in(['AND', 'OR'])],
+            'conditions.items' => ['required_with:conditions', 'array', 'min:1'],
             'conditions.items.*.table' => ['required', 'string', 'max:64', 'regex:/^[a-z_][a-z0-9_]*$/'],
             'conditions.items.*.field' => ['required', 'string', 'max:64', 'regex:/^[a-z_][a-z0-9_]*$/'],
-            'conditions.items.*.op'   => ['required', 'string', Rule::in(self::CONDITION_OPERATORS)],
+            'conditions.items.*.op' => ['required', 'string', Rule::in(self::CONDITION_OPERATORS)],
             'conditions.items.*.value' => [
                 'nullable',
                 function (string $attribute, mixed $value, \Closure $fail): void {
@@ -51,11 +50,13 @@ trait ValidatesNotificationConditions
 
                     if ($value === null) {
                         $fail(__('validation.required', ['attribute' => $attribute]));
+
                         return;
                     }
 
                     if (in_array($op, ['in', 'not_in'], true) && ! is_array($value)) {
                         $fail(__('validation.array', ['attribute' => $attribute]));
+
                         return;
                     }
 

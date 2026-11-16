@@ -25,6 +25,14 @@ vi.mock('../widgets/registry', () => ({
       minSize: { w: 4, h: 2 },
       component: () => <div>DailyFichajesWidget</div>,
     },
+    'bookings-calendar': {
+      id: 'bookings-calendar',
+      titleKey: 'dashboard.widgets.bookings',
+      hideTitle: true,
+      defaultSize: { w: 12, h: 6 },
+      minSize: { w: 6, h: 4 },
+      component: () => <div>BookingsWidget</div>,
+    },
   },
 }))
 
@@ -64,17 +72,20 @@ vi.mock('@ceedcv-maya/shared-dashboard-react', () => ({
     </div>
   ),
   WidgetGrid: ({
+    registry,
     layout,
     editable,
     onLayoutChange,
     onRemoveWidget,
   }: {
+    registry: Record<string, unknown>
     layout: { i: string }[]
     editable: boolean
     onLayoutChange: (l: { i: string }[]) => void
     onRemoveWidget: (id: string) => void
   }) => (
     <div data-testid="widget-grid">
+      <span data-testid="widget-registry">{Object.keys(registry).join(',')}</span>
       {layout.map((item) => (
         <div key={item.i} data-testid={`widget-${item.i}`}>
           <span>{item.i}</span>
@@ -112,7 +123,7 @@ vi.mock('@ceedcv-maya/shared-i18n-react', () => ({
   useLocale: vi.fn(),
 }))
 
-const hasPermissionMock = vi.fn(() => true)
+const hasPermissionMock = vi.fn((_permission: string) => true)
 
 vi.mock('../../user-profile', () => ({
   useUserProfile: () => ({
@@ -208,6 +219,21 @@ describe('DashboardPage', () => {
       render(<DashboardPage />)
       expect(screen.getByTestId('widget-grid')).toBeTruthy()
       expect(screen.getByTestId('widget-user-alerts')).toBeTruthy()
+    })
+  })
+
+  describe('reservas (D27)', () => {
+    it('quita el widget de reservas del registro sin dashboard.bookings', () => {
+      hasPermissionMock.mockImplementation((permission: string) => permission !== 'dashboard.bookings')
+      render(<DashboardPage />)
+      expect(screen.getByTestId('widget-registry').textContent).toBe('user-alerts,fichaje-daily')
+    })
+
+    it('ofrece el widget de reservas con dashboard.bookings', () => {
+      render(<DashboardPage />)
+      expect(screen.getByTestId('widget-registry').textContent).toBe(
+        'user-alerts,fichaje-daily,bookings-calendar',
+      )
     })
   })
 

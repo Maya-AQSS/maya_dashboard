@@ -14,3 +14,13 @@ Schedule::command('panel-alerts:materialize')
     ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground();
+
+// Cola de Laravel (Redis): solo lleva los reintentos de publicación en RabbitMQ
+// (RetryAmqpPublishJob de shared-messaging-laravel). El worker de esta app consume RabbitMQ,
+// no esa cola, así que la vacía el scheduler; sin esto los reintentos se quedaban en Redis
+// sin procesar (plan de las apps, § 4.4, defecto 9). Los que aún esperan su backoff se
+// recogen al minuto siguiente.
+Schedule::command('queue:work --stop-when-empty --max-time=50 --memory=96')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground();

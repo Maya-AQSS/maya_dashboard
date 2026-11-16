@@ -146,14 +146,26 @@ describe('App', () => {
     })
   })
 
-  it('onNotificationNavigate navega a la notificación con estado de retorno', () => {
+  it('onNotificationNavigate abre la notificación en una pestaña nueva', () => {
+    const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
     render(<App />)
 
     const onNavigate = capturedShellProps.onNotificationNavigate as (n: { id: string }) => void
     onNavigate({ id: '42' })
 
+    expect(openSpy).toHaveBeenCalledWith('/notifications/42', '_blank', 'noopener,noreferrer')
+    expect(mockNavigate).not.toHaveBeenCalled()
+    openSpy.mockRestore()
+  })
+
+  it('onProfileNavigate navega a /profile con estado de retorno', () => {
+    render(<App />)
+
+    const onProfile = capturedShellProps.onProfileNavigate as () => void
+    onProfile()
+
     expect(buildBackState).toHaveBeenCalledWith(mockLocation)
-    expect(mockNavigate).toHaveBeenCalledWith('/notifications/42', {
+    expect(mockNavigate).toHaveBeenCalledWith('/profile', {
       state: { backTo: { pathname: '/' } },
     })
   })
