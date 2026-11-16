@@ -33,8 +33,8 @@ final class UpdateMeEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'personal_email'           => ['nullable', 'email', 'max:254'],
-            'iban'                     => ['nullable', 'string', 'max:34'],
+            'personal_email' => ['nullable', 'email', 'max:254'],
+            'iban' => ['nullable', 'string', 'max:34'],
             'car_registration_number_1' => ['nullable', 'string', 'max:20'],
             'car_registration_number_2' => ['nullable', 'string', 'max:20'],
             'car_registration_number_3' => ['nullable', 'string', 'max:20'],
